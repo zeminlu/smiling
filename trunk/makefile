@@ -1,18 +1,86 @@
-CFLAGS=-Wall -ansi 
+############################### Variables ######################################
+#
+#Sets working directories
+INC_DIR = ./inc/
+SRC_DIR = ./src/
+OUTPUT_DIR = ./bin/
+#
+#- Global Variables
+#Sets the location of the header files for make
+vpath %.h $(INC_DIR)
+#Set the location of the source files for make
+vpath %.c $(SRC_DIR)
+#
+#
+#- Compiler
+#Sets the C compiler used to create object files from source code.
+CC = gcc
+#Sets compiler options.
+CFLAGS = -O -Wall -Wuninitialized -pedantic -errors -fno-builtin -c -o
+#Sets the location of the header files.
+INCLUDES = -I $(INC_DIR)
+#Sets the C compiler set up
+COMPILE.c = $(CC) $(INCLUDES) $(CFLAGS) 
+#
+#Sets the linker for the project
+LD = ld
+#
+LDFLAGS = -T $(SRC_DIR)link.ld -o
+#
+TARGET1 = main
+OBJECTS1 = main.o
+TARGET2 = parallel
+OBJECTS2 = parallel.o
+TARGET3 = pipe
+OBJECTS3 = pipe.o
+TARGET4 = fifaGen
+OBJECTS4 = fifaGen.o
+TARGET5 = luGen
+OBJECTS5 = luGen.o
+###############################################################################
+.SILENT:
+.PHONY: clean
 
+all: $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5)
 
-TARGET1=main
-TARGET2=pipe
-TARGET3=parallel
-OBJS1=main.o
-OBJS2=pipe.o
-OBJS3=parallel.o 
+$(TARGET1): $(OBJECTS1)
+	@echo "Linking" $@"..."
+	$(LD) $(LDFLAGS) $(OUTPUT_DIR)$@ $^ 
+	@echo "Done."
+	
+$(TARGET2): $(OBJECTS2)
+	@echo "Linking" $@"..."
+	$(LD) $(LDFLAGS) $(OUTPUT_DIR)$@ $^ 
+	@echo "Done."
+	
+$(TARGET3): $(OBJECTS3)
+	@echo "Linking" $@"..."
+	$(LD) $(LDFLAGS) $(OUTPUT_DIR)$@ $^ 
+	@echo "Done."
+	
+$(TARGET4): $(OBJECTS4)
+	@echo "Linking" $@"..."
+	$(LD) $(LDFLAGS) $(OUTPUT_DIR)$@ $^ 
+	@echo "Done."
+	
+$(TARGET5): $(OBJECTS5)
+	@echo "Linking" $@"..."
+	$(LD) $(LDFLAGS) $(OUTPUT_DIR)$@ $^ 
+	@echo "Done."
+	
+%.o: %.c
+	@echo "Compiling" $< "into" $@...
+	$(COMPILE.c) $@ $<
+	@echo "Done."
 
-$(TARGET1):	$(TARGET1).c $(OBJS1)
-	cc $(CFLAGS) -o ./bin/$(TARGET1) ./src/$(TARGET1).c $(OBJS1)
+main.o:
+pipe.o:
+parallel.o:
+fifaGen.o:
+luGen.o:
 
-$(TARGET2):	$(TARGET2).c $(OBJS2)
-	cc $(CFLAGS) -o $(TARGET2) $(TARGET2).c $(OBJS2)
-
-$(TARGET3):	$(TARGET3).c $(OBJS3)
-	cc $(CFLAGS) -c $(TARGET3).c $(OBJS3)
+clean:
+	@echo "Clearing" $(OUTPUT_DIR) "directory..."
+	@rm -f *.o
+	@rm -f $(OUTPUT_DIR)*
+	@echo "Done."
