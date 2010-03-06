@@ -16,7 +16,7 @@ vpath %.c $(SRC_DIR)
 #Sets the C compiler used to create object files from source code.
 CC = gcc
 #Sets compiler options.
-CFLAGS = -O -Wall -Wuninitialized -pedantic -fno-builtin -c -o
+CFLAGS = -O -Wall -Wuninitialized -pedantic -errors -ansi -fno-builtin -c -o
 #Sets the location of the header files.
 INCLUDES = -I $(INC_DIR)
 #Sets the C compiler set up
@@ -65,7 +65,7 @@ $(TARGET4): $(OBJECTS4)
 	
 $(TARGET5): $(OBJECTS5)
 	@echo "Linking" $@"..."
-	$(LD) $(OUTPUT_DIR)$@ $^ 
+	$(LD) $(LDFLAGS) $(OUTPUT_DIR)$@ $^ 
 	@echo "Done."
 
 %.o: %.c
@@ -73,12 +73,12 @@ $(TARGET5): $(OBJECTS5)
 	$(COMPILE.c) $@ $<
 	@echo "Done."
 
-main.o: main.c
-pipe.o: pipe.c
-parallel.o: parallel.c
-fifaGen.o: fifaGen.c types.h conditions.h
-luGen.o: luGen.c
-conditions.o: conditions.c types.h
+main.o: main.c main.h
+pipe.o: pipe.c pipe.h
+parallel.o: parallel.c parallel.h
+fifaGen.o: fifaGen.c fifaGen.h types.h conditions.h
+luGen.o: luGen.c luGen.h
+conditions.o: conditions.c conditions.h types.h
 
 clean:
 	@echo "Clearing" $(OUTPUT_DIR) "directory..."
