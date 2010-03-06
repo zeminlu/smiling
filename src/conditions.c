@@ -10,9 +10,9 @@
 * en la tabla de paises. De no encontrar ninguno devuelve NULL.
 * 
 */
-int * sameContinent(pais **paises,pais * cabezera){
-	int * rta;
-	int i, j;
+size_t * sameContinent(pais **paises,pais * cabezera){
+	size_t * rta;
+	size_t i, j;
 	
 	rta = malloc(sizeof(int)*31);
 	if(rta == NULL){
@@ -38,9 +38,9 @@ int * sameContinent(pais **paises,pais * cabezera){
 * De no encontrar ninguno devuelve NULL.
 * 
 */
-int * deathGroup(pais **paises,pais * cabezera){
-	int * rta;
-	int i, j;
+size_t * deathGroup(pais **paises,pais * cabezera){
+	size_t * rta;
+	size_t i, j;
 	
 	rta = malloc(sizeof(int)*31);
 	if(rta == NULL){
@@ -65,9 +65,9 @@ int * deathGroup(pais **paises,pais * cabezera){
 * De no encontrar ninguno devuelve NULL.
 * 
 */
-int * champGroup(pais **paises,pais * cabezera){
-	int * rta;
-	int i, j;
+size_t * champGroup(pais **paises,pais * cabezera){
+	size_t * rta;
+	size_t i, j;
 	
 	rta = malloc(sizeof(int)*31);
 	if(rta == NULL){
@@ -93,9 +93,9 @@ int * champGroup(pais **paises,pais * cabezera){
 * De no encontrar ninguno devuelve NULL.
 * 
 */
-int * weakGroup(pais **paises,pais * cabezera){
-	int * rta;
-	int i, j;
+size_t * weakGroup(pais **paises,pais * cabezera){
+	size_t * rta;
+	size_t i, j;
 	
 	rta = malloc(sizeof(int)*31);
 	if(rta == NULL){
