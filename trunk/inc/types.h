@@ -8,5 +8,5 @@ typedef struct {
 typedef struct {
 	char *nombre;
 	int condAmm;
-	char ** (**conditions)(pais **paises);
+	int * (**conditions)(pais **paises, pais *cabecera);
 	} cabeza;
