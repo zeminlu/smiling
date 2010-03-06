@@ -17,3 +17,13 @@ typedef struct {
 	int champGroup;
 	int weakGroup;
 	}cabeza;
+
+typedef struct{
+	void **estructura;
+	int amm;
+	}package;
+
+typedef struct{
+	pais **paises;
+	cabeza *head;
+	}condPack;

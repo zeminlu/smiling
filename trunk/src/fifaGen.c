@@ -1,11 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdarg.h>
-#include <errno.h>
-#include "../inc/types.h"
-#include "../inc/conditions.h"
+#include "../inc/fifagen.h"
 
 int main (void){
 	int i, amm, death, c1, c2, c3;
