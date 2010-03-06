@@ -10,13 +10,13 @@ int main (void){
 			execv("./parallel.bin", NULL);
 			break;
 		default:
-			/*switch (fork()){
+			switch (fork()){
 				case 0:
 					execv("./pipe.bin", NULL);
 					break;
 				default:
 					wait(&p1);
-			*/		wait(&p2);
+					wait(&p2);
 					break;	
 			
 			break;
