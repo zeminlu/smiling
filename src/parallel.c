@@ -14,8 +14,8 @@ int main(){
 	FILE *paisesF, *cabezasF;
 	pais **paises = NULL;
 	cabeza **cabezas = NULL;
-	size_t i = 0;
-	size_t j = 0;
+	int i = 0;
+	int j = 0;
 	
 	if ((dp = opendir("./parallelDir")) == NULL){
 		perror("Error al abrir el directiorio parallelDir");
@@ -114,7 +114,7 @@ int main(){
 
 int getFilesAmm (DIR *dp){
 	struct dirent *d;
-	size_t ret = 0;
+	int ret = 0;
 	while ((d = readdir(dp))){
 		 if (d->d_ino != 0){
 			++ret;
