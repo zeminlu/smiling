@@ -7,12 +7,12 @@ int main (void){
 	int p1, p2;
 	switch (fork()){
 		case 0:
-			execv("./pipe", NULL);
+			execv("./pipe.bin", NULL);
 			break;
 		default:
 			switch (fork()){
 				case 0:
-					execv("./parallel", NULL);
+					execv("./parallel.bin", NULL);
 					break;
 				default:
 					wait(&p1);

@@ -10,9 +10,7 @@ int main(){
 	if ((dp = opendir("./pipeDir")) == NULL){
 		return -1;
 	}
-	while (getFilesAmm(dp) < 3){
-		sleep(1);
-	};
+	while (getFilesAmm(dp) < 4);
 	printf("Nuevo archivo en pipe\n");
 	return 0;
 }
