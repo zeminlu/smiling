@@ -1,3 +1,8 @@
+typedef struct{
+	int cantPaises;
+	int * paises;
+	}conjunto;
+
 typedef struct {
 	char *nombre;
 	int continente;
@@ -8,5 +13,6 @@ typedef struct {
 typedef struct {
 	char *nombre;
 	int condAmm;
-	int * (**conditions)(pais **paises, pais *cabecera);
+	conjunto * (**conditions)(pais **paises, pais *cabecera);
 	}cabeza;
+	

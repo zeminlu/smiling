@@ -39,10 +39,12 @@ size_t * sameContinent(pais **paises,pais * cabezera){
 * 
 */
 size_t * deathGroup(pais **paises,pais * cabezera){
-	size_t * rta;
+	size_t * paises;
 	size_t i, j;
+	conjunto * rta;
 	
-	rta = malloc(sizeof(int)*31);
+	rta = malloc()
+	paises = malloc(sizeof(int)*31);
 	if(rta == NULL){
 		/*	error memoria, insuficiente*/	}
 	for(i = 0, j= 0; i < 31; i++){
