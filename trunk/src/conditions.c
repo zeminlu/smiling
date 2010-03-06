@@ -1,5 +1,6 @@
-#include "./inc/types.h"
+#include "../inc/types.h"
 int * sameContinent(pais **paises,pais * cabezera){
+	return 0;
 }
 
 int * deathGroup(pais **paises,pais * cabezera){
