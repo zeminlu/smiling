@@ -1,12 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <dirent.h>
-#include <string.h>
-#include <stdarg.h>
-#include <errno.h>
 #include "../inc/parallel.h"
-#include "../inc/types.h"
 
 int main(){
 	DIR *dp;
@@ -16,6 +8,7 @@ int main(){
 	cabeza **cabezas = NULL;
 	int i = 0;
 	int j = 0;
+	int fifa = 0;
 	
 	if ((dp = opendir("./parallelDir")) == NULL){
 		perror("Error al abrir el directiorio parallelDir");
@@ -109,6 +102,16 @@ int main(){
 		}
 	}
 	
+	switch (fork()){
+		case 0:
+			execv("./fifa.bin", NULL);
+			/*Se le pasa a fifa las estructuras paises y cabezas*/
+			break;
+		default:
+			wait(&fifa);
+			return 0;
+			break;
+	}
 	return 0;
 }
 
