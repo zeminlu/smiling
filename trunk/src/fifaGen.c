@@ -24,7 +24,7 @@ int main (void){
 		return -1;
 	}
 	
-	for (i = 0 ; i < amm ; --i){
+	for (i = 0 ; i < amm ; ++i){
 		paises[i] = malloc(sizeof(pais));
 		printf("Ingrese el Nombre del Pais\n");
 		scanf("%s", nombre);
