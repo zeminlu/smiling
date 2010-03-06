@@ -85,7 +85,7 @@ int * weakGroup(pais **paises,pais * cabezera){
 		}
 	}
 	if(j == 0){
-		return = NULL;
+		return NULL;
 	}
 	rta = realloc(rta, sizeof(int)*j);
 	return rta;
