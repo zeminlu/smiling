@@ -18,7 +18,7 @@ int main (void){
 					wait(&p1);
 					wait(&p2);
 					break;	
-			
+			}
 			break;
 	}
 	return 0;
