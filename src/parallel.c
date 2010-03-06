@@ -18,54 +18,64 @@ int main(){
 	if ((dp = opendir("./parallelDir")) == NULL){
 		return -1;
 	}
-	while (getFilesAmm(dp) < 4);
+	while (getFilesAmm(dp) < 4){
+		rewinddir(dp);
+	};
 	printf("Nuevo archivo en parallel\n");
 	rewinddir(dp);
-	readdir(dp);
-	readdir(dp);
 	while ((d = readdir(dp))){
+		printf("%s\n", d->d_name);
 		if (d->d_ino == 0){
 			continue;
-		}
+		}	
 		if (strcmp(d->d_name, "paises.fifa") == 0){
 			i = 0;
-			if ((paisesF = fopen(d->d_name, "r")) == NULL){
+			if ((paisesF = fopen("./parallelDir/paises.fifa", "r")) == NULL){
 				return -1;
 			}
 			while (feof(paisesF) == 0){
 				++i;
-				if((paises = realloc(paises, sizeof(void *) * i)) == NULL ||
-					(paises[i - 1] = malloc(sizeof(pais))) == NULL){
-					if (fread(paises[i - 1], sizeof(pais), 1, paisesF) != 1){
-						return -1;
-					}
+				if ((paises = realloc(paises, sizeof(void *) * i)) == NULL ||
+					(paises[i - 1] = malloc(sizeof(pais))) == NULL || 
+					((fread(paises[i - 1], sizeof(pais), 1, paisesF) != 1) && !feof(paisesF))){
+					return -1;
 				}
+				else {
+					if (feof(paisesF)){
+						--i;
+						free(paises[i]);
+						paises = realloc(paises, sizeof(void *) * i);
+					}
+				}				
 			}
 		}
 		else if (strcmp(d->d_name, "cabezas.fifa") == 0){
 			i = 0;
-			if ((cabezasF = fopen(d->d_name, "r")) == NULL){
+			if ((cabezasF = fopen("./parallelDir/cabezas.fifa", "r")) == NULL){
 				return -1;
 			}
 			while (feof(cabezasF) == 0){
 				++i;
 				if ((cabezas = realloc(cabezas, sizeof(void *) * i)) == NULL ||
-					(cabezas[i - 1] = malloc(sizeof(cabeza))) == NULL){
-					if (fread(cabezas[i - 1], sizeof(cabeza), 1, cabezasF) != 1){
+					(cabezas[i - 1] = malloc(sizeof(cabeza))) == NULL ||
+					((fread(cabezas[i - 1], sizeof(cabeza), 1, cabezasF) != 1) && !feof(cabezasF))){
 						return -1;
+				}
+				else {
+					if (feof(cabezasF)){
+						--i;
+						free(cabezas[i]);
+						cabezas = realloc(cabezas, sizeof(void *) * i);
 					}
 				}
 			}
 		}
-		else if (strcmp(d->d_name, ".svn") == 0){
-			
+		else if (strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0 || strcmp(d->d_name, ".svn") == 0){
+			continue;
 		}
 		else{
 			printf("Se inserto un arhivo incorrecto\n");
 		}
-	}
-	for(; i >=0 ;i--){
-		printf("Pais %s Continente %d Campeon %d Peso %d", (paises[i])->nombre, (paises[i])->continente, (paises[i])->campeon, (paises[i])->peso);
 	}
 	
 	return 0;

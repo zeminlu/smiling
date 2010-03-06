@@ -4,15 +4,16 @@ typedef struct{
 	}conjunto;
 
 typedef struct {
-	char *nombre;
+	char nombre[45];
 	int continente;
 	int campeon;
 	int peso; 
 	}pais;
 
 typedef struct {
-	char *nombre;
-	int condAmm;
-	conjunto * (**conditions)(pais **paises, pais *cabecera);
+	char nombre[45];
+	int sameContinent;
+	int deathGroup;
+	int champGroup;
+	int weakGroup;
 	}cabeza;
-	

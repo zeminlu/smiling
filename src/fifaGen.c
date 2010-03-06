@@ -7,7 +7,7 @@
 #include "../inc/conditions.h"
 
 int main (void){
-	int i, amm, continent, champ, weight, death, c1, c2, c3, j;
+	int i, amm, continent, champ, weight, death, c1, c2, c3;
 	char nombre[45];
 	pais **paises;
 	cabeza **cabezas;
@@ -36,12 +36,11 @@ int main (void){
 		scanf("%d", &weight);
 		printf("OK\n");
 		
-		(paises[i])->nombre = malloc(strlen(nombre));
 		strcpy((paises[i])->nombre, nombre);
 		(paises[i])->continente = continent;
 		(paises[i])->campeon = champ;
-		(paises[i])->peso = weight; 
-		fwrite(paises[i], sizeof(paises), 1, archivoP);
+		(paises[i])->peso = weight;
+		fwrite(paises[i], sizeof(pais), 1, archivoP);
 	}
 	
 	printf("Cual sera el grupo de la muerte? De no existir, ingrese 0.\n");
@@ -49,9 +48,7 @@ int main (void){
 	
 	for (i = 0 ; i < amm/4 ; ++i){
 		cabezas[i] = malloc(sizeof(cabeza));
-		cabezas[i]->conditions = malloc(sizeof(void *) * 4);
 		
-		j = 0;
 		printf("Ingrese el Nombre del Pais cabeza de serie\n");
 		scanf("%s", nombre);
 		printf("A continuacion se le preguntara acerca de la inclusion de ciertas restricciones. Conteste con 1 o 0.\n\n");
@@ -59,13 +56,11 @@ int main (void){
 		
 		scanf("%d", &c1);
 		if(c1 == 0){
-			cabezas[i]->conditions[j] = sameContinent;
-			++j;
+			cabezas[i]->sameContinent = 1;
 		}
 		
 		if (death == i + 1){
-			cabezas[i]->conditions[j] = deathGroup;
-			++j;
+			cabezas[i]->deathGroup = 1;
 		}
 		else{
 			printf("Debe ser grupo debil?\n");
@@ -75,16 +70,13 @@ int main (void){
 				printf("Debe intentar incluir campeones?\n");
 				scanf("%d", &c3);
 				if (c3 == 1){
-					cabezas[i]->conditions[j] = champGroup;
-					++j;
+					cabezas[i]->champGroup = 1;
 				}
 			}
 			else{
-				cabezas[i]->conditions[j] = weakGroup;
-				++j;
+				cabezas[i]->weakGroup = 1;
 			}
 		}
-		cabezas[i]->condAmm = j;
 		fwrite(cabezas[i], sizeof(cabeza), 1, archivoC);
 	}
 	
