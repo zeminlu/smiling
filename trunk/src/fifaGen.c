@@ -3,24 +3,30 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdarg.h>
+#include <errno.h>
 #include "../inc/types.h"
 #include "../inc/conditions.h"
 
 int main (void){
 	int i, amm, death, c1, c2, c3;
-	char nombre[45];
 	pais *paises;
 	cabeza *cabezas;
 	FILE *archivoP, *archivoC;
 	
 	if ((archivoP = fopen("./testFiles/paises.fifa", "w")) == NULL || 
 		(archivoC = fopen("./testFiles/cabezas.fifa", "w")) == NULL){
-		return -1;
+			perror("Error al crear archivos");
+			fclose(archivoP);
+			return errno;
 	}
 	
 	if ((paises = malloc(sizeof(pais))) == NULL || 
 		(cabezas = malloc(sizeof(cabeza))) == NULL){
-		return -1;
+			perror("Error de memoria");
+			free(paises);
+			fclose(archivoP);
+			fclose(archivoC);
+			return errno;
 	};
 	
 	printf("Ingrese cantidad de paises\n");
@@ -37,7 +43,14 @@ int main (void){
 		scanf("%d", &(paises->peso));
 		printf("OK\n");
 		
-		fwrite(paises, sizeof(pais), 1, archivoP);
+		if (fwrite(paises, sizeof(pais), 1, archivoP) != 1){
+			perror("Error de escritura");
+			free(paises);
+			free(cabezas);
+			fclose(archivoP);
+			fclose(archivoC);
+			return errno;
+		}
 	}
 	
 	printf("Cual sera el grupo de la muerte? De no existir, ingrese 0.\n");
@@ -46,7 +59,7 @@ int main (void){
 	for (i = 0 ; i < amm/4 ; ++i){
 		
 		printf("Ingrese el Nombre del Pais cabeza de serie\n");
-		scanf("%s", nombre);
+		scanf("%s", cabezas->nombre);
 		printf("A continuacion se le preguntara acerca de la inclusion de ciertas restricciones. Conteste con 1 o 0.\n\n");
 		printf("Puede aceptar paises del mismo continente?\n");
 		
@@ -73,7 +86,14 @@ int main (void){
 				cabezas->weakGroup = 1;
 			}
 		}
-		fwrite(cabezas, sizeof(cabeza), 1, archivoC);
+		if (fwrite(cabezas, sizeof(cabeza), 1, archivoC) != 1){
+			perror("Error de escritura");
+			free(paises);
+			free(cabezas);
+			fclose(archivoP);
+			fclose(archivoC);
+			return errno;
+		}
 	}
 	
 	free(paises);

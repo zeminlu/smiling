@@ -36,7 +36,7 @@ OBJECTS3 = pipe.o
 TARGET4 = fifaGen.bin
 OBJECTS4 = fifaGen.o conditions.o
 TARGET5 = luGen.bin
-OBJECTS5 = luGen.o
+OBJECTS5 = luGen.o 
 ###############################################################################
 .SILENT:
 .PHONY: clean
@@ -74,7 +74,7 @@ $(TARGET5): $(OBJECTS5)
 	@echo "Done."
 
 main.o: main.c main.h
-pipe.o: pipe.c pipe.h
+pipe.o: pipe.c pipe.h 
 parallel.o: parallel.c parallel.h
 fifaGen.o: fifaGen.c fifaGen.h types.h conditions.h
 luGen.o: luGen.c luGen.h
