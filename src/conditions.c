@@ -3,7 +3,13 @@
 
 #define WEAK_GROUP 4
 
-//------------------------sameContinent----------------------------
+/*Nombre: sameContinent
+*
+* 	Busca de la talba de paises, cual pertenece al mismo continente
+* que el pais de cabezera, y almacena el int asociado , ala entrada
+* en la tabla de paises. De no encontrar ninguno devuelve NULL.
+* 
+*/
 int * sameContinent(pais **paises,pais * cabezera){
 	int * rta;
 	int i, j;
@@ -25,7 +31,13 @@ int * sameContinent(pais **paises,pais * cabezera){
 	return rta;
 }
 
-//------------------------deathGroup----------------------------
+/*Nombre: deathGroup
+*
+* 	Busca de la talba de paises, cuales tiene mayor peso que WEAK_GROUP,
+* y almacena el int asociado , ala entrada en la tabla de paises. 
+* De no encontrar ninguno devuelve NULL.
+* 
+*/
 int * deathGroup(pais **paises,pais * cabezera){
 	int * rta;
 	int i, j;
@@ -47,7 +59,13 @@ int * deathGroup(pais **paises,pais * cabezera){
 	return rta;
 }
 
-//------------------------champGroup----------------------------
+/*Nombre: champGroup
+*
+* 	Busca de la talba de paises, los que hallan salido campeon,
+* y almacena el int asociado , ala entrada en la tabla de paises.
+* De no encontrar ninguno devuelve NULL.
+* 
+*/
 int * champGroup(pais **paises,pais * cabezera){
 	int * rta;
 	int i, j;
@@ -69,7 +87,13 @@ int * champGroup(pais **paises,pais * cabezera){
 	return rta;
 }
 
-//------------------------weakGroup----------------------------
+/*Nombre: weakGroup
+*
+* 	Busca de la talba de paises, los que tenga peso menos o igual que,
+* WEAK_GROUP, y almacena el int asociado , ala entrada en la tabla de paises.
+* De no encontrar ninguno devuelve NULL.
+* 
+*/
 int * weakGroup(pais **paises,pais * cabezera){
 	int * rta;
 	int i, j;
