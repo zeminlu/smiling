@@ -16,7 +16,7 @@ int * sameContinent(pais **paises,pais * cabezera){
 	
 	rta = malloc(sizeof(int)*31);
 	if(rta == NULL){
-		//	error memoria, insuficiente
+		/*	error memoria, insuficiente*/
 	}
 	for(i = 0, j= 0; i < 31; i++){
 		if(cabezera->continente	== paises[i]->continente){
@@ -44,8 +44,7 @@ int * deathGroup(pais **paises,pais * cabezera){
 	
 	rta = malloc(sizeof(int)*31);
 	if(rta == NULL){
-		//	error memoria, insuficiente
-	}
+		/*	error memoria, insuficiente*/	}
 	for(i = 0, j= 0; i < 31; i++){
 		if(paises[i]->peso > WEAK_GROUP){
 			rta[j] = i;
@@ -72,7 +71,7 @@ int * champGroup(pais **paises,pais * cabezera){
 	
 	rta = malloc(sizeof(int)*31);
 	if(rta == NULL){
-		//	error memoria, insuficiente
+		/*	error memoria, insuficiente*/
 	}
 	for(i = 0, j= 0; i < 31; i++){
 		if(paises[i]->campeon > 0){
@@ -100,7 +99,7 @@ int * weakGroup(pais **paises,pais * cabezera){
 	
 	rta = malloc(sizeof(int)*31);
 	if(rta == NULL){
-		//	error memoria, insuficiente
+		/*	error memoria, insuficiente*/
 	}
 	for(i = 0, j= 0; i < 31; i++){
 		if(paises[i]->peso <= WEAK_GROUP){
