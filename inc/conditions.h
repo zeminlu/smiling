@@ -5,3 +5,5 @@ int * deathGroup(pais **paises,pais * cabezera);
 int * champGroup(pais **paises,pais * cabezera);
 
 int * weakGroup(pais **paises,pais * cabezera);
+
+#define WEAK_GROUP 4
