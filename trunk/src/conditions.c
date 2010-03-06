@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include "../inc/types.h"
 
+#define WEAK_GROUP 4
+
 //------------------------sameContinent----------------------------
 int * sameContinent(pais **paises,pais * cabezera){
 	int * rta;
@@ -17,7 +19,7 @@ int * sameContinent(pais **paises,pais * cabezera){
 		}
 	}
 	if(j == 0){
-		return = NULL;
+		return NULL;
 	}
 	rta = realloc(rta, sizeof(int)*j);
 	return rta;
@@ -39,7 +41,7 @@ int * deathGroup(pais **paises,pais * cabezera){
 		}
 	}
 	if(j == 0){
-		return = NULL;
+		return NULL;
 	}
 	rta = realloc(rta, sizeof(int)*j);
 	return rta;
@@ -61,7 +63,7 @@ int * champGroup(pais **paises,pais * cabezera){
 		}
 	}
 	if(j == 0){
-		return = NULL;
+		return NULL;
 	}
 	rta = realloc(rta, sizeof(int)*j);
 	return rta;
