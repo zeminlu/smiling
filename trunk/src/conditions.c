@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
 #include "../inc/types.h"
 
 #define WEAK_GROUP 4
@@ -12,27 +14,28 @@
 */
 
 conjunto * sameContinent(pais **paises,pais * cabezera){
-	size_t * paisesInt;
-	size_t i, j;
+	int * paisesInt;
+	int i, j;
 	conjunto * rta;
 	
 	rta = malloc(sizeof(conjunto));
-	paisesInt = malloc(sizeof(int)*31);
+	paisesInt = malloc(sizeof(int)*32);
 	
 	if(rta == NULL){
 		/*	error memoria, insuficiente*/
 	}
-	for(i = 0, j= 0; i < 31; i++){
-		if(cabezera->continente	== paises[i]->continente){
+	for(i = 0, j= 0; i < 31; ++i){
+		if(cabezera->continente	!= paises[i]->continente){
 			paisesInt[j] = i;
-			j++;
+			++j;
 		}
 	}
 	if(j == 0){
 		return NULL;
 	}
-	rta->cantPaises = (j-1);
-	rta->paises = realloc(paisesInt, sizeof(int)*(j-1));
+
+	rta->cantPaises = j;
+	rta->paises = realloc(paisesInt, sizeof(int)*(j));
 	return rta;
 }
 
@@ -44,8 +47,8 @@ conjunto * sameContinent(pais **paises,pais * cabezera){
 * 
 */
 conjunto * deathGroup(pais **paises,pais * cabezera){
-	size_t * paisesInt;
-	size_t i, j;
+	int * paisesInt;
+	int i, j;
 	conjunto * rta;
 	
 	rta = malloc(sizeof(conjunto));
@@ -53,17 +56,17 @@ conjunto * deathGroup(pais **paises,pais * cabezera){
 	
 	if(rta == NULL){
 		/*	error memoria, insuficiente*/	}
-	for(i = 0, j= 0; i < 31; i++){
+	for(i = 0, j= 0; i < 31; ++i){
 		if(paises[i]->peso > WEAK_GROUP){
 			paisesInt[j] = i;
-			j++;
+			++j;
 		}
 	}
 	if(j == 0){
 		return NULL;
 	}
-	rta->cantPaises = j-1;
-	rta->paises = realloc(paisesInt, sizeof(int)*(j-1));
+	rta->cantPaises = j;
+	rta->paises = realloc(paisesInt, sizeof(int)*(j));
 	return rta;
 }
 
@@ -75,8 +78,8 @@ conjunto * deathGroup(pais **paises,pais * cabezera){
 * 
 */
 conjunto * champGroup(pais **paises,pais * cabezera){
-	size_t * paisesInt;
-	size_t i, j;
+	int * paisesInt;
+	int i, j;
 	conjunto * rta;
 	
 	rta = malloc(sizeof(conjunto));
@@ -85,17 +88,17 @@ conjunto * champGroup(pais **paises,pais * cabezera){
 	if(rta == NULL){
 		/*	error memoria, insuficiente*/
 	}
-	for(i = 0, j= 0; i < 31; i++){
+	for(i = 0, j= 0; i < 31; ++i){
 		if(paises[i]->campeon > 0){
 			paisesInt[j] = i;
-			j++;
+			++j;
 		}
 	}
 	if(j == 0){
 		return NULL;
 	}
-	rta->cantPaises = j-1;
-	rta->paises = realloc(paisesInt, sizeof(int)*(j-1));
+	rta->cantPaises = j;
+	rta->paises = realloc(paisesInt, sizeof(int)*(j));
 	return rta;
 }
 
@@ -108,27 +111,27 @@ conjunto * champGroup(pais **paises,pais * cabezera){
 */
 
 conjunto * weakGroup(pais **paises,pais * cabezera){
-	size_t * paisesInt;
-	size_t i, j;
+	int * paisesInt;
+	int i, j;
 	conjunto * rta;
 	
 	rta = malloc(sizeof(conjunto));
-	paisesInt = malloc(sizeof(int)*31);
+	paisesInt = malloc(sizeof(int)*32);
 	
 	if(rta == NULL){
 		/*	error memoria, insuficiente*/
 	}
-	for(i = 0, j= 0; i < 31; i++){
+	for(i = 0, j= 0; i < 31; ++i){
 		if(paises[i]->peso <= WEAK_GROUP){
 			paisesInt[j] = i;
-			j++;
+			++j;
 		}
 	}
 	if(j == 0){
 		return NULL;
 	}
-	rta->cantPaises = j-1;
-	rta->paises = realloc(paisesInt, sizeof(int)*(j-1));
+	rta->cantPaises = j;
+	rta->paises = realloc(paisesInt, sizeof(int)*(j));
 	return rta;
 }
 
