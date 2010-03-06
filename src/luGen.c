@@ -15,20 +15,20 @@
 
 int main (int argc, char const *argv[])
 {
-	size_t i, j, count = 0;
+	int i, j;
 	int cantVar = 0;
 	float **varValues;
-	float initCond[];
+	float *initCond;
 	
 	printf("Ingrese la cantidad de variables que desea que tenga el sistema\n");
 	
-	if( (cantVar = scanf("%d")) <= 0 )
+	if( scanf("%d", & cantVar) <= 0 )
 	{
 		printf("La cantidad de variables tiene que ser un numero natural positivo\n");
 	}
 	++cantVar;
 	
-	if( (varValues = malloc(sizeof(float) * cantVar)) == NULL )
+	if( (varValues = malloc(sizeof(float) * cantVar - 1)) == NULL )
 	{
 		printf("Error en la alocacion de memoria\n");
 	}
@@ -42,18 +42,18 @@ int main (int argc, char const *argv[])
 	}
 	
 	printf("A continuacion debera ingresar los coeficientes de cada variable\n");
-	for( size_t i = 0 ; i < cantVar ; ++i )
+	for( i = 0 ; i < cantVar - 1 ; ++i )
 	{
-		for( size_t j = 0 ; j < cantVar ; ++j )
+		for( j = 0 ; j < cantVar ; ++j )
 		{
 			if( j == cantVar - 1 )
 			{
 				printf("Ingrese el termino independiente de la ecuacion %d\n", i+1);
-				varValues[i][j] = scanf("%f");
+				scanf("%f", &varValues[i][j]);
 			}else
 			{
 				printf("Ingrese el valor de la variable numero %d y de la ecuacion %d \n", i+1, j+1);
-				varValues[i][j] = scanf("%f");
+				scanf("%f", &varValues[i][j]);
 			}
 		}
 	}
@@ -64,10 +64,10 @@ int main (int argc, char const *argv[])
 	}
 	
 	printf("A continuacion debera ingresar las condiciones iniciales\n");
-	for(size_t i = 0; i < cantVar - 1; ++i)
+	for( i = 0; i < cantVar - 1; ++i)
 	{
 		printf("Ingrese las condiciones iniciales de la variable %d\n", i+1);
-		initCond[i] = scanf("%f");
+		scanf("%f", &initCond[i]);
 	}
 	
 	createInitCondFile( cantVar - 1, initCond );
@@ -81,15 +81,34 @@ int main (int argc, char const *argv[])
  *	Recibe la cantidad de variables que hay y el vector de las condiciones iniciales.
  */
 
-void createInitCondFile( int cantVar, float *init )
+void createInitCondFile( int cantVar, float *cond )
 {
-	char * filename = "inicial.lu";
+	int i;
+	char * filename = "./testFiles/inicial.lu";
 	FILE * init;
 	
-	if((init = fopen(filename,"a+")) == NULL )
+	if((init = fopen(filename,"w+")) == NULL )
 	{
 		printf("No se puedo crear el archivo\n");
+		exit(1);
 	}
+	if( fwrite(&cantVar, sizeof(int), 1, init) == 0 )
+	{
+		printf("Error no se pudo escribir en el archivo inicial.lu\n");
+		fclose(init);
+		exit(1);
+	}
+	for( i = 0; i < cantVar - 1; ++i)
+	{
+		if( fwrite(&cond[i], sizeof(float), 1, init) == 0 )
+		{
+			printf("Error no se pudo escribir en el archivo inicial.lu\n");
+			fclose(init);
+			exit(1);
+		}	
+	}
+	printf("Se creo exitosamente el archivo inicial.lu\n");
+	fclose(init);
 }
 
 /*
@@ -99,6 +118,29 @@ void createInitCondFile( int cantVar, float *init )
 
 void createLUFile( float ** values )
 {
+	int i,j;
+	char * filename = "./testFiles/ecuaciones.lu";
+	FILE * ecu;
 	
+	if((ecu = fopen(filename,"w+")) == NULL )
+	{
+		printf("No se puedo crear el archivo\n");
+		exit(1);
+	}
+	
+	for( i = 0; i < sizeof(values)/sizeof(float) ; ++i)
+	{
+		for( j = 0; j < sizeof(values[0])/sizeof(float); ++j)
+		{
+			if( fwrite(&values[i][j], sizeof(float), 1, ecu) == 0 )
+			{
+				printf("Error no se pudo escribir en el archivo inicial.lu\n");
+				fclose(ecu);
+				exit(1);
+			}
+		}
+	}
+	printf("Se creo exitosamente el archivo ecuaciones.lu\n");
+	fclose(ecu);
 	
 }
