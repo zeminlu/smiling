@@ -16,16 +16,16 @@ vpath %.c $(SRC_DIR)
 #Sets the C compiler used to create object files from source code.
 CC = gcc
 #Sets compiler options.
-CFLAGS = -O -Wall -Wuninitialized -pedantic -errors -fno-builtin -c -o
+CFLAGS = -O -Wall -Wuninitialized -pedantic -fno-builtin -c -o
 #Sets the location of the header files.
 INCLUDES = -I $(INC_DIR)
 #Sets the C compiler set up
 COMPILE.c = $(CC) $(INCLUDES) $(CFLAGS) 
 #
 #Sets the linker for the project
-LD = ld
+LD = gcc
 #
-LDFLAGS = -o
+LDFLAGS = -O -Wall -Wuninitialized -pedantic -fno-builtin -o
 #
 TARGET1 = main
 OBJECTS1 = main.o
@@ -34,14 +34,14 @@ OBJECTS2 = parallel.o
 TARGET3 = pipe
 OBJECTS3 = pipe.o
 TARGET4 = fifaGen
-OBJECTS4 = fifaGen.o
+OBJECTS4 = fifaGen.o conditions.o
 TARGET5 = luGen
 OBJECTS5 = luGen.o
 ###############################################################################
 .SILENT:
 .PHONY: clean
 
-all: $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5)
+all: $(TARGET4) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET1)
 
 $(TARGET1): $(OBJECTS1)
 	@echo "Linking" $@"..."
@@ -60,14 +60,14 @@ $(TARGET3): $(OBJECTS3)
 	
 $(TARGET4): $(OBJECTS4)
 	@echo "Linking" $@"..."
-	$(LD) $(LDFLAGS) $(OUTPUT_DIR)$@ $^ 
+	$(LD) $(LDFLAGS) $(OUTPUT_DIR)$@ $^
 	@echo "Done."
 	
 $(TARGET5): $(OBJECTS5)
 	@echo "Linking" $@"..."
 	$(LD) $(OUTPUT_DIR)$@ $^ 
 	@echo "Done."
-	
+
 %.o: %.c
 	@echo "Compiling" $< "into" $@...
 	$(COMPILE.c) $@ $<
@@ -76,8 +76,9 @@ $(TARGET5): $(OBJECTS5)
 main.o: main.c
 pipe.o: pipe.c
 parallel.o: parallel.c
-fifaGen.o: fifaGen.c types.h
+fifaGen.o: fifaGen.c types.h conditions.h
 luGen.o: luGen.c
+conditions.o: conditions.c types.h
 
 clean:
 	@echo "Clearing" $(OUTPUT_DIR) "directory..."
