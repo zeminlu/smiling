@@ -27,7 +27,7 @@ int main (void){
 			fclose(archivoP);
 			fclose(archivoC);
 			return errno;
-	};
+	}
 	
 	printf("Ingrese cantidad de paises\n");
 	scanf("%d", &amm);
