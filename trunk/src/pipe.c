@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <dirent.h>
+#include "../inc/pipe.h"
 
 int main(){
-	struct dirent *d;
 	DIR *dp;
 	
 	if ((dp = opendir("./pipeDir")) == NULL){
@@ -19,8 +19,8 @@ int main(){
 
 int getFilesAmm (DIR *dp){
 	struct dirent *d;
-	int ret;
-	while (d = readdir(dp)){
+	int ret = 0;
+	while ((d = readdir(dp))){
 		 if (d->d_ino != 0){
 			++ret;
 		}

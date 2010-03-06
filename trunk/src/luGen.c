@@ -13,8 +13,9 @@
 
 int main (int argc, char const *argv[])
 {
+	size_t i, j, count = 0;
 	int cantVar = 0;
-	float varValues[][];
+	float **varValues;
 	
 	printf("Ingrese la cantidad de variables que desea que tenga el sistema\n");
 	
@@ -24,12 +25,12 @@ int main (int argc, char const *argv[])
 	}
 	++cantVar;
 	
-	if( (varValues = malloc(sizeof(float) * cantVar) == NULL )
+	if( (varValues = malloc(sizeof(float) * cantVar)) == NULL )
 	{
 		printf("Error en la alocacion de memoria\n");
 	}
 	
-	for(size_t i = 0 ; i < cantVar ; ++i)
+	for(i = 0 ; i < cantVar ; ++i)
 	{
 		if( (varValues[i] = malloc(sizeof(float) * cantVar)) == NULL )
 		{
@@ -37,14 +38,13 @@ int main (int argc, char const *argv[])
 		}
 	}
 	
-	for(size_t i = 0; i < cantVar; ++i)
+	for(i = 0; i < cantVar; ++i)
 	{
-		for(size_t j = 0; j < count; ++j)
+		for(j = 0; j < count; ++j)
 		{
 			printf("Ingrese el valor de la \n");
 		}
 	}
-	
 	
 	return 0;
 }
