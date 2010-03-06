@@ -11,14 +11,13 @@
 * 
 */
 
-size_t * sameContinent(pais **paises,pais * cabezera){
+conjunto * sameContinent(pais **paises,pais * cabezera){
 	size_t * paisesInt;
 	size_t i, j;
 	conjunto * rta;
 	
 	rta = malloc(sizeof(conjunto));
 	paisesInt = malloc(sizeof(int)*31);
-	rta->paises = paisesInt;
 	
 	if(rta == NULL){
 		/*	error memoria, insuficiente*/
@@ -32,7 +31,8 @@ size_t * sameContinent(pais **paises,pais * cabezera){
 	if(j == 0){
 		return NULL;
 	}
-	paisesInt = realloc(paisesInt, sizeof(int)*j);
+	rta->cantPaises = (j-1);
+	rta->paises = realloc(paisesInt, sizeof(int)*(j-1));
 	return rta;
 }
 
@@ -43,14 +43,13 @@ size_t * sameContinent(pais **paises,pais * cabezera){
 * De no encontrar ninguno devuelve NULL.
 * 
 */
-size_t * deathGroup(pais **paises,pais * cabezera){
+conjunto * deathGroup(pais **paises,pais * cabezera){
 	size_t * paisesInt;
 	size_t i, j;
 	conjunto * rta;
 	
 	rta = malloc(sizeof(conjunto));
-	paises = malloc(sizeof(int)*31);
-	rta->paises = paisesInt;
+	paisesInt = malloc(sizeof(int)*31);
 	
 	if(rta == NULL){
 		/*	error memoria, insuficiente*/	}
@@ -63,7 +62,8 @@ size_t * deathGroup(pais **paises,pais * cabezera){
 	if(j == 0){
 		return NULL;
 	}
-	paisesInt = realloc(paisesInt, sizeof(int)*j);
+	rta->cantPaises = j-1;
+	rta->paises = realloc(paisesInt, sizeof(int)*(j-1));
 	return rta;
 }
 
@@ -74,14 +74,13 @@ size_t * deathGroup(pais **paises,pais * cabezera){
 * De no encontrar ninguno devuelve NULL.
 * 
 */
-size_t * champGroup(pais **paises,pais * cabezera){
+conjunto * champGroup(pais **paises,pais * cabezera){
 	size_t * paisesInt;
 	size_t i, j;
 	conjunto * rta;
 	
 	rta = malloc(sizeof(conjunto));
-	paises = malloc(sizeof(int)*31);
-	rta->paises = paisesInt;
+	paisesInt = malloc(sizeof(int)*31);
 	
 	if(rta == NULL){
 		/*	error memoria, insuficiente*/
@@ -95,7 +94,8 @@ size_t * champGroup(pais **paises,pais * cabezera){
 	if(j == 0){
 		return NULL;
 	}
-	paisesInt = realloc(paisesInt, sizeof(int)*j);
+	rta->cantPaises = j-1;
+	rta->paises = realloc(paisesInt, sizeof(int)*(j-1));
 	return rta;
 }
 
@@ -107,14 +107,13 @@ size_t * champGroup(pais **paises,pais * cabezera){
 * 
 */
 
-size_t * weakGroup(pais **paises,pais * cabezera){
+conjunto * weakGroup(pais **paises,pais * cabezera){
 	size_t * paisesInt;
 	size_t i, j;
 	conjunto * rta;
 	
 	rta = malloc(sizeof(conjunto));
-	paises = malloc(sizeof(int)*31);
-	rta->paises = paisesInt;
+	paisesInt = malloc(sizeof(int)*31);
 	
 	if(rta == NULL){
 		/*	error memoria, insuficiente*/
@@ -128,7 +127,8 @@ size_t * weakGroup(pais **paises,pais * cabezera){
 	if(j == 0){
 		return NULL;
 	}
-	paisesInt = realloc(paisesInt, sizeof(int)*j);
+	rta->cantPaises = j-1;
+	rta->paises = realloc(paisesInt, sizeof(int)*(j-1));
 	return rta;
 }
 
