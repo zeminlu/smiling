@@ -25,7 +25,7 @@ COMPILE.c = $(CC) $(INCLUDES) $(CFLAGS)
 #Sets the linker for the project
 LD = ld
 #
-LDFLAGS = -T $(SRC_DIR)link.ld -o
+LDFLAGS = -o
 #
 TARGET1 = main
 OBJECTS1 = main.o
@@ -65,7 +65,7 @@ $(TARGET4): $(OBJECTS4)
 	
 $(TARGET5): $(OBJECTS5)
 	@echo "Linking" $@"..."
-	$(LD) $(LDFLAGS) $(OUTPUT_DIR)$@ $^ 
+	$(LD) $(OUTPUT_DIR)$@ $^ 
 	@echo "Done."
 	
 %.o: %.c
@@ -73,14 +73,14 @@ $(TARGET5): $(OBJECTS5)
 	$(COMPILE.c) $@ $<
 	@echo "Done."
 
-main.o:
-pipe.o:
-parallel.o:
-fifaGen.o:
-luGen.o:
+main.o: main.c
+pipe.o: pipe.c
+parallel.o: parallel.c
+fifaGen.o: fifaGen.c types.h
+luGen.o: luGen.c
 
 clean:
 	@echo "Clearing" $(OUTPUT_DIR) "directory..."
 	@rm -f *.o
-	@rm -f $(OUTPUT_DIR)*
+	@rm $(OUTPUT_DIR)*
 	@echo "Done."
