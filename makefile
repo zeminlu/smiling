@@ -27,21 +27,21 @@ LD = gcc
 #
 LDFLAGS = -O -Wall -Wuninitialized -pedantic -fno-builtin -o
 #
-TARGET1 = main
+TARGET1 = main.bin
 OBJECTS1 = main.o
-TARGET2 = parallel
+TARGET2 = parallel.bin
 OBJECTS2 = parallel.o
-TARGET3 = pipe
+TARGET3 = pipe.bin
 OBJECTS3 = pipe.o
-TARGET4 = fifaGen
+TARGET4 = fifaGen.bin
 OBJECTS4 = fifaGen.o conditions.o
-TARGET5 = luGen
+TARGET5 = luGen.bin
 OBJECTS5 = luGen.o
 ###############################################################################
 .SILENT:
 .PHONY: clean
 
-all: $(TARGET4) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET1)
+all: clean $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5)
 
 $(TARGET1): $(OBJECTS1)
 	@echo "Linking" $@"..."
@@ -83,5 +83,5 @@ conditions.o: conditions.c types.h
 clean:
 	@echo "Clearing" $(OUTPUT_DIR) "directory..."
 	@rm -f *.o
-	@rm $(OUTPUT_DIR)*
+	@rm -f $(OUTPUT_DIR)*.bin
 	@echo "Done."
