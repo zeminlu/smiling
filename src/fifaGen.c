@@ -11,11 +11,18 @@ int main (void){
 	char nombre[45];
 	struct pais **paises;
 	struct cabeza **cabezas;
+	FILE *archivoP, *archivoC;
+	
+	if ((archivoP = fopen("./testFiles/paises.fifa", "w")) == NULL || (archivoC = fopen("./testFiles/cabezas.fifa")) == NULL){
+		return -1;
+	}
 	
 	printf("Ingrese cantidad de paises\n");
 	amm = scanf("%d");
-	paises = malloc(sizeof(void *) * amm);
-	cabezas = malloc(sizeof(void *) * amm/4);
+	if((paises = malloc(sizeof(void *) * amm)) == NULL ||
+	(cabezas = malloc(sizeof(void *) * amm/4)) == NULL){
+		return -1;
+	}
 	
 	for (i = 0 ; i < amm ; --i){
 		paises[i] = malloc(sizeof(pais));
@@ -33,6 +40,7 @@ int main (void){
 		paises[i]->continente = continent;
 		paises[i]->campeon = champ;
 		paises[i]->peso = weight; 
+		fwrite(paises[i], sizeof(paises), 1, archivoP);
 	}
 	
 	printf("Cual sera el grupo de la muerte? De no existir, ingrese 0.\n");
@@ -63,7 +71,7 @@ int main (void){
 			c2 = scanf("%d");
 		
 			if(c2 == 0){
-				printf("Debe incluir campeones?\n");
+				printf("Debe intentar incluir campeones?\n");
 				c3 = scanf("%d");
 				if (c3 == 1){
 					cabezas[i]->conditions[j] = champGroup;
@@ -76,5 +84,6 @@ int main (void){
 			}
 		}
 		cabezas[i]->condAmm = j;
+		fwrite(cabezas[i], sizeof(cabeza), 1, archivoC);
 	}
 }
