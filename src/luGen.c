@@ -28,14 +28,14 @@ int main (int argc, char const *argv[])
 	}
 	++cantVar;
 	
-	if( (varValues = malloc(sizeof(float) * cantVar - 1)) == NULL )
+	if( (varValues = (float**)malloc(sizeof(float*) * cantVar - 1)) == NULL )
 	{
 		printf("Error en la alocacion de memoria\n");
 	}
 	
 	for(i = 0 ; i < cantVar ; ++i)
 	{
-		if( (varValues[i] = malloc(sizeof(float) * cantVar)) == NULL )
+		if( (varValues[i] = (float*)malloc(sizeof(float) * cantVar)) == NULL )
 		{
 			printf("Error en la alocacion de memoria\n");
 		}
@@ -72,6 +72,8 @@ int main (int argc, char const *argv[])
 	
 	createInitCondFile( cantVar - 1, initCond );
 	createLUFile( varValues );
+	
+	freeAllPtr(varValues, initCond);
 	
 	return 0;
 }
@@ -143,4 +145,17 @@ void createLUFile( float ** values )
 	printf("Se creo exitosamente el archivo ecuaciones.lu\n");
 	fclose(ecu);
 	
+}
+
+void freeAllPtr( float ** values, float *cond)
+{
+	
+	int i,j;
+	
+	for( i = 0; i < sizeof(values)/sizeof(float); ++i)
+	{
+		free(values[i]);
+	}
+	free(values);
+	free(cond);
 }
