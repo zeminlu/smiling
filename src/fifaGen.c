@@ -3,48 +3,49 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdarg.h>
-#include 'types.h'
+#include "../inc/types.h"
+#include "../inc/conditions.h"
 
 int main (void){
 	int i, amm, continent, champ, weight, death, c1, c2, c3, j;
-	j = 0;
 	char nombre[45];
-	struct pais **paises;
-	struct cabeza **cabezas;
+	pais **paises;
+	cabeza **cabezas;
 	FILE *archivoP, *archivoC;
 	
-	if ((archivoP = fopen("./testFiles/paises.fifa", "w")) == NULL || (archivoC = fopen("./testFiles/cabezas.fifa")) == NULL){
+	if ((archivoP = fopen("./testFiles/paises.fifa", "w")) == NULL || (archivoC = fopen("./testFiles/cabezas.fifa", "w")) == NULL){
 		return -1;
 	}
 	
 	printf("Ingrese cantidad de paises\n");
-	amm = scanf("%d");
+	scanf("%d", &amm);
 	if((paises = malloc(sizeof(void *) * amm)) == NULL ||
-	(cabezas = malloc(sizeof(void *) * amm/4)) == NULL){
+	(cabezas = malloc(sizeof(void *) * (amm/4))) == NULL){
 		return -1;
 	}
 	
 	for (i = 0 ; i < amm ; --i){
 		paises[i] = malloc(sizeof(pais));
 		printf("Ingrese el Nombre del Pais\n");
-		gets(nombre);
+		scanf("%s", nombre);
 		printf("Ingrese ID de Continente\n");
-		continent = scanf("%d");
+		scanf("%d", &continent);
 		printf("Ingrese 1 si el pais fue campeón, 0 de lo contrario\n");
-		champ = scanf("%d");
+		scanf("%d", &champ);
 		printf("Ingrese el peso del pais\n");
-		weight = scanf("%d");
+		scanf("%d", &weight);
 		printf("OK\n");
 		
-		strcpy(paises[i]->nombre, nombre);
-		paises[i]->continente = continent;
-		paises[i]->campeon = champ;
-		paises[i]->peso = weight; 
+		(paises[i])->nombre = malloc(strlen(nombre));
+		strcpy((paises[i])->nombre, nombre);
+		(paises[i])->continente = continent;
+		(paises[i])->campeon = champ;
+		(paises[i])->peso = weight; 
 		fwrite(paises[i], sizeof(paises), 1, archivoP);
 	}
 	
 	printf("Cual sera el grupo de la muerte? De no existir, ingrese 0.\n");
-	death = scanf("%d");
+	scanf("%d", &death);
 	
 	for (i = 0 ; i < amm/4 ; ++i){
 		cabezas[i] = malloc(sizeof(cabeza));
@@ -52,11 +53,11 @@ int main (void){
 		
 		j = 0;
 		printf("Ingrese el Nombre del Pais cabeza de serie\n");
-		gets(nombre);
+		scanf("%s", nombre);
 		printf("A continuacion se le preguntara acerca de la inclusion de ciertas restricciones. Conteste con 1 o 0.\n\n");
 		printf("Puede aceptar paises del mismo continente?\n");
 		
-		c1 = scanf("%d");
+		scanf("%d", &c1);
 		if(c1 == 0){
 			cabezas[i]->conditions[j] = sameContinent;
 			++j;
@@ -68,11 +69,11 @@ int main (void){
 		}
 		else{
 			printf("Debe ser grupo debil?\n");
-			c2 = scanf("%d");
+			scanf("%d", &c2);
 		
 			if(c2 == 0){
 				printf("Debe intentar incluir campeones?\n");
-				c3 = scanf("%d");
+				scanf("%d", &c3);
 				if (c3 == 1){
 					cabezas[i]->conditions[j] = champGroup;
 					++j;
@@ -86,4 +87,6 @@ int main (void){
 		cabezas[i]->condAmm = j;
 		fwrite(cabezas[i], sizeof(cabeza), 1, archivoC);
 	}
+	
+	return 0;
 }

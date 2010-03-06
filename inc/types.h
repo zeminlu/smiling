@@ -1,12 +1,12 @@
 typedef struct {
-	char nombre[45];
+	char *nombre;
 	int continente;
 	int campeon;
 	int peso; 
-	} pais;
+	}pais;
 
 typedef struct {
 	char *nombre;
 	int condAmm;
 	int * (**conditions)(pais **paises, pais *cabecera);
-	} cabeza;
+	}cabeza;
