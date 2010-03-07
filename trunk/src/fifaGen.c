@@ -1,4 +1,4 @@
-#include "../inc/fifagen.h"
+#include "../inc/fifaGen.h"
 
 int main (void){
 	int i, amm, death, c1, c2, c3;
