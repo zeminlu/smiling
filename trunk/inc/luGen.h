@@ -2,14 +2,22 @@
  *		luGen.h
  */
 
+#ifndef _LUGEN_
+#define _LUGEN_
 
-void createInitCondFile( int cantVar, float *initCond );
+#include <stdio.h>
+#include <stdlib.h>
 
-void createLUFile( float ** values );
+#include "../inc/pipe.h"
 
-void freeAllPtr( float ** values, float* initCond );
+void createInitCondFile( int cantVar, float *cond );
 
-void printMatrix( float ** values );
+void createLUFile( float ** values, int cantVar );
 
-void printInitCond( float * init);
+void freeAllPtr( float ** values, float* initCond, int cantVar );
 
+void printMatrix( float ** values, int row, int col );
+
+void printInitCond( float * init, int row);
+
+#endif
