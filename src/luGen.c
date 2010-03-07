@@ -20,7 +20,7 @@ int main (int argc, char const *argv[])
 		
 	printf("Ingrese la cantidad de variables que desea que tenga el sistema\n");
 	
-	if( scanf("%d", & cantVar) <= 0 )
+	if( scanf("%d", &cantVar) <= 0 )
 	{
 		printf("La cantidad de variables tiene que ser un numero natural positivo\n");
 	}
@@ -47,11 +47,15 @@ int main (int argc, char const *argv[])
 			if( j == cantVar - 1 )
 			{
 				printf("Ingrese el termino independiente de la ecuacion %d\n", i+1);
-				scanf("%f", &varValues[i][j]);
+				while (scanf("%f", &varValues[i][j]) != 1){
+					printf("Ingrese SOLO el termino independiente\n");
+				}
 			}else
 			{
-				printf("Ingrese el valor de la variable numero %d y de la ecuacion %d \n", i+1, j+1);
-				scanf("%f", &varValues[i][j]);
+				printf("Ingrese el valor de la variable numero %d de la ecuacion %d \n", i+1, j+1);
+				while (scanf("%f", &varValues[i][j]) != 1){
+					printf("Ingrese SOLO el valor de la variable numero %d de la ecuacion %d\n", i+1, j+1);
+				}
 			}
 		}
 	}
@@ -65,7 +69,9 @@ int main (int argc, char const *argv[])
 	for( i = 0; i < cantVar - 1; ++i)
 	{
 		printf("Ingrese las condiciones iniciales de la variable %d\n", i+1);
-		scanf("%f", &initCond[i]);
+		while (scanf("%f", &initCond[i]) != 1){
+			printf("Ingrese SOLO la condicion inicial de la variable %d\n", i+1);
+		}
 	}
 	
 	createInitCondFile( cantVar - 1, initCond );

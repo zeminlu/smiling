@@ -41,7 +41,7 @@ OBJECTS5 = luGen.o
 .SILENT:
 .PHONY: clean
 
-all: clean $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5)
+all: clean $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5) cleanObjects
 
 $(TARGET1): $(OBJECTS1)
 	@echo "Linking" $@"..."
@@ -80,6 +80,10 @@ fifaGen.o: fifaGen.c fifaGen.h types.h conditions.h
 luGen.o: luGen.c luGen.h
 conditions.o: conditions.c conditions.h types.h
 
+cleanObjects:
+	@echo "Clearing Objects..."
+	@rm -f *.o
+	@echo "Done."
 clean:
 	@echo "Clearing" $(OUTPUT_DIR) "directory..."
 	@rm -f *.o
