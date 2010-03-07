@@ -9,6 +9,8 @@
 #include <stdarg.h>
 #include <errno.h>
 #include "../inc/types.h"
+#include <sys/types.h>
+#include <sys/wait.h>
 
 int getFilesAmm (DIR *dp);
 
