@@ -23,17 +23,27 @@ int main (void){
 	}
 	
 	printf("Ingrese cantidad de paises\n");
-	scanf("%d", &amm);
+	while (scanf("%d", &amm) != 1){
+		printf("Ingrese un numero ENTERO\n");
+	}	
 	
 	for (i = 0 ; i < amm ; ++i){
-		printf("Ingrese el Nombre del Pais\n");
-		scanf("%s", paises->nombre);
-		printf("Ingrese ID de Continente\n");
-		scanf("%d", &(paises->continente));
+		printf("Ingrese el nombre del pais\n");
+		while (scanf("%s", paises->nombre) != 1){
+			printf("Ingrese SOLO el nombre del pais\n");
+		}
+		printf("Ingrese el ID del continente\n");
+		while (scanf("%d", &(paises->continente)) != 1){
+			printf("Ingrese SOLO el ID del continente\n");
+		}
 		printf("Ingrese 1 si el pais fue campeón, 0 de lo contrario\n");
-		scanf("%d", &(paises->campeon));
+		while (scanf("%d", &(paises->campeon)) != 1){
+			printf("Ingrese SOLO 1 o 0\n");
+		}
 		printf("Ingrese el peso del pais\n");
-		scanf("%d", &(paises->peso));
+		while (scanf("%d", &(paises->peso)) != 1){
+			printf("Ingrese un numero ENTERO\n");
+		}
 		printf("OK\n");
 		
 		if (fwrite(paises, sizeof(pais), 1, archivoP) != 1){
@@ -47,16 +57,22 @@ int main (void){
 	}
 	
 	printf("Cual sera el grupo de la muerte? De no existir, ingrese 0.\n");
-	scanf("%d", &death);
-	
+	while (scanf("%d", &death) != 1){
+		printf("Ingrese SOLO un numero ENTERO\n");
+	}
+
 	for (i = 0 ; i < amm/4 ; ++i){
 		
 		printf("Ingrese el Nombre del Pais cabeza de serie\n");
-		scanf("%s", cabezas->nombre);
+		while (scanf("%s", cabezas->nombre) != 1){
+			printf("Ingrese SOLO el NOMBRE del pais\n");
+		}
 		printf("A continuacion se le preguntara acerca de la inclusion de ciertas restricciones. Conteste con 1 o 0.\n\n");
 		printf("Puede aceptar paises del mismo continente?\n");
 		
-		scanf("%d", &c1);
+		while (scanf("%d", &c1) != 1){
+			printf("Ingrese SOLO 1 o 0\n");
+		}
 		if(c1 == 0){
 			cabezas->sameContinent = 1;
 		}
@@ -66,11 +82,15 @@ int main (void){
 		}
 		else{
 			printf("Debe ser grupo debil?\n");
-			scanf("%d", &c2);
+			while (scanf("%d", &c2) != 1){
+				printf("Ingrese SOLO 1 o 0\n");
+			}
 		
 			if(c2 == 0){
 				printf("Debe intentar incluir campeones?\n");
-				scanf("%d", &c3);
+				while (scanf("%d", &c3) != 1){
+					printf("Ingrese SOLO 1 o 0\n");
+				}
 				if (c3 == 1){
 					cabezas->champGroup = 1;
 				}

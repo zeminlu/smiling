@@ -1,7 +1,4 @@
-#include <stdio.h>
-#include <sys/wait.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include "../inc/main.h"
 
 int main (void){
 	int p1, p2;
