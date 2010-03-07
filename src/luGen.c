@@ -8,21 +8,17 @@
  *								 con los valores de cada variable.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "../inc/luGen.h"
-#include "../inc/pipe.h"
-
+/*
 int main (int argc, char const *argv[])
 {
 	int i, j;
 	int cantVar = 0;
 	float **varValues;
-	float *initCond;
-	/*FILE *ecuFile, *initFile;*/
-	
-	printf("Ingrese la cantidad de variables que desea que tenga el sistema\n");
+	float *initCond;*/
+/*	FILE *ecuFile, *initFile;*/
+		
+/*	printf("Ingrese la cantidad de variables que desea que tenga el sistema\n");
 	
 	if( scanf("%d", & cantVar) <= 0 )
 	{
@@ -73,10 +69,13 @@ int main (int argc, char const *argv[])
 	}
 	
 	createInitCondFile( cantVar - 1, initCond );
-	createLUFile( varValues );
+	createLUFile( varValues, cantVar - 1 );
 	
-	freeAllPtr(varValues, initCond);
+	printInitCond(initCond, cantVar - 1);
+	printMatrix(varValues, cantVar - 1, cantVar);
 	
+	freeAllPtr(varValues, initCond, cantVar);
+*/
 	/*if ((ecuFile = fopen("./testFiles/ecuaciones.lu", "r")) == NULL){
 		return -1;
 	}
@@ -87,13 +86,13 @@ int main (int argc, char const *argv[])
 	initCond = loadInitCondition(initFile);
 	varValues = loadEquationFile( ecuFile);
 	
-	printInitCond(initCond);
-	printMatrix(varValues);
+	printInitCond(initCond, cantVar - 1);
+	printMatrix(varValues, cantVar - 1, cantVar);
 	
-	freeAllPtr(varValues, initCond);
-	*/
-	return 0;
-}
+	freeAllPtr(varValues, initCond, cantVar - 1);
+*/
+/*	return 0;
+}*/
 
 /*
  *	Funcion que crea el archivo inicial.lu
@@ -135,9 +134,9 @@ void createInitCondFile( int cantVar, float *cond )
  *	Recibe una matriz de float con todos los coeficientes de cada variables.
  */
 
-void createLUFile( float ** values )
+void createLUFile( float ** values, int cantVar )
 {
-	int i,j, cantVar;
+	int i,j;
 	char * filename = "./testFiles/ecuaciones.lu";
 	FILE * ecu;
 	
@@ -148,16 +147,15 @@ void createLUFile( float ** values )
 	}
 	
 	/*printMatrix(values);*/
-	cantVar = sizeof(values)/sizeof(float);
 	if( fwrite(&cantVar, sizeof(int), 1, ecu) == 0 )
 	{
 		printf("Error no se pudo escribir en el archivo inicial.lu\n");
 		fclose(ecu);
 		exit(1);
 	}
-	for( i = 0; i < sizeof(values)/sizeof(float) ; ++i)
+	for( i = 0; i < cantVar ; ++i)
 	{
-		for( j = 0; j <= sizeof(values[0])/sizeof(float); ++j)
+		for( j = 0; j <= cantVar; ++j)
 		{
 			if( fwrite(&values[i][j], sizeof(float), 1, ecu) == 0 )
 			{
@@ -176,12 +174,11 @@ void createLUFile( float ** values )
  *	Libera todos los punteros utilizados
  */
 
-void freeAllPtr( float ** values, float *cond)
+void freeAllPtr( float ** values, float *cond, int cantVar)
 {
 	
 	int i;
-	
-	for( i = 0; i < sizeof(values)/sizeof(float); ++i)
+	for( i = 0; i < cantVar; ++i)
 	{
 		free(values[i]);
 	}
@@ -190,15 +187,15 @@ void freeAllPtr( float ** values, float *cond)
 }
 
 
-void printMatrix( float ** values )
+void printMatrix( float ** values, int row, int col )
 {
 	
 	int i,j;
 	
 	printf("La matriz es la siguientes:\n");
-	for( i = 0 ; i < sizeof(values)/sizeof(float) ; ++i )
+	for( i = 0 ; i < row ; ++i )
 	{
-		for( j = 0 ; j <= sizeof(values[0])/sizeof(float) ; ++j )
+		for( j = 0 ; j < col ; ++j )
 		{
 			printf("%f  ",values[i][j] );
 		}
@@ -206,12 +203,12 @@ void printMatrix( float ** values )
 	}
 }
 
-void printInitCond( float *init )
+void printInitCond( float *init, int row )
 {
 	int i;
 	
 	printf("Las condiciones iniciales son las siguientes:\n");
-	for(i = 0; i < sizeof(init)/sizeof(float); ++i)
+	for(i = 0; i < row ; ++i)
 	{
 		printf("%f ",init[i] );
 	}
