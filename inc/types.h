@@ -1,3 +1,6 @@
+#ifndef TYPES_H_
+#define TYPES_H_
+
 typedef struct{
 	int cantPaises;
 	int * paises;
@@ -27,3 +30,5 @@ typedef struct{
 	pais **paises;
 	cabeza *head;
 	}condPack;
+
+#endif

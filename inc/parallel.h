@@ -1,3 +1,6 @@
+#ifndef PARALLEL_H_
+#define PARALLEL_H_
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -8,3 +11,5 @@
 #include "../inc/types.h"
 
 int getFilesAmm (DIR *dp);
+
+#endif
