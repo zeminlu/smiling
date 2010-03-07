@@ -9,16 +9,16 @@
  */
 
 #include "../inc/luGen.h"
-/*
+
 int main (int argc, char const *argv[])
 {
 	int i, j;
 	int cantVar = 0;
 	float **varValues;
-	float *initCond;*/
+	float *initCond;
 /*	FILE *ecuFile, *initFile;*/
 		
-/*	printf("Ingrese la cantidad de variables que desea que tenga el sistema\n");
+	printf("Ingrese la cantidad de variables que desea que tenga el sistema\n");
 	
 	if( scanf("%d", & cantVar) <= 0 )
 	{
@@ -75,7 +75,7 @@ int main (int argc, char const *argv[])
 	printMatrix(varValues, cantVar - 1, cantVar);
 	
 	freeAllPtr(varValues, initCond, cantVar);
-*/
+
 	/*if ((ecuFile = fopen("./testFiles/ecuaciones.lu", "r")) == NULL){
 		return -1;
 	}
@@ -91,8 +91,8 @@ int main (int argc, char const *argv[])
 	
 	freeAllPtr(varValues, initCond, cantVar - 1);
 */
-/*	return 0;
-}*/
+	return 0;
+}
 
 /*
  *	Funcion que crea el archivo inicial.lu
