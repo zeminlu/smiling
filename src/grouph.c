@@ -10,11 +10,6 @@ int main (void){
 	pthread_t *threads;
 	int i = 0, j = 0, index = 0;
 	
-	condArgs = malloc(sizeof(condPack));
-	condArgs->countries = countries;
-	condArgs->head = data;
-	condArgs->index = &index;
-	
 	if (data->sameContinent){
 		conditions = realloc(conditions, sizeof(void *) * (++i));
 		conditions[i - 1] = sameContinent;
@@ -32,12 +27,22 @@ int main (void){
 		conditions[i - 1] = deathGroup;
 	}
 	
-	condArgs->sets = malloc (sizeof(void *) * i);
-	
+	condArgs = malloc(sizeof(condPack));
+	condArgs->countries = countries;
+	condArgs->head = data;
+	condArgs->index = &index;
+	condArgs->sets = malloc(sizeof(void *) * i);
 	threads = malloc(sizeof(pthread_t) * i);
+	group = malloc(sizeof(set));
+	group->countries = malloc(sizeof(void *));
+	group->countries[0] = data;
+	++(group->countriesAmm);
 	
-	for (j = 0 ; j < i ; ++j){
-		pthread_create(&threads[j], NULL, conditions[j], (void *)(condArgs));
-		
+	while (group->countriesAmm < 4){
+		for (j = 0 ; j < i ; ++j){
+			pthread_create(&threads[j], NULL, conditions[j], (void *)(condArgs));
+
+			
+		}
 	}
 }

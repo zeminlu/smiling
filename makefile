@@ -35,8 +35,12 @@ TARGET3 = pipe.bin
 OBJECTS3 = pipe.o
 TARGET4 = fifaGen.bin
 OBJECTS4 = fifaGen.o conditions.o
-TARGET5 = luGen.bin
-OBJECTS5 = luGen.o 
+TARGET5 = fifa.bin
+OBJECTS5 = fifa.o
+TARGET6 = grouph.bin
+OBJECTS6 = grouph.o
+TARGET7 = gates.bin
+OBJECTS7 = gates.o
 ###############################################################################
 .SILENT:
 .PHONY: clean
@@ -76,9 +80,10 @@ $(TARGET5): $(OBJECTS5)
 main.o: main.c main.h
 pipe.o: pipe.c pipe.h 
 parallel.o: parallel.c parallel.h
-fifaGen.o: fifaGen.c fifaGen.h types.h conditions.h
-luGen.o: luGen.c luGen.h
-conditions.o: conditions.c conditions.h types.h
+fifaGen.o: fifaGen.c fifaGen.h
+conditions.o: conditions.c conditions.h
+grouph.o: grouph.c grouph.h
+gates.o: gates.c gates.h
 
 cleanObjects:
 	@echo "Clearing Objects..."
