@@ -13,10 +13,16 @@
 * 
 */
 
-conjunto * sameContinent(pais **paises,pais * cabezera){
+conjunto * sameContinent(condPack * cond){
 	int * paisesInt;
 	int i, j;
+	pais **paises;
+	pais * cabezera;
 	conjunto * rta;
+	
+	cabeza = cond->cabeza;
+	paises = cond->paises;
+	
 	
 	rta = malloc(sizeof(conjunto));
 	paisesInt = malloc(sizeof(int)*32);

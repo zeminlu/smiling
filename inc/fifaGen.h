@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <errno.h>
+#include "../inc/definitions.h"
 #include "../inc/types.h"
 #include "../inc/conditions.h"
 
