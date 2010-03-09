@@ -5,7 +5,7 @@
  *			de un sistema de ecuaciones lineales por el metodo LUX = B.
  */
 
-#include "../inc/lu.h"
+#include "../inc/gates.h"
 
 /*void fillMatrix( float **mtx1, float **mtx2, int row1, int col1, int row2, int col2)
 {
@@ -86,7 +86,7 @@
  */
 
 
-float ** productTwoMatrix( float ** matrix1, float **matrix2, int qtyF1, int qtyC1, int qtyF2, int qtyC2 )
+/*float ** productTwoMatrix( float ** matrix1, float **matrix2, int qtyF1, int qtyC1, int qtyF2, int qtyC2 )
 {
 	
 	int i,j,k;
@@ -123,4 +123,4 @@ float ** productTwoMatrix( float ** matrix1, float **matrix2, int qtyF1, int qty
 		}
 	}
 	return rta;
-}
+}*/
