@@ -13,12 +13,7 @@
 
 /* Gates */
 
-#define		AND			0
-#define		OR			1
-#define		NAND		2
-#define		NOR			3
-#define		NOT			4
-#define		XOR			5
+enum 	logicGates { AND = 0, OR, XOR, NAND, NOR, XNOR };
 
 #endif
 
