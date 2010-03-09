@@ -63,7 +63,7 @@ int main(){
 	
 	switch( fork() ){
 		case 0:
-			execv("./gates.bin");
+			execv("./gates.bin", NULL);
 			break;
 		case -1:
 			perror("Error en el fork del pipeline\n");
