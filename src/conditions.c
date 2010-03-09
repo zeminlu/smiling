@@ -1,9 +1,5 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include "../inc/types.h"
+#include "../inc/conditions.h"
 
-#define WEAK_GROUP 4
 
 /*Nombre: sameContinent
 *
@@ -13,36 +9,36 @@
 * 
 */
 
-conjunto * sameContinent(condPack * cond){
-	int * paisesInt;
+int sameContinent(condPack * cond){
+	int * countryInt;
 	int i, j;
-	pais **paises;
-	pais * cabezera;
-	conjunto * rta;
+	country **countries;
+	country * head;
+	set * ans;
 	
-	cabeza = cond->cabeza;
-	paises = cond->paises;
+	head = cond->head;
+	countries = cond->countries;
 	
+	ans = malloc(sizeof(set));
+	countryInt = malloc(sizeof(int)*_MAX_COUNTRIES_);
 	
-	rta = malloc(sizeof(conjunto));
-	paisesInt = malloc(sizeof(int)*32);
-	
-	if(rta == NULL){
+	if(ans == NULL){
 		/*	error memoria, insuficiente*/
 	}
-	for(i = 0, j= 0; i < 31; ++i){
-		if(cabezera->continente	!= paises[i]->continente){
-			paisesInt[j] = i;
+	for(i = 0, j= 0; i < _MAX_COUNTRIES_; ++i){
+		if(head->continent != countries[i]->continent){
+			countryInt[j] = i;
 			++j;
 		}
 	}
 	if(j == 0){
-		return NULL;
+		return FALSE;
 	}
 
-	rta->cantPaises = j;
-	rta->paises = realloc(paisesInt, sizeof(int)*(j));
-	return rta;
+	ans->countriesAmm = j;
+	ans->countries = realloc(countryInt, sizeof(int)*(j));
+	condPack->sets[*(condPack->index)] = ans;
+	return TRUE;
 }
 
 /*Nombre: deathGroup
@@ -52,28 +48,35 @@ conjunto * sameContinent(condPack * cond){
 * De no encontrar ninguno devuelve NULL.
 * 
 */
-conjunto * deathGroup(pais **paises,pais * cabezera){
-	int * paisesInt;
+int deathGroup(condPack * cond){
+	int * countryInt;
 	int i, j;
-	conjunto * rta;
+	set * ans;
+	country **countries;
+	country * head;
 	
-	rta = malloc(sizeof(conjunto));
-	paisesInt = malloc(sizeof(int)*31);
+	head = cond->head;
+	countries = cond->countries;
 	
-	if(rta == NULL){
+	
+	ans = malloc(sizeof(set));
+	countryInt = malloc(sizeof(int)*_MAX_COUNTRIES_);
+	
+	if(ans == NULL){
 		/*	error memoria, insuficiente*/	}
-	for(i = 0, j= 0; i < 31; ++i){
-		if(paises[i]->peso > WEAK_GROUP){
-			paisesInt[j] = i;
+	for(i = 0, j= 0; i < _MAX_COUNTRIES_; ++i){
+		if(countries[i]->weight > WEAK_GROUP){
+			countryInt[j] = i;
 			++j;
 		}
 	}
 	if(j == 0){
-		return NULL;
+		return FALSE;
 	}
-	rta->cantPaises = j;
-	rta->paises = realloc(paisesInt, sizeof(int)*(j));
-	return rta;
+	ans->countriesAmm = j;
+	ans->country = realloc(countryInt, sizeof(int)*(j));
+	condPack->sets[*(condPack->index)] = ans;
+	return TRUE;
 }
 
 /*Nombre: champGroup
@@ -83,29 +86,35 @@ conjunto * deathGroup(pais **paises,pais * cabezera){
 * De no encontrar ninguno devuelve NULL.
 * 
 */
-conjunto * champGroup(pais **paises,pais * cabezera){
-	int * paisesInt;
+int champGroup(condPack * cond){
+	int * countryInt;
 	int i, j;
-	conjunto * rta;
+	set * ans;
+	country **countries;
+	country * head;
 	
-	rta = malloc(sizeof(conjunto));
-	paisesInt = malloc(sizeof(int)*31);
+	head = cond->head;
+	countries = cond->countries;
 	
-	if(rta == NULL){
+	ans = malloc(sizeof(set));
+	countryInt = malloc(sizeof(int)*_MAX_COUNTRIES_);
+	
+	if(ans == NULL){
 		/*	error memoria, insuficiente*/
 	}
-	for(i = 0, j= 0; i < 31; ++i){
-		if(paises[i]->campeon > 0){
-			paisesInt[j] = i;
+	for(i = 0, j= 0; i < _MAX_COUNTRIES_; ++i){
+		if(countries[i]->champ > 0){
+			countryInt[j] = i;
 			++j;
 		}
 	}
 	if(j == 0){
-		return NULL;
+		return FALSE;
 	}
-	rta->cantPaises = j;
-	rta->paises = realloc(paisesInt, sizeof(int)*(j));
-	return rta;
+	ans->countriesAmm = j;
+	ans->country = realloc(countryInt, sizeof(int)*(j));
+	condPack->sets[*(condPack->index)] = ans;
+	return TRUE;
 }
 
 /*Nombre: weakGroup
@@ -116,28 +125,34 @@ conjunto * champGroup(pais **paises,pais * cabezera){
 * 
 */
 
-conjunto * weakGroup(pais **paises,pais * cabezera){
-	int * paisesInt;
+int weakGroup(condPack * cond){
+	int * countryInt;
 	int i, j;
-	conjunto * rta;
+	set * ans;	
+	country **countries;
+	country * head;
 	
-	rta = malloc(sizeof(conjunto));
-	paisesInt = malloc(sizeof(int)*32);
+	head = cond->head;
+	countries = cond->countries;
 	
-	if(rta == NULL){
+	ans = malloc(sizeof(set));
+	countryInt = malloc(sizeof(int)*_MAX_COUNTRIES_);
+	
+	if(ans == NULL){
 		/*	error memoria, insuficiente*/
 	}
-	for(i = 0, j= 0; i < 31; ++i){
-		if(paises[i]->peso <= WEAK_GROUP){
-			paisesInt[j] = i;
+	for(i = 0, j= 0; i < _MAX_COUNTRIES_; ++i){
+		if(countries[i]->weight <= WEAK_GROUP){
+			countryInt[j] = i;
 			++j;
 		}
 	}
 	if(j == 0){
-		return NULL;
+		return FALSE;
 	}
-	rta->cantPaises = j;
-	rta->paises = realloc(paisesInt, sizeof(int)*(j));
-	return rta;
+	ans->countriesAmm = j;
+	ans->country = realloc(countryInt, sizeof(int)*(j));
+	condPack->sets[*(condPack->index)] = ans;
+	return TRUE;
 }
 
