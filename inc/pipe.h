@@ -7,6 +7,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <stdarg.h>
+#include <errno.h>
 #include <sys/wait.h>
 
 #include "../inc/definitions.h"
