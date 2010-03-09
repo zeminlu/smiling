@@ -16,6 +16,7 @@ int main(){
 		sleep(1);
 		rewinddir(dp);
 	}
+	sleep(5);
 	printf("Nuevo archivo en parallel\n");
 	while (getFilesAmm(dp) > 3){
 		rewinddir(dp);
