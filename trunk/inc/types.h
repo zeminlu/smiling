@@ -3,7 +3,7 @@
 
 typedef struct{
 	int countriesAmm;
-	int * country;
+	int *country;
 	}set;
 
 typedef struct{
