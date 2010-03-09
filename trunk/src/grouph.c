@@ -42,7 +42,12 @@ int main (void){
 		for (j = 0 ; j < i ; ++j){
 			pthread_create(&threads[j], NULL, conditions[j], (void *)(condArgs));
 
-			
+			/*
+				Se verifica que hayan terminado todos los threads
+				Se realiza la interseccion de los resultados de cada thread
+				Se pide un pais de la interseccion a fifa
+				Si fifa lo concede, se lo agrega a group->countries
+			*/
 		}
 	}
 }
