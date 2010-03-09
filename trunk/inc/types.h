@@ -2,7 +2,7 @@
 #define TYPES_H_
 
 typedef struct{
-	int countrysAmm;
+	int countriesAmm;
 	int * country;
 	}set;
 

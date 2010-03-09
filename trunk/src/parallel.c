@@ -3,10 +3,10 @@
 int main(){
 	DIR *dp;
 	struct dirent *d;
-	FILE *paisesF;
-	pais **paises = NULL;
+	FILE *countryFile;
+	pais **countries = NULL;
 	int i = 0, j = 0, fifa = 0;
-	char *parDir = "./parallelDir", *procDir = "./processed/", fileDir[60], procFileDir[60];
+	char *parDir = "./parallelDir/", *procDir = "./processed/", fileDir[60], procFileDir[60];
 	
 	if ((dp = opendir("./parallelDir")) == NULL){
 		perror("Error al abrir el directiorio parallelDir");
@@ -31,31 +31,31 @@ int main(){
 				i = 0;
 				strcpy(fileDir, parDir);
 				strcat(fileDir, d->d_name);
-				if ((paisesF = fopen(fileDir, "r")) == NULL){
+				if ((countryFile = fopen(fileDir, "r")) == NULL){
 					closedir(dp);
-					perror("Error al abrir el archivo de paises");
+					perror("Error al abrir el archivo de countries");
 					return errno;
 				}
-				while (feof(paisesF) == 0){
+				while (feof(countryFile) == 0){
 					++i;
-					if ((paises = realloc(paises, sizeof(void *) * i)) == NULL ||
-						(paises[i - 1] = malloc(sizeof(pais))) == NULL || 
-					((fread(paises[i - 1], sizeof(pais), 1, paisesF) != 1) && !feof(paisesF))){
+					if ((countries = realloc(countries, sizeof(void *) * i)) == NULL ||
+						(countries[i - 1] = malloc(sizeof(pais))) == NULL || 
+					((fread(countries[i - 1], sizeof(pais), 1, countryFile) != 1) && !feof(countryFile))){
 						for(j = 0 ; j < i - 1 ; ++j){
-							free(paises[i - 1]);
+							free(countries[i - 1]);
 						}
-						free(paises);
-						fclose(paisesF);
+						free(countries);
+						fclose(countryFile);
 						closedir(dp);
 						perror("Error en la carga de un Pais");
 						return errno;
 					}
 					else {
-						if (feof(paisesF)){
+						if (feof(countryFile)){
 							--i;
-							free(paises[i]);
-							if ((paises = realloc(paises, sizeof(void *) * i)) == NULL){
-								fclose(paisesF);
+							free(countries[i]);
+							if ((countries = realloc(countries, sizeof(void *) * i)) == NULL){
+								fclose(countryFile);
 								closedir(dp);
 								perror("Error de memoria");
 								return errno;
@@ -65,7 +65,7 @@ int main(){
 				}
 				strcpy(procFileDir, procDir);
 				strcat(procFileDir, d->d_name);
-				fclose(paisesF);
+				fclose(countryFile);
 				link(fileDir, procFileDir);
 				unlink(fileDir);
 			}
@@ -73,7 +73,7 @@ int main(){
 		switch (fork()){
 			case 0:
 				execv("./fifa.bin", NULL);
-				/*Se le pasa a fifa la estructuras paises*/
+				/*Se le pasa a fifa la estructuras countries*/
 				break;
 			default:
 				wait(&fifa);
