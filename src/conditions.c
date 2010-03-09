@@ -36,8 +36,8 @@ int sameContinent(condPack * cond){
 	}
 
 	ans->countriesAmm = j;
-	ans->countries = realloc(countryInt, sizeof(int)*(j));
-	condPack->sets[*(condPack->index)] = ans;
+	ans->country = realloc(countryInt, sizeof(int)*(j));
+	cond->sets[*(cond->index)++] = ans;
 	return TRUE;
 }
 
@@ -65,7 +65,7 @@ int deathGroup(condPack * cond){
 	if(ans == NULL){
 		/*	error memoria, insuficiente*/	}
 	for(i = 0, j= 0; i < _MAX_COUNTRIES_; ++i){
-		if(countries[i]->weight > WEAK_GROUP){
+		if(countries[i]->weight > _WEAK_GROUP_){
 			countryInt[j] = i;
 			++j;
 		}
@@ -75,7 +75,7 @@ int deathGroup(condPack * cond){
 	}
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
-	condPack->sets[*(condPack->index)] = ans;
+	cond->sets[*(cond->index)++] = ans;
 	return TRUE;
 }
 
@@ -113,7 +113,7 @@ int champGroup(condPack * cond){
 	}
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
-	condPack->sets[*(condPack->index)] = ans;
+	cond->sets[*(cond->index)++] = ans;
 	return TRUE;
 }
 
@@ -142,7 +142,7 @@ int weakGroup(condPack * cond){
 		/*	error memoria, insuficiente*/
 	}
 	for(i = 0, j= 0; i < _MAX_COUNTRIES_; ++i){
-		if(countries[i]->weight <= WEAK_GROUP){
+		if(countries[i]->weight <= _WEAK_GROUP_){
 			countryInt[j] = i;
 			++j;
 		}
@@ -152,7 +152,7 @@ int weakGroup(condPack * cond){
 	}
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
-	condPack->sets[*(condPack->index)] = ans;
+	cond->sets[*(cond->index)++] = ans;
 	return TRUE;
 }
 
