@@ -11,6 +11,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <stdarg.h>
+#include <sys/wait.h>
 
 #include "../inc/pipe.h"
 
@@ -18,45 +19,68 @@ int main(){
 	
 	DIR *dp;
 	struct dirent *d;
-	int i = 0;
-	FILE *ecuFile, *initFile;
-	float **values,*initCond;
+	int i = 0, gate = 0;
+	FILE *dataFile;
+	char *dir = "./pipeDir/", *procDir = "./processed/", *dirFile, *procCopyDir;
 	
-	if ((dp = opendir("./pipeDir")) == NULL){
+	if ((dp = opendir(dir)) == NULL){
 		return -1;
 	}
-	while (getFilesAmm(dp) < 4){
+	while (getFilesAmm(dp) <= 3 ){
+		sleep(1);
 		rewinddir(dp);
 	};
-	printf("Nuevo archivo en pipe\n");
-	rewinddir(dp);
-	while ((d = readdir(dp))){
-		printf("%s\n", d->d_name);
-		if (d->d_ino == 0){
+	while( (d = readdir(dp)) && getFilesAmm(dp) > 3 )
+	{
+		if(d->d_ino == 0 )
+		{
 			continue;
-		}	
-		if (strcmp(d->d_name, "inicial.lu") == 0){
-			i = 0;
-			if ((initFile = fopen("./pipelDir/inicial.lu", "r")) == NULL){
-				return -1;
-			}
-			initCond = loadInitCondition(initFile);
 		}
-		else if (strcmp(d->d_name, "ecuaciones.lu") == 0){
-			i = 0;
-			if ((ecuFile = fopen("./pipeDir/ecuaciones.lu", "r")) == NULL){
-				return -1;
-			}
-			values = loadEquationFile(ecuFile);
-		}
-		else if (strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0 || strcmp(d->d_name, ".svn") == 0){
+		if (strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0 || strcmp(d->d_name, ".svn") == 0){
 			continue;
 		}
 		else{
-			printf("Se inserto un arhivo incorrecto\n");
+			if( ( dirFile = (char*)malloc(sizeof(char) + strlen(dir) + strlen(d->d_name) + 1 )) == NULL )
+			{
+				closedir(dp);
+				perror("Error en la alocacion de memoria\n");
+				return errno;
+			}
+			strcpy(dirFile, dir);
+			strcat(dirFile, d->d_name);
+			if( (dataFile = fopen(dir, "r")) ==  NULL )
+			{
+				closedir(dp);
+				perror("No se pudo abrir el archivo de las compuertas\n");
+				return errno;
+			}
+			/* Aca hay que cargar el archivo de las compuertas */
 		}
 	}
-	return 0;
+	if( ( procCopyDir = (char*)malloc(sizeof(char) + strlen(procDir) + strlen(d->d_name) + 1 )) == NULL )
+	{
+		closedir(dp);
+		perror("Error en la alocacion de memoria\n");
+		return errno;
+	}
+	strcpy(procCopyDir,procDir);
+	strcat(procCopyDir,d->d_name);
+	fclose( dirFile );
+	link(dirFile,procCopyDir);
+	unlink(dirFile);
+	
+	switch( fork() ){
+		case 0:
+			execv("./gates.bin");
+			break;
+		case -1:
+			perror("Error en el fork del pipeline\n");
+			break;
+		default:
+			wait(&gate);
+			return 0;
+	}
+		return 0;
 }
 
 /*

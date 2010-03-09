@@ -11,11 +11,14 @@
 #define		TRUE		1
 #define		FALSE		!TRUE
 
+/* Gates */
 
-#define		_SUCCESSFULL_			1
-#define		_INCORRECT_MATRIX_		-1
-#define		_FATAL_ERROR_			_INCORRECT_MATRIX_
-#define		_MALLOC_ERROR_			-2
+#define		AND			0
+#define		OR			1
+#define		NAND		2
+#define		NOR			3
+#define		NOT			4
+#define		XOR			5
 
 #endif
 
