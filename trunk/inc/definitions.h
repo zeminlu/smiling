@@ -14,6 +14,7 @@
 /* Gates */
 
 enum 	logicGates { AND = 0, OR, XOR, NAND, NOR, XNOR };
-
+#define 	_WEAK_GROUP_			4
+#define 	_MAX_COUNTRIES_			32
 #endif
 

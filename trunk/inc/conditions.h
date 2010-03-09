@@ -1,12 +1,18 @@
 #ifndef CONDITIONS_H_
 #define CONDITIONS_H_
 
-set * sameContinent(country **countries,country * head);
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include "../inc/types.h"
+#include "../inc/definitions.h"
 
-set * deathGroup(country **countries,country * head);
+int sameContinent(condPack * cond);
 
-set * champGroup(country **countries,country * head);
+int deathGroup(condPack * cond);
 
-set * weakGroup(country **countries,country * head);
+int champGroup(condPack * cond);
+
+int weakGroup(condPack * cond);
 
 #endif
