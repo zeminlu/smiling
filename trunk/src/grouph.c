@@ -2,15 +2,15 @@
 #include "../inc/group.h"
 
 int main (void){
-	cabeza *data;
-	pais **paises;
+	country *data;
+	country **countries;
 	condPack *condArgs;
 	conjunto *(**conditions)(pais **p, pais *c) = NULL;
 	pthread_t *threads;
 	int i = 0, j = 0;
 	
 	condArgs = malloc(sizeof(condPack));
-	condArgs->paises = paises;
+	condArgs->countries = countries;
 	condArgs->head = data;
 	
 	if (data->sameContinent){

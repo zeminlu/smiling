@@ -23,4 +23,8 @@ typedef struct{
     int amm;
 	}package;
 
+typedef struct{
+	country **countries;
+	country *head;
+	}condPack;
 #endif
