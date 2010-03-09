@@ -11,7 +11,7 @@ int main(){
 	
 	DIR *dp;
 	struct dirent *d;
-	int i = 0, gate = 0;
+	int gate = 0;
 	FILE *dataFile;
 	char *dir = "./pipeDir/", *procDir = "./processed/", *dirFile, *procCopyDir;
 	
@@ -57,7 +57,7 @@ int main(){
 	}
 	strcpy(procCopyDir,procDir);
 	strcat(procCopyDir,d->d_name);
-	fclose( dirFile );
+	fclose( dataFile );
 	link(dirFile,procCopyDir);
 	unlink(dirFile);
 	
