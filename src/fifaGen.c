@@ -2,40 +2,40 @@
 
 int main (void){
 	int i, amm, head, headsAmm = 0, death, c1, c2, c3;
-	pais *paises;
-	FILE *archivoP;
+	pais *countries;
+	FILE *countriesFile;
 	
-	if ((archivoP = fopen("./testFiles/paises.fifa", "w")) == NULL){
+	if ((countriesFile = fopen("./testFiles/countries.fifa", "w")) == NULL){
 			perror("Error al crear archivo");
 			return errno;
 	}
 		
-	if ((paises = malloc(sizeof(pais))) == NULL){
+	if ((countries = malloc(sizeof(pais))) == NULL){
 			perror("Error de memoria");
-			fclose(archivoP);
+			fclose(countriesFile);
 			return errno;
 	}
 	
-	printf("Ingrese cantidad de paises\n");
+	printf("Ingrese cantidad de countries\n");
 	while (scanf("%d", &amm) != 1){
 		printf("Ingrese un numero ENTERO\n");
 	}	
 	
 	for (i = 0 ; i < amm ; ++i){
 		printf("Ingrese el nombre del pais\n");
-		while (scanf("%s", paises->nombre) != 1){
+		while (scanf("%s", countries->name) != 1){
 			printf("Ingrese SOLO el nombre del pais\n");
 		}
 		printf("Ingrese el ID del continente\n");
-		while (scanf("%d", &(paises->continente)) != 1){
+		while (scanf("%d", &(countries->continent)) != 1){
 			printf("Ingrese SOLO el ID del continente\n");
 		}
 		printf("Ingrese 1 si el pais fue campeón, 0 de lo contrario\n");
-		while (scanf("%d", &(paises->campeon)) != 1){
+		while (scanf("%d", &(countries->champ)) != 1){
 			printf("Ingrese SOLO 1 o 0\n");
 		}
 		printf("Ingrese el peso del pais\n");
-		while (scanf("%d", &(paises->peso)) != 1){
+		while (scanf("%d", &(countries->weight)) != 1){
 			printf("Ingrese un numero ENTERO\n");
 		}
 		if (headsAmm < amm / 4){
@@ -45,7 +45,7 @@ int main (void){
 			}
 			if (head){
 				++headsAmm;
-				paises->isHead = TRUE;
+				countries->isHead = TRUE;
 				printf("A continuacion se le preguntara acerca de la inclusion de ciertas restricciones. Conteste con 1 o 0.\n\n");
 				
 				if (death == FALSE){
@@ -54,20 +54,20 @@ int main (void){
 						printf("Ingrese SOLO 1 o 0\n");
 					}
 					if (death){
-						paises->deathGroup = TRUE;
+						countries->deathGroup = TRUE;
 					}
 				}
 				
-				printf("Puede aceptar paises del mismo continente?\n");
+				printf("Puede aceptar countries del mismo continente?\n");
 
 				while (scanf("%d", &c1) != 1){
 					printf("Ingrese SOLO 1 o 0\n");
 				}
 				if(c1 == FALSE){
-					paises->sameContinent = TRUE;
+					countries->sameContinent = TRUE;
 				}
 
-				if (!paises->deathGroup){
+				if (!countries->deathGroup){
 					printf("Debe ser grupo debil?\n");
 					while (scanf("%d", &c2) != 1){
 						printf("Ingrese SOLO 1 o 0\n");
@@ -79,27 +79,27 @@ int main (void){
 							printf("Ingrese SOLO 1 o 0\n");
 						}
 						if (c3 == !FALSE){
-							paises->champGroup = TRUE;
+							countries->champGroup = TRUE;
 						}
 					}
 					else{
-						paises->weakGroup = TRUE;
+						countries->weakGroup = TRUE;
 					}
 				}
 			}
 		}
 		printf("OK\n");
 		
-		if (fwrite(paises, sizeof(pais), 1, archivoP) != 1){
+		if (fwrite(countries, sizeof(pais), 1, countriesFile) != 1){
 			perror("Error de escritura");
-			free(paises);
-			fclose(archivoP);
+			free(countries);
+			fclose(countriesFile);
 			return errno;
 		}
 	}
 	
-	free(paises);
-	fclose(archivoP);
+	free(countries);
+	fclose(countriesFile);
 	
 	return 0;
 }
