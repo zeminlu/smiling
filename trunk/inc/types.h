@@ -16,6 +16,7 @@ typedef struct{
 	int deathGroup;
 	int champGroup;
 	int weakGroup;
+	int used;
 	}country;
 
 typedef struct{
