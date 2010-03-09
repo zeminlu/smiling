@@ -2,7 +2,7 @@
 #define TYPES_H_
 
 typedef struct{
-	int ammCountrys;
+	int countrysAmm;
 	int * country;
 	}set;
 
@@ -20,7 +20,7 @@ typedef struct {
 
 typedef struct{
 	void **genStruct;
-amm;
+    int amm;
 	}package;
 
 #endif
