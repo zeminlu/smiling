@@ -1,12 +1,12 @@
 #ifndef CONDITIONS_H_
 #define CONDITIONS_H_
 
-conjunto * sameContinent(pais **paises,pais * cabezera);
+set * sameContinent(country **countries,country * head);
 
-conjunto * deathGroup(pais **paises,pais * cabezera);
+set * deathGroup(country **countries,country * head);
 
-conjunto * champGroup(pais **paises,pais * cabezera);
+set * champGroup(country **countries,country * head);
 
-conjunto * weakGroup(pais **paises,pais * cabezera);
+set * weakGroup(country **countries,country * head);
 
 #endif

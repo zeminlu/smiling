@@ -2,7 +2,7 @@
 
 int main (void){
 	int i, amm, head, headsAmm = 0, death, c1, c2, c3;
-	pais *countries;
+	country *countries;
 	FILE *countriesFile;
 	
 	if ((countriesFile = fopen("./testFiles/countries.fifa", "w")) == NULL){
@@ -10,7 +10,7 @@ int main (void){
 			return errno;
 	}
 		
-	if ((countries = malloc(sizeof(pais))) == NULL){
+	if ((countries = malloc(sizeof(country))) == NULL){
 			perror("Error de memoria");
 			fclose(countriesFile);
 			return errno;
@@ -22,19 +22,19 @@ int main (void){
 	}	
 	
 	for (i = 0 ; i < amm ; ++i){
-		printf("Ingrese el nombre del pais\n");
+		printf("Ingrese el nombre del country\n");
 		while (scanf("%s", countries->name) != 1){
-			printf("Ingrese SOLO el nombre del pais\n");
+			printf("Ingrese SOLO el nombre del country\n");
 		}
 		printf("Ingrese el ID del continente\n");
 		while (scanf("%d", &(countries->continent)) != 1){
 			printf("Ingrese SOLO el ID del continente\n");
 		}
-		printf("Ingrese 1 si el pais fue campeón, 0 de lo contrario\n");
+		printf("Ingrese 1 si el country fue campeón, 0 de lo contrario\n");
 		while (scanf("%d", &(countries->champ)) != 1){
 			printf("Ingrese SOLO 1 o 0\n");
 		}
-		printf("Ingrese el peso del pais\n");
+		printf("Ingrese el peso del country\n");
 		while (scanf("%d", &(countries->weight)) != 1){
 			printf("Ingrese un numero ENTERO\n");
 		}
@@ -90,7 +90,7 @@ int main (void){
 		}
 		printf("OK\n");
 		
-		if (fwrite(countries, sizeof(pais), 1, countriesFile) != 1){
+		if (fwrite(countries, sizeof(country), 1, countriesFile) != 1){
 			perror("Error de escritura");
 			free(countries);
 			fclose(countriesFile);
