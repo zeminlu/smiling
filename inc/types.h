@@ -33,7 +33,7 @@ typedef struct{
 typedef struct{
 	char *name;
 	int type;
-	struct gates *fathers;
+	struct gates fathers[2];
 	struct gates *sons;
 	int output;
 } gates;
