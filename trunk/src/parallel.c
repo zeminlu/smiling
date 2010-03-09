@@ -4,7 +4,7 @@ int main(){
 	DIR *dp;
 	struct dirent *d;
 	FILE *countryFile;
-	pais **countries = NULL;
+	country **countries = NULL;
 	int i = 0, j = 0, fifa = 0;
 	char *parDir = "./parallelDir/", *procDir = "./processed/", fileDir[60], procFileDir[60];
 	
@@ -39,8 +39,8 @@ int main(){
 				while (feof(countryFile) == 0){
 					++i;
 					if ((countries = realloc(countries, sizeof(void *) * i)) == NULL ||
-						(countries[i - 1] = malloc(sizeof(pais))) == NULL || 
-					((fread(countries[i - 1], sizeof(pais), 1, countryFile) != 1) && !feof(countryFile))){
+						(countries[i - 1] = malloc(sizeof(country))) == NULL || 
+					((fread(countries[i - 1], sizeof(country), 1, countryFile) != 1) && !feof(countryFile))){
 						for(j = 0 ; j < i - 1 ; ++j){
 							free(countries[i - 1]);
 						}
