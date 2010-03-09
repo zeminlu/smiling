@@ -5,7 +5,8 @@ int main (void){
 	country *data;
 	country **countries;
 	condPack *condArgs;
-	conjunto *(**conditions)(pais **p, pais *c) = NULL;
+	set *group;
+	int (**conditions)(country **countries, country *head) = NULL;
 	pthread_t *threads;
 	int i = 0, j = 0, index = 0;
 	
