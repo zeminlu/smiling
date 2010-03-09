@@ -6,7 +6,7 @@ typedef struct{
 	int * country;
 	}set;
 
-typedef struct {
+typedef struct{
 	char name[45];
 	int continent;
 	int champ;
@@ -26,6 +26,8 @@ typedef struct{
 typedef struct{
 	country **countries;
 	country *head;
+	int *index;
+	set **sets;
 	}condPack;
 	
 typedef struct{

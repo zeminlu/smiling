@@ -7,11 +7,12 @@ int main (void){
 	condPack *condArgs;
 	conjunto *(**conditions)(pais **p, pais *c) = NULL;
 	pthread_t *threads;
-	int i = 0, j = 0;
+	int i = 0, j = 0, index = 0;
 	
 	condArgs = malloc(sizeof(condPack));
 	condArgs->countries = countries;
 	condArgs->head = data;
+	condArgs->index = &index;
 	
 	if (data->sameContinent){
 		conditions = realloc(conditions, sizeof(void *) * (++i));
@@ -29,6 +30,8 @@ int main (void){
 		conditions = realloc(conditions, sizeof(void *) * (++i));
 		conditions[i - 1] = deathGroup;
 	}
+	
+	condArgs->sets = malloc (sizeof(void *) * i);
 	
 	threads = malloc(sizeof(pthread_t) * i);
 	
