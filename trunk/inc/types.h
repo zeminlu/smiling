@@ -10,25 +10,17 @@ typedef struct {
 	char nombre[45];
 	int continente;
 	int campeon;
-	int peso; 
-	}pais;
-
-typedef struct {
-	char nombre[45];
+	int peso;
+	int isHead;
 	int sameContinent;
 	int deathGroup;
 	int champGroup;
 	int weakGroup;
-	}cabeza;
+	}pais;
 
 typedef struct{
 	void **estructura;
 	int amm;
 	}package;
-
-typedef struct{
-	pais **paises;
-	cabeza *head;
-	}condPack;
 
 #endif

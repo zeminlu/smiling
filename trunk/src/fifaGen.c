@@ -1,24 +1,18 @@
 #include "../inc/fifaGen.h"
 
 int main (void){
-	int i, amm, death, c1, c2, c3;
+	int i, amm, head, headsAmm = 0, death, c1, c2, c3;
 	pais *paises;
-	cabeza *cabezas;
-	FILE *archivoP, *archivoC;
+	FILE *archivoP;
 	
-	if ((archivoP = fopen("./testFiles/paises.fifa", "w")) == NULL || 
-		(archivoC = fopen("./testFiles/cabezas.fifa", "w")) == NULL){
-			perror("Error al crear archivos");
-			fclose(archivoP);
+	if ((archivoP = fopen("./testFiles/paises.fifa", "w")) == NULL){
+			perror("Error al crear archivo");
 			return errno;
 	}
-	
-	if ((paises = malloc(sizeof(pais))) == NULL || 
-		(cabezas = malloc(sizeof(cabeza))) == NULL){
+		
+	if ((paises = malloc(sizeof(pais))) == NULL){
 			perror("Error de memoria");
-			free(paises);
 			fclose(archivoP);
-			fclose(archivoC);
 			return errno;
 	}
 	
@@ -44,74 +38,67 @@ int main (void){
 		while (scanf("%d", &(paises->peso)) != 1){
 			printf("Ingrese un numero ENTERO\n");
 		}
+		if (headsAmm < amm / 4){
+			printf("Debe ser Cabeza de Serie? Restan %d\n", amm/4 - headsAmm);
+			while (scanf("%d", &head) != 1){
+				printf("Infrese SOLO 1 o 0");
+			}
+			if (head){
+				++headsAmm;
+				paises->isHead = TRUE;
+				printf("A continuacion se le preguntara acerca de la inclusion de ciertas restricciones. Conteste con 1 o 0.\n\n");
+				
+				if (death == FALSE){
+					printf("Debe ser el grupo de la muerte?\n");
+					while (scanf("%d", &death) != 1){
+						printf("Ingrese SOLO 1 o 0\n");
+					}
+					if (death){
+						paises->deathGroup = TRUE;
+					}
+				}
+				
+				printf("Puede aceptar paises del mismo continente?\n");
+
+				while (scanf("%d", &c1) != 1){
+					printf("Ingrese SOLO 1 o 0\n");
+				}
+				if(c1 == FALSE){
+					paises->sameContinent = TRUE;
+				}
+
+				if (!paises->deathGroup){
+					printf("Debe ser grupo debil?\n");
+					while (scanf("%d", &c2) != 1){
+						printf("Ingrese SOLO 1 o 0\n");
+					}
+
+					if(c2 == FALSE){
+						printf("Debe intentar incluir campeones?\n");
+						while (scanf("%d", &c3) != 1){
+							printf("Ingrese SOLO 1 o 0\n");
+						}
+						if (c3 == !FALSE){
+							paises->champGroup = TRUE;
+						}
+					}
+					else{
+						paises->weakGroup = TRUE;
+					}
+				}
+			}
+		}
 		printf("OK\n");
 		
 		if (fwrite(paises, sizeof(pais), 1, archivoP) != 1){
 			perror("Error de escritura");
 			free(paises);
-			free(cabezas);
 			fclose(archivoP);
-			fclose(archivoC);
-			return errno;
-		}
-	}
-	
-	printf("Cual sera el grupo de la muerte? De no existir, ingrese 0.\n");
-	while (scanf("%d", &death) != 1){
-		printf("Ingrese SOLO un numero ENTERO\n");
-	}
-
-	for (i = 0 ; i < amm/4 ; ++i){
-		
-		printf("Ingrese el Nombre del Pais cabeza de serie\n");
-		while (scanf("%s", cabezas->nombre) != 1){
-			printf("Ingrese SOLO el NOMBRE del pais\n");
-		}
-		printf("A continuacion se le preguntara acerca de la inclusion de ciertas restricciones. Conteste con 1 o 0.\n\n");
-		printf("Puede aceptar paises del mismo continente?\n");
-		
-		while (scanf("%d", &c1) != 1){
-			printf("Ingrese SOLO 1 o 0\n");
-		}
-		if(c1 == 0){
-			cabezas->sameContinent = 1;
-		}
-		
-		if (death == i + 1){
-			cabezas->deathGroup = 1;
-		}
-		else{
-			printf("Debe ser grupo debil?\n");
-			while (scanf("%d", &c2) != 1){
-				printf("Ingrese SOLO 1 o 0\n");
-			}
-		
-			if(c2 == 0){
-				printf("Debe intentar incluir campeones?\n");
-				while (scanf("%d", &c3) != 1){
-					printf("Ingrese SOLO 1 o 0\n");
-				}
-				if (c3 == 1){
-					cabezas->champGroup = 1;
-				}
-			}
-			else{
-				cabezas->weakGroup = 1;
-			}
-		}
-		if (fwrite(cabezas, sizeof(cabeza), 1, archivoC) != 1){
-			perror("Error de escritura");
-			free(paises);
-			free(cabezas);
-			fclose(archivoP);
-			fclose(archivoC);
 			return errno;
 		}
 	}
 	
 	free(paises);
-	free(cabezas);
-	fclose(archivoC);
 	fclose(archivoP);
 	
 	return 0;
