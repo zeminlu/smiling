@@ -27,4 +27,13 @@ typedef struct{
 	country **countries;
 	country *head;
 	}condPack;
+	
+typedef struct{
+	char *name;
+	int type;
+	struct *gates fathers;
+	struct *gates sons;
+	int output;
+} gates;
+
 #endif
