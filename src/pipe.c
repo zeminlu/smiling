@@ -12,8 +12,8 @@ int main(){
 	DIR *dp;
 	struct dirent *d;
 	int gate = 0;
-	FILE *dataFile;
-	char *dir = "./pipeDir/", *procDir = "./processed/", *dirFile, *procCopyDir;
+	FILE *dataFile = NULL;
+	char *dir = "./pipeDir/", *procDir = "./processed/", *dirFile = NULL, *procCopyDir;
 	
 	if ((dp = opendir(dir)) == NULL){
 		return -1;
@@ -40,7 +40,7 @@ int main(){
 			}
 			strcpy(dirFile, dir);
 			strcat(dirFile, d->d_name);
-			if( (dataFile = fopen(dir, "r")) ==  NULL )
+			if( (dataFile = fopen(dirFile, "r")) ==  NULL )
 			{
 				closedir(dp);
 				perror("No se pudo abrir el archivo de las compuertas\n");
