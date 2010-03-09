@@ -1,18 +1,15 @@
 #include "../inc/fifa.h"
 
 int main (void){
-	package c, p;
-	pais **paises;
-	cabeza **cabezas;
-	int i, pamm, camm;
+	package *p = NULL;
+	country **countries;
+	int i, pamm;
 	
-	paises = (paises **)(p->estructura);
-	cabezas = (cabezas **)(c->estructura);
+	countries = (country **)(p->genStruct);
 	pamm = p->amm;
-	camm = c->amm;
-	
-	for (i = 0 ; i < camm ; ++i){
-		switch(fork){
+	/*VER BIEN PAMM PORQUE NO VA ESE...*/
+	for (i = 0 ; i < pamm ; ++i){
+		switch(fork()){
 			case 0:
 				execv("./grouph.bin", NULL);
 				/*Se le pasa a grouph la estructura cabezas[i]*/
@@ -22,8 +19,10 @@ int main (void){
 		}
 	}
 	/*
-	* Aca viene el listener que administra las peticiones de paises de los grouph hijos.
+	* Aca viene el listener que administra las peticiones de countries de los grouph hijos.
 	* A su vez, se debe al final, invocar los waits correspondientes y evaluarlos.
 	*
 	*/
+	
+	return 0;
 }
