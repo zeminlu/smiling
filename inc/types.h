@@ -2,25 +2,25 @@
 #define TYPES_H_
 
 typedef struct{
-	int cantPaises;
-	int * paises;
-	}conjunto;
+	int ammCountrys;
+	int * country;
+	}set;
 
 typedef struct {
-	char nombre[45];
-	int continente;
-	int campeon;
-	int peso;
+	char name[45];
+	int continent;
+	int champ;
+	int weight;
 	int isHead;
 	int sameContinent;
 	int deathGroup;
 	int champGroup;
 	int weakGroup;
-	}pais;
+	}country;
 
 typedef struct{
-	void **estructura;
-	int amm;
+	void **genStruct;
+amm;
 	}package;
 
 #endif

@@ -17,7 +17,7 @@ int main (int argc, char const *argv[])
 	float **varValues;
 	float *initCond;
 /*	FILE *ecuFile, *initFile;*/
-		
+		prin
 	printf("Ingrese la cantidad de variables que desea que tenga el sistema\n");
 	
 	if( scanf("%d", &cantVar) <= 0 )
