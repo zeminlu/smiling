@@ -110,7 +110,7 @@ int gateOr( int in1, int in2 )
 
 int gateXor( int in1, int in2 )
 {
-	return ((in1 == 1 && in2 == 0) || (in1 == 0 && in2 == 1)) ? 1 : 0; 
+	return in1 ^ in2; 
 }
 
 /* Compuerta NAND */
