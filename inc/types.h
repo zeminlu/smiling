@@ -37,6 +37,11 @@ typedef struct{
 	struct gates *fathers;
 	struct gates *sons;
 	int output;
-} gates;
+	} gates;
+
+typedef struct{
+	int countryAmm;
+	country **countries;
+	}subFixture;
 
 #endif
