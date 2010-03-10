@@ -23,10 +23,16 @@ int sameContinent(condPack * cond){
 	countryInt = malloc(sizeof(int)*_MAX_COUNTRIES_);
 	
 	if(ans == NULL){
-		/*	error memoria, insuficiente*/
+		perror("Memoria insuficiente, para crear el conjunto del mismo continente");
+		return errno;
 	}
-	for(i = 0, j= 0; i < _MAX_COUNTRIES_; ++i){
-		if(head->continent != countries[i]->continent){
+	if(countryInt == NULL){
+		/*	error memoria, insuficiente*/
+		perror("Memoria insuficiente, para crear el conjunto countryInt");
+		return errno;
+	}
+	for(i = 0, j= 0;i < _MAX_COUNTRIES_ ; ++i){
+		if((head->continent != countries[i]->continent) && ((cond->countries[i])->used == FALSE)){
 			countryInt[j] = i;
 			++j;
 		}
@@ -63,9 +69,16 @@ int deathGroup(condPack * cond){
 	countryInt = malloc(sizeof(int)*_MAX_COUNTRIES_);
 	
 	if(ans == NULL){
-		/*	error memoria, insuficiente*/	}
+		perror("Memoria insuficiente, para crear el conjunto de la muerte");
+		return errno;
+	}
+	if(countryInt == NULL){
+		/*	error memoria, insuficiente*/
+		perror("Memoria insuficiente, para crear el conjunto countryInt");
+		return errno;
+	}
 	for(i = 0, j= 0; i < _MAX_COUNTRIES_; ++i){
-		if(countries[i]->weight > _WEAK_GROUP_){
+		if((countries[i]->weight > _WEAK_GROUP_) && ((cond->countries[i])->used == FALSE)){
 			countryInt[j] = i;
 			++j;
 		}
@@ -100,10 +113,16 @@ int champGroup(condPack * cond){
 	countryInt = malloc(sizeof(int)*_MAX_COUNTRIES_);
 	
 	if(ans == NULL){
+		perror("Memoria insuficiente, para crear el conjunto de paises de campeones");
+		return errno;
+	}
+	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
+		perror("Memoria insuficiente, para crear el conjunto countryInt");
+		return errno;
 	}
 	for(i = 0, j= 0; i < _MAX_COUNTRIES_; ++i){
-		if(countries[i]->champ > 0){
+		if((countries[i]->champ > 0) && ((cond->countries[i])->used == FALSE)){
 			countryInt[j] = i;
 			++j;
 		}
@@ -140,9 +159,16 @@ int weakGroup(condPack * cond){
 	
 	if(ans == NULL){
 		/*	error memoria, insuficiente*/
+		perror("Memoria insuficiente, para crear el conjunto de paises del weak Grpup");
+		return errno;
 	}
-	for(i = 0, j= 0; i < _MAX_COUNTRIES_; ++i){
-		if(countries[i]->weight <= _WEAK_GROUP_){
+	if(countryInt == NULL){
+		/*	error memoria, insuficiente*/
+		perror("Memoria insuficiente, para crear el conjunto countryInt");
+		return errno;
+	}
+	for(i = 0, j= 0; (i < _MAX_COUNTRIES_); ++i){
+		if((countries[i]->weight <= _WEAK_GROUP_) && ((cond->countries[i])->used == FALSE)){
 			countryInt[j] = i;
 			++j;
 		}
@@ -155,4 +181,72 @@ int weakGroup(condPack * cond){
 	cond->sets[*(cond->index)++] = ans;
 	return TRUE;
 }
+/*Nombre: countryFree
+*
+* 	Busca todos los paises que estan sin usar, si no encuentra ninguno
+* devuelve NULL. Necesita liberar el puntero que se devuelve.
+* 
+*/
+int * countryFree( condPack * cond, int * amm){
+	int * countryInt;
+	int i , j;	
+	country **countries;
+		
+	countries = cond->countries;
+	
+	countryInt = malloc(sizeof(int)*_MAX_COUNTRIES_);
+	
+	if(countryInt == NULL){
+		/*	error memoria, insuficiente*/
+		perror("Memoria insuficiente, para crear el conjunto de paises libres");
+	}
+	for(i = 0, j= 0; (i < _MAX_COUNTRIES_); ++i){
+		if((cond->countries[i])->used == FALSE){
+			countryInt[j] = i;
+			++j;
+		}
+	}
+	if(j == 0){
+		return NULL;
+	}else{
+		*amm = j;
+		return realloc(countryInt, sizeof(int)*(j));;
+	}
 
+}
+	
+
+int noCondition(condPack * cond){
+	
+	int * countryInt; 
+	int *amm = NULL; 
+	int *countryAns = NULL;
+	set * ans; 
+	
+	srand(time(NULL));
+	
+	countryInt = countryFree(cond, amm);
+	
+	if(countryInt == NULL){
+		return FALSE;
+	}else if(*amm > 1){
+		*countryAns = countryInt[rand() % (*amm)]; 
+	}else{
+		*countryAns = countryInt[0];
+	}
+	
+	ans = malloc(sizeof(set));
+	
+	if(ans == NULL){
+		/*	error memoria, insuficiente*/
+		perror("Memoria insuficiente, para crear el conjunto de paises libres");
+		return errno;
+	}
+	
+	ans->countriesAmm = 1;
+	ans->country = countryAns;
+	cond->sets[*(cond->index)++] = ans;
+	return TRUE;
+
+	
+}
