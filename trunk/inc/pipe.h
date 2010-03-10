@@ -11,8 +11,14 @@
 #include <sys/wait.h>
 
 #include "../inc/definitions.h"
+#include "../inc/types.h"
+
+typedef gates ** gateLevels;
+typedef gateLevels  * tableOfGates;
 
 int getFilesAmm (DIR *dp);
+
+gateLevels parseXMLGate( char * docName );
 
 int gateAnd( int in1, int in2 );
 int gateOr( int in1, int in2 );

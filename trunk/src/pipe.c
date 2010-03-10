@@ -11,8 +11,9 @@ int main(){
 	
 	DIR *dp;
 	struct dirent *d;
-	int gate = 0;
+	int gate = 0, sizeTable = 1;
 	FILE *dataFile = NULL;
+	tableOfGates table = NULL;
 	char *dir = "./pipeDir/", *procDir = "./processed/", *dirFile = NULL, *procCopyDir;
 	
 	if ((dp = opendir(dir)) == NULL){
@@ -46,6 +47,13 @@ int main(){
 				perror("No se pudo abrir el archivo de las compuertas\n");
 				return errno;
 			}
+			if( (table = realloc(table, sizeof(tableOfGates) + sizeTable )) == NULL )
+			{
+				closedir(dp);
+				perror("Error en la realocacion de memoria\n");
+				return errno;
+			}
+			table[sizeTable++] = parseXMLGate( dirFile );
 			/* Aca hay que cargar el archivo de las compuertas */
 		}
 	}
@@ -90,6 +98,15 @@ int getFilesAmm (DIR *dp){
 		}
 	}
 	return ret;
+}
+
+/*
+ *	Funcion encargada de parsear el archivo XML con todas las compuertas
+ */
+
+gateLevels parseXMLGate( char * docName )
+{
+	return NULL;
 }
 
 /* Compuerta AND */

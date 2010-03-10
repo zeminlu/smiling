@@ -2,8 +2,10 @@
  *		gates.c
  *
  *			Archivo encargado de llevar a cabo todos los procesos de resolucion
- *			de un sistema de ecuaciones lineales por el metodo LUX = B.
+ *			de un circuito de compuertas.
  */
 
 #include "../inc/gates.h"
+
+
 
