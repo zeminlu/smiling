@@ -4,12 +4,12 @@
 int main (void){
 	country *data;
 	country **countries;
-	condPack *condArgs;
+	condPack *condArgs, **aux;
 	subFixture *group;
 	set *intersection;
 	int (**conditions)(country **countries, country *head) = NULL;
 	pthread_t *threads;
-	int i = 0, j = 0, index = 0;
+	int i = 0, j = 0, k = 0, x = 0, y = 0, index = 0, reqCountry;
 	
 	if (data->sameContinent){
 		conditions = realloc(conditions, sizeof(void *) * (++i));
@@ -28,25 +28,27 @@ int main (void){
 		conditions[i - 1] = deathGroup;
 	}
 	
-	if (i == 0){
-		/*
-		Funcion que toma un pais random de la tabla de paises y se lo pide a fifa
-		Si fifa lo concede, se realiza lo mismo hasta obtener 3 paises y se devuelve el subFixture
-		*/
-	}
-	else{
-		condArgs = malloc(sizeof(condPack));
-		condArgs->countries = countries;
-		condArgs->head = data;
-		condArgs->index = &index;
-		condArgs->sets = malloc(sizeof(void *) * i);
-		threads = malloc(sizeof(pthread_t) * i);
-		group = malloc(sizeof(subFixture));
-		group->countries = malloc(sizeof(void *));
-		group->countries[0] = data;
-		++(group->countriesAmm);
-
-		while (group->countriesAmm < 4){
+	condArgs = malloc(sizeof(condPack));
+	condArgs->countries = countries;
+	condArgs->head = data;
+	condArgs->index = &index;
+	condArgs->sets = malloc(sizeof(void *) * i);
+	threads = malloc(sizeof(pthread_t) * i);
+	group = malloc(sizeof(subFixture));
+	group->countries = malloc(sizeof(void *));
+	group->countries[0] = data;
+	++(group->countriesAmm);
+	
+	while (group->countriesAmm < 4){
+		if (i == 0){
+			noCondition(condArgs);
+			reqCountry = condArgs->sets[0]->countries[0];
+		}
+		else if (i == 1){
+			conditions[0](condArgs);
+			reqCountry = condArgs->sets[0]->countries[rand() % condArgs->sets[0]->countriesAmm];
+		}
+		else{
 			for (j = 0 ; j < i ; ++j){
 				pthread_create(&threads[j], NULL, conditions[j], (void *)(condArgs));
 			}
@@ -54,40 +56,44 @@ int main (void){
 				pthread_join(threads[j], NULL);
 			}
 
-			instersection = malloc(sizeof(set));
-			intersection->country = malloc(sizeof(int *) * _MAX_COUNTRIES_);
-			
-			for (j = 0 ; j < ((condArgs->sets)[0])->countriesAmm ; ++j){
-				(intersection->country)[j] = (((condArgs->sets)[0])->country)[j];
-			}
+			aux = malloc(sizeof(void *));
+			aux[0] = malloc(sizeof(subFixture));			
+			aux[0]->countries = malloc(sizeof(int *) * ((condArgs->sets)[0])->countriesAmm);
 
-			for (j = 1 ; j < i ; ++j){
-				
-				// start with arrays a and b.  
-				sort(a);  // log(a.length) time  
-				sort(b);  // log(b.length) time  
-				int aindex = 0;  
-				int bindex = 0;  
-				while (aindex < a.length && bindex < b.length) {  
-				  if (a[aindex] == b[bindex]) {  
-				    print(a[aindex] + " is in both a and b.");  
-				    aindex++;  
-				    bindex++;  
-				  }  
-				  else if (a[index] < b[bindex]) {  
-				    aindex++;  
-				  }  
-				  else {  
-				    bindex++;  
-				  }  
+			for (j = 0 ; j < ((condArgs->sets)[0])->countriesAmm ; ++j){
+				aux[0]->countries[j] = condArgs->sets[0]->countries[j]; 
+			}
+			aux[0]->countriesAmm = j;
+
+			for (j = 1 ; j < i ; ++j){	
+				aux = realloc(aux, sizeof(void *) * (j + 1));
+				aux[j] = malloc(sizeof(subFixture));
+				aux[j]->countries = malloc(sizeof(int) * aux[0]->countriesAmm);
+				y = 0; 
+				while (x < aux[j - 1]->countriesAmm && k < ((condArgs->sets)[j])->countriesAmm) {  
+					if (((aux[j - 1])->countries)[x] == (((condArgs->sets)[j])->countries)[k]) {  
+						aux[j]->countries[y] = ((aux[j - 1])->countries)[x];
+						x++;  
+						k++;
+						y++;  
+					}  
+					else if (((aux[j])->countries)[x] < (((condArgs->sets)[j + 1])->countries)[k]) {  
+						x++;  
+					}  
+					else {  
+						k++;  
+					}  
 				}
 			}
+			reqCountry = aux[j]->countries[rand() % aux[j]->countriesAmm];
+		}
+		
 		/*
-		Se verifica que hayan terminado todos los threads
-		Se realiza la interseccion de los resultados de cada thread
-		Se pide un pais de la interseccion a fifa
-		Si fifa lo concede, se lo agrega a group->countries
+		Se pide a fifa reqCountry
+		Si lo concede, se agrega a group y se incrementa la cantidad de paises en el mismo
 		*/
 	}
-	}
+	/*
+	Se envia a fifa el subfixture terminado, o error de no haberse logrado
+	*/
 }
