@@ -5,8 +5,9 @@
 *
 * 	Busca de la talba de paises, cual pertenece al mismo continente
 * que el pais de cabezera, y almacena el int asociado , ala entrada
-* en la tabla de paises. De no encontrar ninguno devuelve NULL.
-* 
+* en la tabla de paises. De no encontrar ninguno devuelve FALSE.
+* Necesita liberar el puntero que se devuelve.
+*
 */
 
 int sameContinent(condPack * cond){
@@ -51,8 +52,9 @@ int sameContinent(condPack * cond){
 *
 * 	Busca de la talba de paises, cuales tiene mayor peso que WEAK_GROUP,
 * y almacena el int asociado , ala entrada en la tabla de paises. 
-* De no encontrar ninguno devuelve NULL.
-* 
+* De no encontrar ninguno devuelve FALSE.
+* Necesita liberar el puntero que se devuelve.
+*
 */
 int deathGroup(condPack * cond){
 	int * countryInt;
@@ -96,8 +98,9 @@ int deathGroup(condPack * cond){
 *
 * 	Busca de la talba de paises, los que hallan salido campeon,
 * y almacena el int asociado , ala entrada en la tabla de paises.
-* De no encontrar ninguno devuelve NULL.
-* 
+* De no encontrar ninguno devuelve FALSE.
+* Necesita liberar el puntero que se devuelve. 
+*
 */
 int champGroup(condPack * cond){
 	int * countryInt;
@@ -140,8 +143,9 @@ int champGroup(condPack * cond){
 *
 * 	Busca de la talba de paises, los que tenga peso menos o igual que,
 * WEAK_GROUP, y almacena el int asociado , ala entrada en la tabla de paises.
-* De no encontrar ninguno devuelve NULL.
-* 
+* De no encontrar ninguno devuelve FALSE.
+* Necesita liberar el puntero que se devuelve.
+*
 */
 
 int weakGroup(condPack * cond){
@@ -184,21 +188,29 @@ int weakGroup(condPack * cond){
 /*Nombre: countryFree
 *
 * 	Busca todos los paises que estan sin usar, si no encuentra ninguno
-* devuelve NULL. Necesita liberar el puntero que se devuelve.
-* 
+* devuelve FALSE. Necesita liberar el puntero que se devuelve.
+* en caso de error devuelvo errno
+*
 */
-int * countryFree( condPack * cond, int * amm){
+int countryFree( condPack * cond){
 	int * countryInt;
 	int i , j;	
 	country **countries;
+	set * ans;
 		
 	countries = cond->countries;
-	
+	ans = malloc(sizeof(set));
 	countryInt = malloc(sizeof(int)*_MAX_COUNTRIES_);
 	
+	if(ans == NULL){
+		/*	error memoria, insuficiente*/
+		perror("Memoria insuficiente, para crear el conjunto de paises del weak Grpup");
+		return errno;
+	}	
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto de paises libres");
+		return errno;
 	}
 	for(i = 0, j= 0; (i < _MAX_COUNTRIES_); ++i){
 		if((cond->countries[i])->used == FALSE){
@@ -207,45 +219,48 @@ int * countryFree( condPack * cond, int * amm){
 		}
 	}
 	if(j == 0){
-		return NULL;
+		return FALSE;
 	}else{
-		*amm = j;
-		return realloc(countryInt, sizeof(int)*(j));;
+		ans->countriesAmm = j;
+		ans->country = realloc(countryInt, sizeof(int)*(j));
+		cond->sets[*(cond->index)] = ans;
+		return TRUE;
 	}
 
 }
-	
+/*Nombre: noCondition
+*
+* 	De los paises libres busca uno al azar, si no hay paises
+* devuelve FALSE. Necesita liberar el puntero que se devuelve.
+* en caso de error retorna errno.
+*
+*/	
 
 int noCondition(condPack * cond){
 	
-	int * countryInt; 
-	int *amm = NULL; 
-	int *countryAns = NULL;
-	set * ans; 
+	int * countryAns = NULL;
+	int * countryAux;
+	int	amm, status;
+	
+	status = countryFree(cond);
+	
+	countryAux = (cond->sets[*(cond->index)])->country;
+	amm = (cond->sets[*(cond->index)])->countriesAmm;
 	
 	srand(time(NULL));
-	
-	countryInt = countryFree(cond, amm);
-	
-	if(countryInt == NULL){
+		
+	if(status){
 		return FALSE;
-	}else if(*amm > 1){
-		*countryAns = countryInt[rand() % (*amm)]; 
+	}else if(amm > 1){
+		*countryAns = countryAux[rand() % (amm)]; 
 	}else{
-		*countryAns = countryInt[0];
+		*countryAns = countryAux[0];
 	}
 	
-	ans = malloc(sizeof(set));
-	
-	if(ans == NULL){
-		/*	error memoria, insuficiente*/
-		perror("Memoria insuficiente, para crear el conjunto de paises libres");
-		return errno;
-	}
-	
-	ans->countriesAmm = 1;
-	ans->country = countryAns;
-	cond->sets[*(cond->index)++] = ans;
+	free(countryAux);
+	Å
+	(cond->sets[*(cond->index)])->countriesAmm = 1;
+	(cond->sets[*(cond->index)++])->country = countryAns;
 	return TRUE;
 
 	
