@@ -28,28 +28,24 @@ int main (void){
 		conditions[i - 1] = deathGroup;
 	}
 	
-	condArgs = malloc(sizeof(condPack));
-	condArgs->countries = countries;
-	condArgs->head = data;
-	condArgs->index = &index;
-	condArgs->sets = malloc(sizeof(void *) * i);
-	group = malloc(sizeof(subFixture));
-	group->countries = malloc(sizeof(void *));
-	group->countries[0] = data;
-	++(group->countriesAmm);
-	
 	if (i == 0){
-		while (group->countriesAmm < 4){
-			noCondition(condArgs);
 		/*
-		Se pide a fifa el pais que esta en condArgs->sets[0]
+		Funcion que toma un pais random de la tabla de paises y se lo pide a fifa
 		Si fifa lo concede, se realiza lo mismo hasta obtener 3 paises y se devuelve el subFixture
 		*/
-		}
 	}
 	else{
+		condArgs = malloc(sizeof(condPack));
+		condArgs->countries = countries;
+		condArgs->head = data;
+		condArgs->index = &index;
+		condArgs->sets = malloc(sizeof(void *) * i);
 		threads = malloc(sizeof(pthread_t) * i);
-		
+		group = malloc(sizeof(subFixture));
+		group->countries = malloc(sizeof(void *));
+		group->countries[0] = data;
+		++(group->countriesAmm);
+
 		while (group->countriesAmm < 4){
 			for (j = 0 ; j < i ; ++j){
 				pthread_create(&threads[j], NULL, conditions[j], (void *)(condArgs));
@@ -67,7 +63,24 @@ int main (void){
 
 			for (j = 1 ; j < i ; ++j){
 				
-				
+				// start with arrays a and b.  
+				sort(a);  // log(a.length) time  
+				sort(b);  // log(b.length) time  
+				int aindex = 0;  
+				int bindex = 0;  
+				while (aindex < a.length && bindex < b.length) {  
+				  if (a[aindex] == b[bindex]) {  
+				    print(a[aindex] + " is in both a and b.");  
+				    aindex++;  
+				    bindex++;  
+				  }  
+				  else if (a[index] < b[bindex]) {  
+				    aindex++;  
+				  }  
+				  else {  
+				    bindex++;  
+				  }  
+				}
 			}
 		/*
 		Se verifica que hayan terminado todos los threads
@@ -75,10 +88,6 @@ int main (void){
 		Se pide un pais de la interseccion a fifa
 		Si fifa lo concede, se lo agrega a group->countries
 		*/
-		}
 	}
-	/*
-	Se le envia a fifa la estructura group
-	*/
-	return TRUE;
+	}
 }
