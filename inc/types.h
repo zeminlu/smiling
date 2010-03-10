@@ -37,6 +37,8 @@ typedef struct{
 	struct gates *fathers;
 	struct gates *sons;
 	int output;
+	int input[2];
+	int (*fnGate)(int in1, int in2);
 	} gates;
 
 typedef struct{
