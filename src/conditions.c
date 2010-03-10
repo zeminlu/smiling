@@ -258,7 +258,7 @@ int noCondition(condPack * cond){
 	}
 	
 	free(countryAux);
-	Å
+	
 	(cond->sets[*(cond->index)])->countriesAmm = 1;
 	(cond->sets[*(cond->index)++])->country = countryAns;
 	return TRUE;
