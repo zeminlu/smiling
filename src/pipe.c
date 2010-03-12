@@ -10,20 +10,42 @@ int main(){
 	
 	DIR *dp;
 	struct dirent *d;
-	int gate = 0;
+	int i,gate = 0, qtyFiles = 0, pos = 0;
 	FILE *dataFile = NULL;
-	circuitTable *table = NULL;
-	char *dir = "./pipeDir/", *procDir = "./processed/", *dirFile = NULL, *procCopyDir;
+	circuitTable **table = NULL;
+	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir;
 	
+
 	if ((dp = opendir(dir)) == NULL){
-		return -1;
+		perror("No se puede abrir el directorio\n");
+		return errno;
 	}
 	while (getFilesAmm(dp) <= 3 ){
 		sleep(1);
 		rewinddir(dp);
-	};
-	while( (d = readdir(dp)) && getFilesAmm(dp) > 3 )
+	}
+	qtyFiles = getFilesAmm(dp);
+	printf("qtyFiles: %d\n", qtyFiles);
+	
+	if( (table = (circuitTable**)malloc( sizeof(circuitTable*) * qtyFiles)) == NULL )
 	{
+		closedir(dp);
+		perror("Error en la alocacion de memoria de table\n");
+		return errno;	
+	}
+	for( i = 0 ; i < qtyFiles ; ++i )
+	{
+		if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable))) == NULL )
+		{
+			closedir(dp);
+			perror("Error en la alocacion de memoria de table[i]\n");
+			return errno;	
+		}
+	}
+	rewinddir(dp);
+	while( getFilesAmm(dp) > 3 && (d = readdir(dp)) )
+	{
+		printf("%s\n", d->d_name );
 		if(d->d_ino == 0 )
 		{
 			continue;
@@ -46,7 +68,8 @@ int main(){
 				perror("No se pudo abrir el archivo de las compuertas\n");
 				return errno;
 			}
-			table = parseXMLGate( dirFile);
+			table[pos++] = parseXMLGate( dirFile);
+			
 			/* Aca hay que cargar el archivo de las compuertas */
 		}
 	}
@@ -83,8 +106,10 @@ int main(){
  */
 
 int getFilesAmm (DIR *dp){
+	
 	struct dirent *d;
 	int ret = 0;
+	
 	while ((d = readdir(dp))){
 		 if (d->d_ino != 0){
 			++ret;
