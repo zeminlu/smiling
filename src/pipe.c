@@ -5,17 +5,7 @@
  *			pipeDir.
  */
 
-#include "../inc/pipe.h"
-
-int main (int argc, char const *argv[])
-{
-	char *dir = "../bin/pipeDir/circuit1.xml";
-	int levels;
-	parseXMLGate(dir,&levels);
-	return 0;
-}
-
-/*int main(){
+int main(){
 	
 	DIR *dp;
 	struct dirent *d;
@@ -91,7 +81,7 @@ int main (int argc, char const *argv[])
 	free(dirFile);
 	free(procCopyDir);
 	return 0;
-}*/
+}
 
 /*
  *	Verifica la cantidad de archivo que hay dentro del directorio
