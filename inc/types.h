@@ -32,14 +32,13 @@ typedef struct{
 	}condPack;
 	
 typedef struct{
-	char *name;
+	char name[30];
 	int type;
-	struct gates *fathers;
-	struct gates *sons;
+	char *fathers[2];
 	int output;
 	int input[2];
 	int (*fnGate)(int in1, int in2);
-	} gates;
+	} gate;
 
 typedef struct{
 	int countryAmm;
