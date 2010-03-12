@@ -4,14 +4,15 @@
  *			Programa encargado de verificar cuando se agrega un archivo en el directorio
  *			pipeDir.
  */
+#include "../inc/pipe.h"
 
 int main(){
 	
 	DIR *dp;
 	struct dirent *d;
-	int gate = 0, sizeTable = 1;
+	int gate = 0;
 	FILE *dataFile = NULL;
-	tableOfGates *table = NULL;
+	circuitTable *table = NULL;
 	char *dir = "./pipeDir/", *procDir = "./processed/", *dirFile = NULL, *procCopyDir;
 	
 	if ((dp = opendir(dir)) == NULL){
@@ -45,15 +46,9 @@ int main(){
 				perror("No se pudo abrir el archivo de las compuertas\n");
 				return errno;
 			}
-			if( (table = realloc(table, sizeof(tableOfGates) + sizeTable )) == NULL )
-			{
-				closedir(dp);
-				perror("Error en la realocacion de memoria\n");
-				return errno;
-			}
-			(table[sizeTable++]).circuit = parseXMLGate( dirFile, &(table->levels) );
-			*//* Aca hay que cargar el archivo de las compuertas */
-		/*}
+			table = parseXMLGate( dirFile);
+			/* Aca hay que cargar el archivo de las compuertas */
+		}
 	}
 	if( ( procCopyDir = (char*)malloc(sizeof(char) + strlen(procDir) + strlen(d->d_name) + 1 )) == NULL )
 	{
@@ -105,7 +100,7 @@ int getFilesAmm (DIR *dp){
  *	La funcion que lo llama debe realizar free al finalizar su uso.
  */
 
-circuitTable * parseXMLGate( char * docName, int *levels )
+circuitTable * parseXMLGate( char * docName)
 {
 	xmlDocPtr doc;
 	xmlNodePtr cur;
@@ -250,7 +245,7 @@ void parseGatesTags( char *father, xmlNodePtr cur, circuitTable * circuit, int c
 					strcpy( (circuit[curLevel].eachLevel)->gates[posExist].fathers[1], father );
 				}else
 				{
-					strcpy((circuit[curLevel].eachLevel)->gates[pos].name, cur->name);
+					strcpy((circuit[curLevel].eachLevel)->gates[pos].name, (char*)cur->name);
 					if( father != NULL )
 					{
 						strcpy( (circuit[curLevel].eachLevel)->gates[pos].fathers[0], father );
@@ -314,6 +309,7 @@ handler getHandler( char * typeH, int *typeInt)
 			*typeInt = XNOR;
 			return gateXnor;
 	}
+	return NULL;
 }
 
 /* 

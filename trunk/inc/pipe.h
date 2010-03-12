@@ -30,7 +30,7 @@ typedef struct{
 
 int getFilesAmm (DIR *dp);
 
-circuitTable * parseXMLGate( char * docName, int *levels );
+circuitTable * parseXMLGate( char * docName );
 circuitTable * parseCircuit( xmlDocPtr doc, xmlNodePtr cur );
 void parseGatesTags( char *father, xmlNodePtr cur, circuitTable * circuit, int curLevel );
 handler getHandler( char * typeH, int *typeInt);
