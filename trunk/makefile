@@ -19,13 +19,15 @@ CC = gcc
 CFLAGS = -O -Wall -Wuninitialized -pedantic -errors -ansi -fno-builtin -c -o
 #Sets the location of the header files.
 INCLUDES = -I $(INC_DIR)
+#Set the libraries variables
+LIBRARIES = -lxml2
 #Sets the C compiler set up
 COMPILE.c = $(CC) $(INCLUDES) $(CFLAGS) 
 #
 #Sets the linker for the project
 LD = gcc
 #
-LDFLAGS = -O -Wall -Wuninitialized -pedantic -fno-builtin -o
+LDFLAGS = $(LIBRARIES) -o
 #
 TARGET1 = main.bin
 OBJECTS1 = main.o
