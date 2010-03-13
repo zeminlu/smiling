@@ -13,7 +13,6 @@ int main (void){
 	country **countriesTable = NULL;
 	
 	
-	perror("Entro a grouph");
 	read(_stdin_, &bufferSize, sizeof(int));
 	if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL ||
 		(data = malloc(sizeof(country))) == NULL){
@@ -229,8 +228,8 @@ int unserializeHead(country *head, void *buffer, int bufferSize){
 	tpl_node *tn;
 	int ret;
 	
-	tn = tpl_map("S(siiiiiiiii)", head);
-	ret = tpl_load(tn, TPL_MEM, head);
+	tn = tpl_map("S(c#iiiiiiiii)", head, 45);
+	ret = tpl_load(tn, TPL_MEM, buffer, bufferSize);
 	tpl_unpack(tn, 0);
 	tpl_free(tn);
 	
@@ -242,7 +241,7 @@ int unserializeAnswer(void *buffer, int bufferSize){
 	int ret;
 	
 	tn = tpl_map("i", &ret);
-	ret = tpl_load(tn, TPL_MEM, buffer);
+	ret = tpl_load(tn, TPL_MEM, buffer, bufferSize);
 	tpl_unpack(tn, 0);
 	tpl_free(tn);
 	
@@ -270,7 +269,7 @@ int serializeStruct(subFixture *group, void **buffer, int *bufferSize){
 		countArr[i] = *(group->countries[i]);
 	}
 	
-	tn = tpl_map("S(siiiiiiiii)#", countArr, 4);
+	tn = tpl_map("S(c#iiiiiiiii)#", countArr, 45, 4);
 	tpl_pack(tn, 0);
 	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
 	tpl_free(tn);

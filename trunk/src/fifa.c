@@ -14,28 +14,30 @@ int fifoServer (){
 	country subFixture[4], **fixture = NULL;
 	struct timeval timeout = {10, 0};
 	country **countriesTable = NULL;
-	
 	read(_stdin_, &countriesTableEntriesAmm, sizeof(int));
 	if ((countriesTable = malloc(sizeof(void *) * countriesTableEntriesAmm)) == NULL){
 		perror("Error de memoria");
 		return errno;
 	}
 	for (i = 0 ; i < countriesTableEntriesAmm ; ++i){
+		
 		read(_stdin_, &bufferSize, sizeof(int));
+		
 		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL ||
 			(countriesTable[i] = malloc(sizeof(country))) == NULL){
 			perror("Error de memoria");
+			free(buffer);
 			for(j = 0 ; j < i ; ++j){
 				free(countriesTable[j]);
 			}
 			free(countriesTable);
 			return errno;
 		}
+		
 		read(_stdin_, buffer, bufferSize);
-		unserializeStruct(buffer, countriesTable[i]);
-		free(buffer);
+		unserializeStruct(buffer, bufferSize, countriesTable[i]);
+		free(buffer);		
 	}
-	
 	
 	if ((pids = malloc(sizeof(pid_t) * countriesTableEntriesAmm)) == NULL ||
 		(p = malloc(sizeof(int *) * (countriesTableEntriesAmm / 4))) == NULL ||
@@ -44,10 +46,6 @@ int fifoServer (){
 		free(pids);
 		free(p);
 		return errno;
-	}
-	printf("Llego %d\n", countriesTableEntriesAmm);
-	for (i = 0 ; i < countriesTableEntriesAmm ; ++i){
-		printf("Nombre: %s, Head: %d\n", countriesTable[i]->name, countriesTable[i]->isHead);
 	}
 	for (j = 0, i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		if ((countriesTable[i])->isHead){
@@ -68,7 +66,6 @@ int fifoServer (){
 			pipe(auxP2);
 			p[j][0] = auxP1[0];
 			p[j][1] = auxP2[1];
-			printf("Llego\n");
 			switch((actPid = fork())){
 				case -1:
 					perror("Error de fork");
@@ -87,9 +84,7 @@ int fifoServer (){
 					dup2(auxP2[0], 0);
 					execv("./grouph.bin", NULL);
 					break;
-				default:
-					printf("Forkeo bien\n");
-					
+				default:					
 					pids[headsAmm++] = actPid;
 					close(auxP1[1]);
 					close(auxP2[0]);
@@ -107,17 +102,18 @@ int fifoServer (){
 	for (j = 0 ; j < i ; ++j){
 		FD_SET(p[j][0], &master);
 	}
+	printf("Entro al while del server\n");
 	
 	while(set = master, select(FD_SETSIZE, &set, NULL, NULL, &timeout) > 0 && flag == FALSE){
 		for (j = 0 ; j < i ; ++j){
 			if (FD_ISSET(p[j][0], &set)){
 				read(p[j][0], &bufferSize, sizeof(int));
 				read(p[j][0], buffer, bufferSize);
-				reqCountry = unserializeCountry(buffer);
+				reqCountry = unserializeCountry(buffer, bufferSize);
 				if (reqCountry < 0){
 						read(p[j][0], &bufferSize, sizeof(int));
 						read(p[j][0], buffer, bufferSize);
-						unserializeSubfixture(buffer, (country **)&subFixture);
+						unserializeSubfixture(buffer, bufferSize, (country **)&subFixture);
 						fixture[j] = subFixture;
 						if (--headsAmm == 0){
 							flag = TRUE;
@@ -138,6 +134,9 @@ int fifoServer (){
 			}
 		}
 	}
+	
+	printf("Salio del while del server\n");
+	
 	
 	if (headsAmm != 0){
 		perror("No solution found");
@@ -309,36 +308,36 @@ int sckServer(){
 	return 0;
 }
 
-int unserializeTable(country **countriesTable, int amm, void *buffer){
+int unserializeTable(country **countriesTable, int amm, void *buffer, int bufferSize){
 	tpl_node *tn;
 	int ret;
 	
-	tn = tpl_map("S(siiiiiiiii)#", countriesTable, amm);
-	ret = tpl_load(tn, TPL_MEM, buffer);
+	tn = tpl_map("S(c#iiiiiiiii)#", countriesTable, 45, 4);
+	ret = tpl_load(tn, TPL_MEM, buffer, bufferSize);
 	tpl_unpack(tn, 0);
 	tpl_free(tn);
 	
 	return ret;
 }
 
-int unserializeSubfixture(void *buffer, country **subFixture){
+int unserializeSubfixture(void *buffer, int bufferSize, country **subFixture){
 	tpl_node *tn;
 	int ret;
 	
-	tn = tpl_map("S(siiiiiiiii)#", *subFixture, 4);
-	ret = tpl_load(tn, TPL_MEM, buffer);
+	tn = tpl_map("S(c#iiiiiiiii)#", *subFixture, 45, 4);
+	ret = tpl_load(tn, TPL_MEM, buffer, bufferSize);
 	tpl_unpack(tn, 0);
 	tpl_free(tn);
 	
 	return ret;
 }
 
-int unserializeStruct(void *buffer, country *subFixture){
+int unserializeStruct(void *buffer, int bufferSize, country *subFixture){
 	tpl_node *tn;
 	int ret;
 	
-	tn = tpl_map("S(siiiiiiiii)", subFixture);
-	ret = tpl_load(tn, TPL_MEM, buffer);
+	tn = tpl_map("S(c#iiiiiiiii)", subFixture, 45);
+	ret = tpl_load(tn, TPL_MEM, buffer, bufferSize);
 	tpl_unpack(tn, 0);
 	tpl_free(tn);
 	
@@ -357,12 +356,12 @@ int serializeAnswer(int status, void **buffer, int *bufferSize){
 	return ret;
 }
 
-int unserializeCountry(void *buffer){
+int unserializeCountry(void *buffer, int bufferSize){
 	tpl_node *tn;
 	int ret;
 	
 	tn = tpl_map("i", &ret);
-	ret = tpl_load(tn, TPL_MEM, buffer);
+	ret = tpl_load(tn, TPL_MEM, buffer, bufferSize);
 	tpl_unpack(tn, 0);
 	tpl_free(tn);
 	
@@ -373,7 +372,7 @@ int serializeHead(country *head, void **buffer, int *bufferSize){
 	tpl_node *tn;
 	int ret;
 	
-	tn = tpl_map("S(siiiiiiiii)", head);
+	tn = tpl_map("S(c#iiiiiiiii)", head, 45);
 	tpl_pack(tn, 0);
 	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
 	tpl_free(tn);
