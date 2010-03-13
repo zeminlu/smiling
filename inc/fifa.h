@@ -17,14 +17,16 @@
 
 int fifoServer();
 
+int unserializeTable(country **countriesTable, int amm, void *buffer, int bufferSize);
+
 int serializeHead(country *head, void **buffer, int *bufferSize);
 
-int unserializeSubfixture(void *buffer, country **subFixture);
+int unserializeSubfixture(void *buffer, int bufferSize, country **subFixture);
 
-int unserializeStruct(void *buffer, country *subFixture);
+int unserializeStruct(void *buffer, int bufferSize, country *subFixture);
 
 int serializeAnswer(int status, void **buffer, int *bufferSize);
 
-int unserializeCountry(void *buffer);
+int unserializeCountry(void *buffer, int bufferSize);
 
 #endif

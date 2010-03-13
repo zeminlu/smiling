@@ -4,7 +4,7 @@ int main(){
 	DIR *dp;
 	struct dirent *d;
 	FILE *countryFile;
-	int i = 0, j = 0, fifa = 0, bufferSize, auxP[2];
+	int i = 0, j = 0, fifa = 0, auxP[2], bufferSize;
 	void *buffer;
 	country **countriesTable = NULL;
 	int countriesTableEntriesAmm;
@@ -74,6 +74,10 @@ int main(){
 			}
 		}
 		countriesTableEntriesAmm = i;
+		
+		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
+			printf("ANTES Nombre: %s, Head: %d\n", countriesTable[j]->name, countriesTable[j]->isHead);
+		}
 		pipe(auxP);
 		switch (fork()){
 			case 0:
@@ -84,12 +88,11 @@ int main(){
 			default:
 				close(auxP[0]);
 				write(auxP[1], &countriesTableEntriesAmm, sizeof(int));
-				
 				for (j = 0 ; j < i ; ++j){
 					serializeStruct(countriesTable[j], &buffer, &bufferSize);
 					write(auxP[1], &bufferSize, sizeof(int));
 					write(auxP[1], buffer, bufferSize);
-					free(buffer);
+					free(buffer);	
 				}
 				
 				wait(&fifa);
@@ -103,7 +106,7 @@ int serializeStruct(country *str, void **buffer, int *bufferSize){
 	tpl_node *tn;
 	int ret;
 	
-	tn = tpl_map("S(siiiiiiiii)", str);
+	tn = tpl_map("S(c#iiiiiiiii)", str, 45);
 	tpl_pack(tn, 0);
 	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
 	tpl_free(tn);
