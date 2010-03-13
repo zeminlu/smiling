@@ -10,13 +10,13 @@
 #include "../inc/types.h"
 #include "../inc/definitions.h"
 
-int sameContinent(condPack * cond);
+void * sameContinent(void * cond);
 
-int deathGroup(condPack * cond);
+void * deathGroup(void * cond);
 
-int champGroup(condPack * cond);
+void * champGroup(void * cond);
 
-int weakGroup(condPack * cond);
+void * weakGroup(void * cond);
 
-int noCondition(condPack * cond);
+void * noCondition(void * cond);
 #endif

@@ -4,8 +4,10 @@ int main(){
 	DIR *dp;
 	struct dirent *d;
 	FILE *countryFile;
-	country **countries = NULL;
-	int i = 0, j = 0, fifa = 0;
+	int i = 0, j = 0, fifa = 0, bufferSize, auxP[2];
+	void *buffer;
+	country **countriesTable = NULL;
+	int countriesTableEntriesAmm;
 	char *parDir = "./parallelDir/", *procDir = "./processed/", fileDir[60], procFileDir[60];
 	
 	if ((dp = opendir("./parallelDir")) == NULL){
@@ -16,12 +18,12 @@ int main(){
 		sleep(1);
 		rewinddir(dp);
 	}
-	sleep(5);
+	sleep(2);
+	rewinddir(dp);
 	printf("Nuevo archivo en parallel\n");
 	while (getFilesAmm(dp) > 3){
 		rewinddir(dp);
 		while ((d = readdir(dp))){
-			printf("%s\n", d->d_name);
 			if (d->d_ino == 0){
 				continue;
 			}	
@@ -39,13 +41,13 @@ int main(){
 				}
 				while (feof(countryFile) == 0){
 					++i;
-					if ((countries = realloc(countries, sizeof(void *) * i)) == NULL ||
-						(countries[i - 1] = malloc(sizeof(country))) == NULL || 
-					((fread(countries[i - 1], sizeof(country), 1, countryFile) != 1) && !feof(countryFile))){
+					if ((countriesTable = realloc(countriesTable, sizeof(void *) * i)) == NULL ||
+						(countriesTable[i - 1] = malloc(sizeof(country))) == NULL || 
+					((fread(countriesTable[i - 1], sizeof(country), 1, countryFile) != 1) && !feof(countryFile))){
 						for(j = 0 ; j < i - 1 ; ++j){
-							free(countries[i - 1]);
+							free(countriesTable[i - 1]);
 						}
-						free(countries);
+						free(countriesTable);
 						fclose(countryFile);
 						closedir(dp);
 						perror("Error en la carga de un Pais");
@@ -54,8 +56,8 @@ int main(){
 					else {
 						if (feof(countryFile)){
 							--i;
-							free(countries[i]);
-							if ((countries = realloc(countries, sizeof(void *) * i)) == NULL){
+							free(countriesTable[i]);
+							if ((countriesTable = realloc(countriesTable, sizeof(void *) * i)) == NULL){
 								fclose(countryFile);
 								closedir(dp);
 								perror("Error de memoria");
@@ -71,18 +73,42 @@ int main(){
 				unlink(fileDir);
 			}
 		}
+		countriesTableEntriesAmm = i;
+		pipe(auxP);
 		switch (fork()){
 			case 0:
+				close(auxP[1]);
+				dup2(auxP[0], 0);
 				execv("./fifa.bin", NULL);
-				/*Se le pasa a fifa la estructuras countries*/
 				break;
 			default:
+				close(auxP[0]);
+				write(auxP[1], &countriesTableEntriesAmm, sizeof(int));
+				
+				for (j = 0 ; j < i ; ++j){
+					serializeStruct(countriesTable[j], &buffer, &bufferSize);
+					write(auxP[1], &bufferSize, sizeof(int));
+					write(auxP[1], buffer, bufferSize);
+					free(buffer);
+				}
+				
 				wait(&fifa);
-				return 0;
 				break;
 		}
 	}
 	return 0;
+}
+
+int serializeStruct(country *str, void **buffer, int *bufferSize){
+	tpl_node *tn;
+	int ret;
+	
+	tn = tpl_map("S(siiiiiiiii)", str);
+	tpl_pack(tn, 0);
+	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
+	tpl_free(tn);
+	
+	return ret;
 }
 
 int getFilesAmm (DIR *dp){
