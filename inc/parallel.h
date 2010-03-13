@@ -8,9 +8,13 @@
 #include <string.h>
 #include <stdarg.h>
 #include <errno.h>
-#include "../inc/types.h"
 #include <sys/types.h>
 #include <sys/wait.h>
+#include "../inc/types.h"
+#include "../inc/definitions.h"
+#include "../inc/tpl.h"
+
+int serializeStruct(country *str, void **buffer, int *bufferSize);
 
 int getFilesAmm (DIR *dp);
 

@@ -9,7 +9,7 @@
 int main(){
 	
 	DIR *dp;
-	struct dirent *d;
+	struct dirent *d = NULL;
 	int i,gate = 0, qtyFiles = 0, pos = 0;
 	FILE *dataFile = NULL;
 	circuitTable **table = NULL;

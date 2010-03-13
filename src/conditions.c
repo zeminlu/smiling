@@ -10,9 +10,10 @@
 *
 */
 
-int sameContinent(condPack * cond){
+void * sameContinent(void * condi){
 	int * countryInt;
 	int i, j;
+	condPack * cond = condi;
 	country **countries;
 	country * head;
 	set * ans;
@@ -25,12 +26,12 @@ int sameContinent(condPack * cond){
 	
 	if(ans == NULL){
 		perror("Memoria insuficiente, para crear el conjunto del mismo continente");
-		return errno;
+		return NULL;
 	}
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
-		return errno;
+		return NULL;
 	}
 	for(i = 0, j= 0;i < _MAX_COUNTRIES_ ; ++i){
 		if((head->continent != countries[i]->continent) && ((cond->countries[i])->used == FALSE)){
@@ -39,13 +40,13 @@ int sameContinent(condPack * cond){
 		}
 	}
 	if(j == 0){
-		return FALSE;
+		return NULL;
 	}
 
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
 	cond->sets[*(cond->index)++] = ans;
-	return TRUE;
+	return cond;
 }
 
 /*Nombre: deathGroup
@@ -56,9 +57,10 @@ int sameContinent(condPack * cond){
 * Necesita liberar el puntero que se devuelve.
 *
 */
-int deathGroup(condPack * cond){
+void * deathGroup(void * condi){
 	int * countryInt;
 	int i, j;
+	condPack * cond = condi;
 	set * ans;
 	country **countries;
 	country * head;
@@ -72,12 +74,12 @@ int deathGroup(condPack * cond){
 	
 	if(ans == NULL){
 		perror("Memoria insuficiente, para crear el conjunto de la muerte");
-		return errno;
+		return NULL;
 	}
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
-		return errno;
+		return NULL;
 	}
 	for(i = 0, j= 0; i < _MAX_COUNTRIES_; ++i){
 		if((countries[i]->weight > _WEAK_GROUP_) && ((cond->countries[i])->used == FALSE)){
@@ -86,12 +88,12 @@ int deathGroup(condPack * cond){
 		}
 	}
 	if(j == 0){
-		return FALSE;
+		return NULL;
 	}
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
 	cond->sets[*(cond->index)++] = ans;
-	return TRUE;
+	return cond;
 }
 
 /*Nombre: champGroup
@@ -102,10 +104,11 @@ int deathGroup(condPack * cond){
 * Necesita liberar el puntero que se devuelve. 
 *
 */
-int champGroup(condPack * cond){
+void * champGroup(void * condi){
 	int * countryInt;
 	int i, j;
 	set * ans;
+	condPack * cond = condi;
 	country **countries;
 	country * head;
 	
@@ -117,12 +120,12 @@ int champGroup(condPack * cond){
 	
 	if(ans == NULL){
 		perror("Memoria insuficiente, para crear el conjunto de paises de campeones");
-		return errno;
+		return NULL;
 	}
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
-		return errno;
+		return NULL;
 	}
 	for(i = 0, j= 0; i < _MAX_COUNTRIES_; ++i){
 		if((countries[i]->champ > 0) && ((cond->countries[i])->used == FALSE)){
@@ -131,12 +134,12 @@ int champGroup(condPack * cond){
 		}
 	}
 	if(j == 0){
-		return FALSE;
+		return NULL;
 	}
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
 	cond->sets[*(cond->index)++] = ans;
-	return TRUE;
+	return cond;
 }
 
 /*Nombre: weakGroup
@@ -148,9 +151,10 @@ int champGroup(condPack * cond){
 *
 */
 
-int weakGroup(condPack * cond){
+void * weakGroup(void * condi){
 	int * countryInt;
 	int i, j;
+	condPack * cond = condi;
 	set * ans;	
 	country **countries;
 	country * head;
@@ -164,12 +168,12 @@ int weakGroup(condPack * cond){
 	if(ans == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto de paises del weak Grpup");
-		return errno;
+		return NULL;
 	}
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
-		return errno;
+		return NULL;
 	}
 	for(i = 0, j= 0; (i < _MAX_COUNTRIES_); ++i){
 		if((countries[i]->weight <= _WEAK_GROUP_) && ((cond->countries[i])->used == FALSE)){
@@ -178,12 +182,12 @@ int weakGroup(condPack * cond){
 		}
 	}
 	if(j == 0){
-		return FALSE;
+		return NULL;
 	}
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
 	cond->sets[*(cond->index)++] = ans;
-	return TRUE;
+	return cond;
 }
 /*Nombre: countryFree
 *
@@ -236,12 +240,12 @@ int countryFree( condPack * cond){
 *
 */	
 
-int noCondition(condPack * cond){
+void * noCondition(void * condi){
 	
 	int * countryAns = NULL;
 	int * countryAux;
 	int	amm, status;
-	
+	condPack * cond = condi;
 	status = countryFree(cond);
 	
 	countryAux = (cond->sets[*(cond->index)])->country;
@@ -250,7 +254,7 @@ int noCondition(condPack * cond){
 	srand(time(NULL));
 		
 	if(status){
-		return FALSE;
+		return NULL;
 	}else if(amm > 1){
 		*countryAns = countryAux[rand() % (amm)]; 
 	}else{
@@ -261,7 +265,6 @@ int noCondition(condPack * cond){
 	
 	(cond->sets[*(cond->index)])->countriesAmm = 1;
 	(cond->sets[*(cond->index)++])->country = countryAns;
-	return TRUE;
-
 	
-}
+	return cond;
+}   

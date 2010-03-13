@@ -1,48 +1,87 @@
-#include <stdlib.h>
-#include "../inc/group.h"
+#include "../inc/grouph.h"
 
 int main (void){
-	country *data;
-	country **countries;
-	condPack *condArgs, **aux;
-	subFixture *group;
-	int (**conditions)(country **countries, country *head) = NULL;
-	pthread_t *threads;
-	int i = 0, j = 0, k = 0, x = 0, y = 0, index = 0, reqCountry, freePt = 0;
+	
+	country *data = NULL;
+	condPack *condArgs;
+	set **aux = NULL;
+	subFixture *group = NULL;
+	void *buffer = NULL;
+	void *(**conditions)(void *condArgs) = NULL;
+	pthread_t *threads = NULL;
+	int i = 0, j = 0, k = 0, x = 0, y = 0, index = 0, reqCountry, freePt = 0, bufferSize = 0;
+	country **countriesTable = NULL;
+	
+	
+	perror("Entro a grouph");
+	read(_stdin_, &bufferSize, sizeof(int));
+	if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL ||
+		(data = malloc(sizeof(country))) == NULL){
+		perror("Error de memoria");
+		free(buffer);
+		return errno;
+	}
+	read(_stdin_, buffer, bufferSize);
+	
+	unserializeHead(data, buffer, bufferSize);
+	
+	free(buffer);
 	
 	if (data->sameContinent){
-		conditions = realloc(conditions, sizeof(void *) * (++i));
+		if ((conditions = realloc(conditions, sizeof(void *) * (++i))) == NULL){
+			perror("Error de memoria");
+			free(data);
+			return errno;
+		}	
 		conditions[i - 1] = sameContinent;
 	}
 	if (data->weakGroup){
-		conditions = realloc(conditions, sizeof(void *) * (++i));
+		if ((conditions = realloc(conditions, sizeof(void *) * (++i))) == NULL){
+			perror("Error de memoria");
+			free(conditions);
+			free(data);
+			return errno;
+		}
 		conditions[i - 1] = weakGroup;
 	}
 	if (data->champGroup){
-		conditions = realloc(conditions, sizeof(void *) * (++i));
+		if ((conditions = realloc(conditions, sizeof(void *) * (++i))) == NULL){
+			perror("Error de memoria");
+			free(conditions);
+			free(data);
+			return errno;
+		}
 		conditions[i - 1] = champGroup;
 	}
 	if (data->deathGroup){
-		conditions = realloc(conditions, sizeof(void *) * (++i));
+		if ((conditions = realloc(conditions, sizeof(void *) * (++i))) == NULL){
+			perror("Error de memoria");
+			free(conditions);
+			free(data);
+			return errno;
+		}
 		conditions[i - 1] = deathGroup;
 	}
 	
 	if ((condArgs = malloc(sizeof(condPack))) == NULL){
 		perror("Error de memoria");
+		free(conditions);
+		free(data);
 		return errno;
 	}
 	
-	condArgs->countries = countries;
+	condArgs->countries = countriesTable;
 	condArgs->head = data;
 	condArgs->index = &index;
 	if ((condArgs->sets = malloc(sizeof(void *) * i)) == NULL ||
 		(threads = malloc(sizeof(pthread_t) * i)) == NULL ||
 		(group = malloc(sizeof(subFixture))) == NULL ||
-		(group->countries = malloc(sizeof(void *))) == NULL){
+		(group->countries = malloc(sizeof(void *) * 4)) == NULL){
 			free(condArgs->sets);
 			free(threads);
 			free(group);
 			free(conditions);
+			free(data);
 			perror("Error de memoria");
 			return errno;
 	}
@@ -52,11 +91,11 @@ int main (void){
 	while (group->countriesAmm < 4){
 		if (i == 0){
 			noCondition(condArgs);
-			reqCountry = condArgs->sets[0]->countries[0];
+			reqCountry = condArgs->sets[0]->country[0];
 		}
 		else if (i == 1){
 			conditions[0](condArgs);
-			reqCountry = condArgs->sets[0]->countries[rand() % condArgs->sets[0]->countriesAmm];
+			reqCountry = condArgs->sets[0]->country[rand() % condArgs->sets[0]->countriesAmm];
 		}
 		else{
 			for (j = 0 ; j < i ; ++j){
@@ -68,7 +107,7 @@ int main (void){
 
 			if ((aux = malloc(sizeof(void *))) == NULL ||
 				(aux[0] = malloc(sizeof(subFixture))) == NULL ||			
-				(aux[0]->countries = malloc(sizeof(int *) * ((condArgs->sets)[0])->countriesAmm)) == NULL){
+				(aux[0]->country = malloc(sizeof(int *) * ((condArgs->sets)[0])->countriesAmm)) == NULL){
 					free(aux[0]);
 					free(aux);
 					free(conditions);
@@ -80,25 +119,26 @@ int main (void){
 					}
 					free(condArgs->sets);
 					free(condArgs);
+					free(data);
 					perror("Error de memoria");
 					return errno;
 				}
 
 			for (j = 0 ; j < ((condArgs->sets)[0])->countriesAmm ; ++j){
-				aux[0]->countries[j] = condArgs->sets[0]->countries[j]; 
+				((aux[0])->country)[j] = (((condArgs->sets)[0])->country)[j]; 
 			}
-			aux[0]->countriesAmm = j;
+			(aux[0])->countriesAmm = j;
 
 			for (j = 1 ; j < i ; ++j){	
 				if ((aux = realloc(aux, sizeof(void *) * (j + 1))) == NULL||
 					(aux[j] = malloc(sizeof(subFixture))) == NULL ||
-					(aux[j]->countries = malloc(sizeof(int) * aux[0]->countriesAmm)) == NULL){
-						for(freePt = 0 ; freePT <= j ; ++freePt){
-							free(aux[freePt]->countries);
+					(aux[j]->country = malloc(sizeof(int) * aux[0]->countriesAmm)) == NULL){
+						for(freePt = 0 ; freePt <= j ; ++freePt){
+							free(aux[freePt]->country);
 							free(aux[freePt]);
 						}
 						free(aux);
-						
+						free(data);
 						free(conditions);
 						free(threads);
 						free(group->countries);
@@ -113,13 +153,13 @@ int main (void){
 					}
 				y = 0; 
 				while (x < aux[j - 1]->countriesAmm && k < ((condArgs->sets)[j])->countriesAmm) {  
-					if (((aux[j - 1])->countries)[x] == (((condArgs->sets)[j])->countries)[k]) {  
-						aux[j]->countries[y] = ((aux[j - 1])->countries)[x];
+					if (((aux[j - 1])->country)[x] == (((condArgs->sets)[j])->country)[k]) {  
+						aux[j]->country[y] = ((aux[j - 1])->country)[x];
 						x++;  
 						k++;
 						y++;  
 					}  
-					else if (((aux[j])->countries)[x] < (((condArgs->sets)[j + 1])->countries)[k]) {  
+					else if (((aux[j])->country)[x] < (((condArgs->sets)[j + 1])->country)[k]) {  
 						x++;  
 					}  
 					else {  
@@ -127,28 +167,114 @@ int main (void){
 					}  
 				}
 			}
-			reqCountry = aux[j]->countries[rand() % aux[j]->countriesAmm];
+			reqCountry = aux[j]->country[rand() % aux[j]->countriesAmm];
 		}
 		
-		/*
-		Se pide a fifa reqCountry
-		Si lo concede, se agrega a group y se incrementa la cantidad de paises en el mismo
-		*/
+		serializeCountry(reqCountry, &buffer, &bufferSize);
+		
+		write(_stdout_, buffer, bufferSize);
+		read(_stdin_, &bufferSize, sizeof(int));
+		free(buffer);
+		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL){
+			perror("Error de memoria");
+			for (j = 0 ; j < i ; ++j){
+				free(condArgs->sets[j]->country);
+				free(condArgs->sets[j]);
+			}
+			for (x = 0 ; x < i ; ++ x){
+				free(aux[x]->country);
+				free(aux[x]);
+			}
+			free(condArgs->sets);
+			free(condArgs);
+			free(conditions);
+			free(threads);
+			free(data);
+			return errno;
+		}
+		read(_stdin_, buffer, bufferSize);
+		if (unserializeAnswer(buffer, bufferSize) == FALSE){
+			continue;
+		}
+		
+		group->countries[(group->countriesAmm)++] = countriesTable[reqCountry];
+		
+		free(buffer);
+		
 		for (j = 0 ; j < i ; ++j){
-			free(condArgs->sets[j]->countries);
+			free(condArgs->sets[j]->country);
 			free(condArgs->sets[j]);
 		}
 		for (x = 0 ; x < i ; ++ x){
-			free(aux[x]->countries);
+			free(aux[x]->country);
 			free(aux[x]);
 		}
 	}
-	/*
-	Se envia a fifa el subfixture terminado, o error de no haberse logrado
-	*/
+	
+	serializeCountry(-1, &buffer, &bufferSize);
+	write(_stdout_, buffer, bufferSize);
+	free(buffer);
+	serializeStruct(group, &buffer, &bufferSize);
+	write(_stdout_, buffer, bufferSize);
+	
+	free(buffer);
 	free(condArgs->sets);
 	free(condArgs);
 	free(conditions);
 	free(threads);
 	return 0;
+}
+
+int unserializeHead(country *head, void *buffer, int bufferSize){
+	tpl_node *tn;
+	int ret;
+	
+	tn = tpl_map("S(siiiiiiiii)", head);
+	ret = tpl_load(tn, TPL_MEM, head);
+	tpl_unpack(tn, 0);
+	tpl_free(tn);
+	
+	return ret;
+}
+
+int unserializeAnswer(void *buffer, int bufferSize){
+	tpl_node *tn;
+	int ret;
+	
+	tn = tpl_map("i", &ret);
+	ret = tpl_load(tn, TPL_MEM, buffer);
+	tpl_unpack(tn, 0);
+	tpl_free(tn);
+	
+	return ret;
+}
+
+int serializeCountry(int country, void **buffer, int *bufferSize){
+	tpl_node *tn;
+	int ret;
+	
+	tn = tpl_map("i", country);
+	tpl_pack(tn, 0);
+	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
+	tpl_free(tn);
+	
+	return ret;
+}
+
+int serializeStruct(subFixture *group, void **buffer, int *bufferSize){
+	tpl_node *tn;
+	int ret, i;
+	country countArr[4];
+	
+	for (i = 0 ; i < 4 ; ++i){
+		countArr[i] = *(group->countries[i]);
+	}
+	
+	tn = tpl_map("S(siiiiiiiii)#", countArr, 4);
+	tpl_pack(tn, 0);
+	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
+	tpl_free(tn);
+	
+	return ret;
+	
 }

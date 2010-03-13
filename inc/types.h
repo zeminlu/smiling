@@ -41,7 +41,7 @@ typedef struct{
 	} gate;
 
 typedef struct{
-	int countryAmm;
+	int countriesAmm;
 	country **countries;
 	}subFixture;
 

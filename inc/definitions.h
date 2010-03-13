@@ -8,10 +8,15 @@
 #ifndef _DECLARATIONS_
 #define _DECLARATIONS_
 
+#include "../inc/types.h"
+
 typedef	char * String;
 
 #define		TRUE		1
 #define		FALSE		!TRUE
+#define		_stdout_	1
+#define		_stdin_		0
+
 
 /* Gates */
 
