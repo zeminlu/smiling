@@ -6,7 +6,11 @@
  */
 #include "../inc/pipe.h"
 
-int main(){
+/*
+ *	Funcion encargada de leer el directorio de archivos de pipeDir, llamar a la funcion
+ *	que los parsea y finaliza enviando por IPC la tabla con los circuitos a gates.
+ */
+int initializeGates(){
 	
 	DIR *dp;
 	struct dirent *d = NULL;
@@ -85,7 +89,7 @@ int main(){
 	link(dirFile,procCopyDir);
 	unlink(dirFile);
 	
-	switch( fork() ){
+	/*switch( fork() ){
 		case 0:
 			execv("./gates.bin", NULL);
 			break;
@@ -95,7 +99,7 @@ int main(){
 		default:
 			wait(&gate);
 			break;
-	}
+	}*/
 	free(dirFile);
 	free(procCopyDir);
 	return 0;
@@ -248,9 +252,9 @@ void parseGatesTags( char *father, xmlNodePtr cur, circuitTable * circuit, int c
 		{
 			cur=cur->next;
 		}
-		if( curLevel == _MAX_GATES_LEVELS_ - 1 )
+		if( curLevel % _MAX_GATES_LEVELS_ == 1 )
 		{
-			circuit = (circuitTable*)realloc(circuit, sizeof(circuitTable) * curLevel * _MAX_GATES_LEVELS_ );
+			circuit = (circuitTable*)realloc(circuit, sizeof(circuitTable) * curLevel );
 		}
 		while( cur != NULL )
 		{
@@ -258,11 +262,11 @@ void parseGatesTags( char *father, xmlNodePtr cur, circuitTable * circuit, int c
 			if( !xmlIsBlankNode(cur) )
 			{
 				pos = (circuit[curLevel].eachLevel)->qtyGates;
-				if( (circuit[curLevel].eachLevel)->qtyGates == _MAX_GATES_LEVELS_ - 1 )
+				if( (circuit[curLevel].eachLevel)->qtyGates % _MAX_GATES_LEVELS_ == 1 )
 				{
 					
 					(circuit[curLevel].eachLevel)->gates = (gate*)realloc((circuit[curLevel].eachLevel)->gates, 
-															sizeof(gate) * pos * _MAX_GATES_LEVELS_);
+															sizeof(gate) * pos );
 				}
 				posExist = checkGateIsLoaded( circuit, (char*)cur->name, curLevel);
 				if( posExist != -1 )
