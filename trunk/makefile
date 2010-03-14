@@ -32,19 +32,17 @@ LDFLAGS = $(LIBRARIES) -o
 TARGET1 = main.bin
 OBJECTS1 = main.o
 TARGET2 = parallel.bin
-OBJECTS2 = parallel.o tpl.o
+OBJECTS2 = parallel.o tpl.o serializable.o
 TARGET3 = pipe.bin
 OBJECTS3 = pipe.o tpl.o serializable.o
 TARGET4 = fifaGen.bin
 OBJECTS4 = fifaGen.o conditions.o
 TARGET5 = fifa.bin
-OBJECTS5 = fifa.o tpl.o
+OBJECTS5 = fifa.o tpl.o serializable.o
 TARGET6 = grouph.bin
-OBJECTS6 = grouph.o tpl.o conditions.o
+OBJECTS6 = grouph.o tpl.o conditions.o serializable.o
 TARGET7 = gates.bin
-OBJECTS7 = gates.o tpl.o
-TARGET8 = serializable.bin
-OBJECT8 = serializable.o tpl.o
+OBJECTS7 = gates.o tpl.o serializable.o
 ###############################################################################
 .SILENT:
 .PHONY: clean

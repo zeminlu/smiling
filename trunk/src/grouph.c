@@ -9,9 +9,8 @@ int main (void){
 	void *buffer = NULL;
 	void *(**conditions)(void *condArgs) = NULL;
 	pthread_t *threads = NULL;
-	int i = 0, j = 0, k = 0, x = 0, y = 0, index = 0, reqCountry, freePt = 0, bufferSize = 0;
+	int i = 0, j = 0, k = 0, x = 0, y = 0, index = 0, reqCountry, freePt = 0, bufferSize = 0, countriesTableEntriesAmm;
 	country **countriesTable = NULL;
-	
 	
 	read(_stdin_, &bufferSize, sizeof(int));
 	if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL ||
@@ -22,7 +21,7 @@ int main (void){
 	}
 	read(_stdin_, buffer, bufferSize);
 	
-	unserializeHead(data, buffer, bufferSize);
+	unserializeCountryStruct(buffer, bufferSize, data);
 	
 	free(buffer);
 	fprintf(stderr, "groupH: %s, seccion: comienzo\n", data->name);
@@ -93,7 +92,6 @@ int main (void){
 	while (group->countriesAmm < 4){
 		fprintf(stderr, "groupH: %s, seccion: Comienzo de While\n", data->name);
 		if (i == 0){
-			fprintf(stderr, "groupH: %s, seccion: pre nocondition\n", data->name);
 			noCondition(condArgs);
 			reqCountry = condArgs->sets[0]->country[0];
 		}
@@ -180,7 +178,7 @@ int main (void){
 			fprintf(stderr, "groupH: %s, seccion: reqCountry = %d\n", data->name, reqCountry);
 		}
 		
-		serializeCountry(reqCountry, &buffer, &bufferSize);
+		serializeInteger(&buffer, &bufferSize, reqCountry);
 		
 		write(_stdout_, buffer, bufferSize);
 		read(_stdin_, &bufferSize, sizeof(int));
@@ -203,7 +201,9 @@ int main (void){
 			return errno;
 		}
 		read(_stdin_, buffer, bufferSize);
-		if (unserializeAnswer(buffer, bufferSize) == FALSE){
+		
+		if (unserializeInteger(buffer, bufferSize) == FALSE){
+			countriesTable[reqCountry]->used = TRUE;
 			continue;
 		}
 		
@@ -221,10 +221,10 @@ int main (void){
 		}
 	}
 	
-	serializeCountry(-1, &buffer, &bufferSize);
+	serializeInteger(&buffer, &bufferSize, -1);
 	write(_stdout_, buffer, bufferSize);
 	free(buffer);
-	serializeStruct(group, &buffer, &bufferSize);
+	serializeSubfixture(&buffer, &bufferSize, group);
 	write(_stdout_, buffer, bufferSize);
 	
 	free(buffer);
@@ -233,58 +233,4 @@ int main (void){
 	free(conditions);
 	free(threads);
 	return 0;
-}
-
-int unserializeHead(country *head, void *buffer, int bufferSize){
-	tpl_node *tn;
-	int ret;
-	
-	tn = tpl_map("S(c#iiiiiiiii)", head, 45);
-	ret = tpl_load(tn, TPL_MEM, buffer, bufferSize);
-	tpl_unpack(tn, 0);
-	tpl_free(tn);
-	
-	return ret;
-}
-
-int unserializeAnswer(void *buffer, int bufferSize){
-	tpl_node *tn;
-	int ret;
-	
-	tn = tpl_map("i", &ret);
-	ret = tpl_load(tn, TPL_MEM, buffer, bufferSize);
-	tpl_unpack(tn, 0);
-	tpl_free(tn);
-	
-	return ret;
-}
-
-int serializeCountry(int country, void **buffer, int *bufferSize){
-	tpl_node *tn;
-	int ret;
-	
-	tn = tpl_map("i", &country);
-	tpl_pack(tn, 0);
-	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
-	tpl_free(tn);
-	
-	return ret;
-}
-
-int serializeStruct(subFixture *group, void **buffer, int *bufferSize){
-	tpl_node *tn;
-	int ret, i;
-	country countArr[4];
-	
-	for (i = 0 ; i < 4 ; ++i){
-		countArr[i] = *(group->countries[i]);
-	}
-	
-	tn = tpl_map("S(c#iiiiiiiii)#", countArr, 45, 4);
-	tpl_pack(tn, 0);
-	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
-	tpl_free(tn);
-	
-	return ret;
-	
 }

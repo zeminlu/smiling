@@ -13,8 +13,7 @@
 #include "../inc/types.h"
 #include "../inc/definitions.h"
 #include "../inc/tpl.h"
-
-int serializeStruct(country *str, void **buffer, int *bufferSize);
+#include "../inc/serializable.h"
 
 int getFilesAmm (DIR *dp);
 

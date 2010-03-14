@@ -13,13 +13,6 @@
 #include "../inc/conditions.h"
 #include "../inc/types.h"
 #include "../inc/tpl.h"
-
-int serializeCountry(int country, void **buffer, int *bufferSize);
-
-int serializeStruct(subFixture *group, void **buffer, int *bufferSize);
-
-int unserializeAnswer(void *buffer, int bufferSize);
-
-int unserializeHead(country *head, void *buffer, int bufferSize);
+#include "../inc/serializable.h"
 
 #endif
