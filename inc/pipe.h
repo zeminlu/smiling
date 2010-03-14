@@ -28,6 +28,7 @@ typedef struct{
 	int	totalLevels;
 }circuitTable;
 
+int initializeGates();
 int getFilesAmm (DIR *dp);
 
 circuitTable * parseXMLGate( char * docName );
