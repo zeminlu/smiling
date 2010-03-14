@@ -98,6 +98,7 @@ int main(){
 				wait(&fifa);
 				break;
 		}
+		close(auxP[1]);
 	}
 	return 0;
 }

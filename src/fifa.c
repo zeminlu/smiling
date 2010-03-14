@@ -6,7 +6,6 @@ int main (void){
 }
 
 int fifoServer (){
-	
 	int i, j, bufferSize, status, **p = NULL, auxP1[2], auxP2[2], reqCountry = 0, headsAmm = 0, flag = FALSE, countriesTableEntriesAmm;
 	pid_t *pids, actPid;
 	void *buffer = NULL;
@@ -88,6 +87,14 @@ int fifoServer (){
 					pids[headsAmm++] = actPid;
 					close(auxP1[1]);
 					close(auxP2[0]);
+					
+					write(auxP2[1], &countriesTableEntriesAmm, sizeof(int));
+					for (j = 0 ; j < i ; ++j){
+						serializeCountryStruct(&buffer, &bufferSize, countriesTable[j]);
+						write(auxP2[1], &bufferSize, sizeof(int));
+						write(auxP2[1], buffer, bufferSize);
+						free(buffer);	
+					}
 					serializeCountryStruct(&buffer, &bufferSize, countriesTable[i]);
 					write(auxP2[1], &bufferSize, sizeof(int));
 					write(auxP2[1], buffer, bufferSize);
@@ -154,6 +161,7 @@ int fifoServer (){
 			return status;
 		}
 	}
+	
 	/*
 	Guardar a archivo la solucion
 	*/
@@ -172,7 +180,8 @@ int fifoServer (){
 		free(fixture[j]);
 	}
 	free(fixture);
-	
+	close(_stdin_);
+	close(_stdout_);
 	return 0;
 }
 
