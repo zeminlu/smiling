@@ -86,7 +86,6 @@ int main (void){
 	}
 	group->countries[0] = data;
 	group->countriesAmm = 1;
-	
 	fprintf(stderr, "groupH: %s, seccion: Pre-While\n", data->name);
 	
 	while (group->countriesAmm < 4){
@@ -102,6 +101,7 @@ int main (void){
 		else{
 			fprintf(stderr, "groupH: %s, seccion: Pre-threadin\n", data->name);
 			for (j = 0 ; j < i ; ++j){
+				
 				pthread_create(&threads[j], NULL, conditions[j], (void *)(condArgs));
 			}
 			for (j = 0 ; j < i ; ++j){
