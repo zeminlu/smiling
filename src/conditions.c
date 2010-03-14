@@ -201,6 +201,8 @@ int countryFree( condPack * cond){
 	int i , j;	
 	country **countries;
 	set * ans;
+	
+	fprintf(stderr, "groupH: %s, seccion: entro a countryFree\n", cond->head->name);	
 		
 	countries = cond->countries;
 	ans = malloc(sizeof(set));
@@ -216,18 +218,25 @@ int countryFree( condPack * cond){
 		perror("Memoria insuficiente, para crear el conjunto de paises libres");
 		return errno;
 	}
+	
+	fprintf(stderr, "groupH: %s, seccion: countryFree pre seleccion\n", cond->head->name);
+	
 	for(i = 0, j= 0; (i < _MAX_COUNTRIES_); ++i){
 		if((cond->countries[i])->used == FALSE){
 			countryInt[j] = i;
 			++j;
 		}
 	}
+	
+	fprintf(stderr, "groupH: %s, seccion: countryFree post seleccion\n", cond->head->name);
+	
 	if(j == 0){
 		return FALSE;
 	}else{
 		ans->countriesAmm = j;
 		ans->country = realloc(countryInt, sizeof(int)*(j));
-		cond->sets[*(cond->index)] = ans;
+		fprintf(stderr, "groupH: %s, seccion: pre asignacion de ans, index = %d\n", cond->head->name, *(cond->index));
+		cond->sets[*(cond->index)++] = ans;
 		return TRUE;
 	}
 
@@ -246,7 +255,12 @@ void * noCondition(void * condi){
 	int * countryAux;
 	int	amm, status;
 	condPack * cond = condi;
+	
+	fprintf(stderr, "groupH: %s, seccion: pre countryFree\n", ((condPack *)condi)->head->name);
+	
 	status = countryFree(cond);
+	
+	fprintf(stderr, "groupH: %s, seccion: post countryFree\n", ((condPack *)condi)->head->name);
 	
 	countryAux = (cond->sets[*(cond->index)])->country;
 	amm = (cond->sets[*(cond->index)])->countriesAmm;

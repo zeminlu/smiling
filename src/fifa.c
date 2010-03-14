@@ -113,7 +113,6 @@ int fifoServer (){
 				printf("Por desserializar reqCountry\n");
 				reqCountry = unserializeCountry(buffer, bufferSize);
 				printf("reqCountry desserializado\n");
-				getchar();
 				if (reqCountry < 0){
 						read(p[j][0], &bufferSize, sizeof(int));
 						read(p[j][0], buffer, bufferSize);

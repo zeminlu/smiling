@@ -25,6 +25,7 @@ int main (void){
 	unserializeHead(data, buffer, bufferSize);
 	
 	free(buffer);
+	fprintf(stderr, "groupH: %s, seccion: comienzo\n", data->name);
 	
 	if (data->sameContinent){
 		if ((conditions = realloc(conditions, sizeof(void *) * (++i))) == NULL){
@@ -85,10 +86,14 @@ int main (void){
 			return errno;
 	}
 	group->countries[0] = data;
-	++(group->countriesAmm);
+	group->countriesAmm = 1;
+	
+	fprintf(stderr, "groupH: %s, seccion: Pre-While\n", data->name);
 	
 	while (group->countriesAmm < 4){
+		fprintf(stderr, "groupH: %s, seccion: Comienzo de While\n", data->name);
 		if (i == 0){
+			fprintf(stderr, "groupH: %s, seccion: pre nocondition\n", data->name);
 			noCondition(condArgs);
 			reqCountry = condArgs->sets[0]->country[0];
 		}
@@ -97,6 +102,7 @@ int main (void){
 			reqCountry = condArgs->sets[0]->country[rand() % condArgs->sets[0]->countriesAmm];
 		}
 		else{
+			fprintf(stderr, "groupH: %s, seccion: Pre-threadin\n", data->name);
 			for (j = 0 ; j < i ; ++j){
 				pthread_create(&threads[j], NULL, conditions[j], (void *)(condArgs));
 			}
@@ -122,7 +128,7 @@ int main (void){
 					perror("Error de memoria");
 					return errno;
 				}
-
+			fprintf(stderr, "groupH: %s, seccion: precarga de head\n", data->name);
 			for (j = 0 ; j < ((condArgs->sets)[0])->countriesAmm ; ++j){
 				((aux[0])->country)[j] = (((condArgs->sets)[0])->country)[j]; 
 			}
@@ -150,6 +156,9 @@ int main (void){
 						perror("Error de memoria");
 						return errno;
 					}
+				
+				fprintf(stderr, "groupH: %s, seccion: preinterseccion\n", data->name);
+				
 				y = 0; 
 				while (x < aux[j - 1]->countriesAmm && k < ((condArgs->sets)[j])->countriesAmm) {  
 					if (((aux[j - 1])->country)[x] == (((condArgs->sets)[j])->country)[k]) {  
@@ -166,7 +175,9 @@ int main (void){
 					}  
 				}
 			}
+			fprintf(stderr, "groupH: %s, seccion: preasignacion de reqCountry\n", data->name);
 			reqCountry = aux[j]->country[rand() % aux[j]->countriesAmm];
+			fprintf(stderr, "groupH: %s, seccion: reqCountry = %d\n", data->name, reqCountry);
 		}
 		
 		serializeCountry(reqCountry, &buffer, &bufferSize);
