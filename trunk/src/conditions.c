@@ -221,8 +221,8 @@ int countryFree( condPack * cond){
 	
 	fprintf(stderr, "groupH: %s, seccion: countryFree pre seleccion\n", cond->head->name);
 	
-	for(i = 0, j= 0; (i < _MAX_COUNTRIES_); ++i){
-		if((cond->countries[i])->used == FALSE){
+	for(i = 0, j= 0; i < _MAX_COUNTRIES_ ; ++i){
+		if(((cond->countries)[i])->used == FALSE){
 			countryInt[j] = i;
 			++j;
 		}
