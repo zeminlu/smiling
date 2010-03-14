@@ -252,7 +252,7 @@ int serializeCountry(int country, void **buffer, int *bufferSize){
 	tpl_node *tn;
 	int ret;
 	
-	tn = tpl_map("i", country);
+	tn = tpl_map("i", &country);
 	tpl_pack(tn, 0);
 	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
 	tpl_free(tn);
