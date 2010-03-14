@@ -89,7 +89,7 @@ int main(){
 				close(auxP[0]);
 				write(auxP[1], &countriesTableEntriesAmm, sizeof(int));
 				for (j = 0 ; j < i ; ++j){
-					serializeStruct(countriesTable[j], &buffer, &bufferSize);
+					serializeCountryStruct(&buffer, &bufferSize, countriesTable[j]);
 					write(auxP[1], &bufferSize, sizeof(int));
 					write(auxP[1], buffer, bufferSize);
 					free(buffer);	
@@ -100,18 +100,6 @@ int main(){
 		}
 	}
 	return 0;
-}
-
-int serializeStruct(country *str, void **buffer, int *bufferSize){
-	tpl_node *tn;
-	int ret;
-	
-	tn = tpl_map("S(c#iiiiiiiii)", str, 45);
-	tpl_pack(tn, 0);
-	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
-	tpl_free(tn);
-	
-	return ret;
 }
 
 int getFilesAmm (DIR *dp){

@@ -35,7 +35,7 @@ int fifoServer (){
 		}
 		
 		read(_stdin_, buffer, bufferSize);
-		unserializeStruct(buffer, bufferSize, countriesTable[i]);
+		unserializeCountryStruct(buffer, bufferSize, countriesTable[i]);
 		free(buffer);		
 	}
 	
@@ -88,7 +88,7 @@ int fifoServer (){
 					pids[headsAmm++] = actPid;
 					close(auxP1[1]);
 					close(auxP2[0]);
-					serializeHead(countriesTable[i], &buffer, &bufferSize);
+					serializeCountryStruct(&buffer, &bufferSize, countriesTable[i]);
 					write(auxP2[1], &bufferSize, sizeof(int));
 					write(auxP2[1], buffer, bufferSize);
 					break;
@@ -111,7 +111,7 @@ int fifoServer (){
 				read(p[j][0], &bufferSize, sizeof(int));
 				read(p[j][0], buffer, bufferSize);
 				printf("Por desserializar reqCountry\n");
-				reqCountry = unserializeCountry(buffer, bufferSize);
+				reqCountry = unserializeInteger(buffer, bufferSize);
 				printf("reqCountry desserializado\n");
 				if (reqCountry < 0){
 						read(p[j][0], &bufferSize, sizeof(int));
@@ -125,11 +125,11 @@ int fifoServer (){
 				}
 				else{
 					if (countriesTable[reqCountry]->used){
-						serializeAnswer(FALSE, &buffer, &bufferSize);
+						serializeInteger(&buffer, &bufferSize, FALSE);
 					}
 					else{
 						countriesTable[reqCountry]->used = TRUE;
-						serializeAnswer(TRUE, &buffer, &bufferSize);	
+						serializeInteger(&buffer, &bufferSize, TRUE);	
 					}
 					write(p[j][1], &bufferSize, sizeof(int));
 					write(p[j][1], buffer, bufferSize);
@@ -197,7 +197,7 @@ int msqServer(){
 					break;
 				case 0:
 					execv("./grouph.bin", NULL);
-					serializeHead(countriesTable[i], &buffer, &bufferSize);
+					serializeCountryStruct(&buffer, &bufferSize, countriesTable[i]);
 					/*Se le pasa a grouph el buffer que contiene al head actual*/
 					break;
 				default:
@@ -242,7 +242,7 @@ int shmServer(){
 					break;
 				case 0:
 					execv("./grouph.bin", NULL);
-					serializeHead(countriesTable[i], &buffer, &bufferSize);
+					serializeCountryStruct(&buffer, &bufferSize, countriesTable[i]);
 					/*Se le pasa a grouph el buffer que contiene al head actual*/
 					break;
 				default:
@@ -287,7 +287,7 @@ int sckServer(){
 					break;
 				case 0:
 					execv("./grouph.bin", NULL);
-					serializeHead(countriesTable[i], &buffer, &bufferSize);
+					serializeCountryStruct(&buffer, &bufferSize, countriesTable[i]);
 					/*Se le pasa a grouph el buffer que contiene al head actual*/
 					break;
 				default:
@@ -309,76 +309,4 @@ int sckServer(){
 	}
 	
 	return 0;
-}
-
-int unserializeTable(country **countriesTable, int amm, void *buffer, int bufferSize){
-	tpl_node *tn;
-	int ret;
-	
-	tn = tpl_map("S(c#iiiiiiiii)#", countriesTable, 45, 4);
-	ret = tpl_load(tn, TPL_MEM, buffer, bufferSize);
-	tpl_unpack(tn, 0);
-	tpl_free(tn);
-	
-	return ret;
-}
-
-int unserializeSubfixture(void *buffer, int bufferSize, country **subFixture){
-	tpl_node *tn;
-	int ret;
-	
-	tn = tpl_map("S(c#iiiiiiiii)#", *subFixture, 45, 4);
-	ret = tpl_load(tn, TPL_MEM, buffer, bufferSize);
-	tpl_unpack(tn, 0);
-	tpl_free(tn);
-	
-	return ret;
-}
-
-int unserializeStruct(void *buffer, int bufferSize, country *subFixture){
-	tpl_node *tn;
-	int ret;
-	
-	tn = tpl_map("S(c#iiiiiiiii)", subFixture, 45);
-	ret = tpl_load(tn, TPL_MEM, buffer, bufferSize);
-	tpl_unpack(tn, 0);
-	tpl_free(tn);
-	
-	return ret;
-}
-
-int serializeAnswer(int status, void **buffer, int *bufferSize){
-	tpl_node *tn;
-	int ret = 0;
-	
-	tn = tpl_map("i", status);
-	tpl_pack(tn, 0);
-	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
-	tpl_free(tn);
-	
-	return ret;
-}
-
-int unserializeCountry(void *buffer, int bufferSize){
-	tpl_node *tn;
-	int ret;
-	
-	tn = tpl_map("i", &ret);
-	ret = tpl_load(tn, TPL_MEM, buffer, bufferSize);
-	tpl_unpack(tn, 0);
-	tpl_free(tn);
-	
-	return ret;
-}
-
-int serializeHead(country *head, void **buffer, int *bufferSize){
-	tpl_node *tn;
-	int ret;
-	
-	tn = tpl_map("S(c#iiiiiiiii)", head, 45);
-	tpl_pack(tn, 0);
-	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
-	tpl_free(tn);
-	
-	return ret;
 }

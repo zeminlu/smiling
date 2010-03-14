@@ -14,19 +14,8 @@
 #include "../inc/definitions.h"
 #include "../inc/types.h"
 #include "../inc/tpl.h"
+#include "../inc/serializable.h"
 
 int fifoServer();
-
-int unserializeTable(country **countriesTable, int amm, void *buffer, int bufferSize);
-
-int serializeHead(country *head, void **buffer, int *bufferSize);
-
-int unserializeSubfixture(void *buffer, int bufferSize, country **subFixture);
-
-int unserializeStruct(void *buffer, int bufferSize, country *subFixture);
-
-int serializeAnswer(int status, void **buffer, int *bufferSize);
-
-int unserializeCountry(void *buffer, int bufferSize);
 
 #endif
