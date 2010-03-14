@@ -14,7 +14,7 @@
 
 #include "../inc/definitions.h"
 #include "../inc/types.h"
-#include "../int/serializable.h"
+#include "../inc/serializable.h"
 
 typedef int (*handler)(int in1,int in2);
 
@@ -31,6 +31,7 @@ typedef struct{
 }circuitTable;
 
 int initializeGates();
+void freeCircuits( circuitTable **table, int qtyFile );
 int getFilesAmm (DIR *dp);
 
 circuitTable * parseXMLGate( char * docName );

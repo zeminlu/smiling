@@ -19,7 +19,7 @@ int main(void){
 	int i,j,gate = 0, qtyFiles = 0, pos = 0, pipeChannel[2], tLevel = 0, bufferSize;
 	FILE *dataFile = NULL;
 	circuitTable **table = NULL;
-	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;
+	char *dir = "./pipeDir/", *procDir = "./processed/", *dirFile = NULL, *procCopyDir = NULL;
 	void * buffer;
 	
 	if ((dp = opendir(dir)) == NULL){
@@ -114,12 +114,12 @@ int main(void){
 			for( i = 0 ; i < pos ; ++i )
 			{
 				close(pipeChannel[0]);
-				tLevel = table[i]->(circuit[0].totalLevels);
+				tLevel = table[i]->totalLevels;
 				write(pipeChannel[1], &(tLevel), sizeof(int) );
 				for( j = 0 ; j < tLevel ; ++j )
 				{
-					serializeGate( ((table[i])->circuit[i]).eachLevel->gates, &buffer, &bufferSize);
-					write( pipeChannel[1], ((table[i])->circuit[i]).eachLevel->qtyFiles, sizeof(int) );
+					serializeGate( ((table[i])->eachLevel)->gates, &buffer, &bufferSize);
+					write( pipeChannel[1], &(((table[i])->eachLevel)->qtyGates), sizeof(int) );
 					write( pipeChannel[1], buffer, bufferSize);
 					free(buffer);
 				}
@@ -144,11 +144,10 @@ void freeCircuits( circuitTable **table, int qtyFile )
 	
 	for( i = 0 ; i < qtyFile ; ++i )
 	{
-		for( j = 0 ; j < ((table[i])->circuit[0]).totalLevels ; ++j )
+		for( j = 0 ; j < table[i]->totalLevels ; ++j )
 		{
-			free( (((table[i])->circuit[j]).eachLevel)->gates );
-			free( ((table[i])->circuit[j]).eachLevel );
-			free( ((table[i])->circuit[j]) );
+			free( ((table[i])->eachLevel)->gates );
+			free( table[i]->eachLevel );
 		}
 		free( table[i] );
 	}
