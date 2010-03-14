@@ -1,6 +1,9 @@
 #ifndef TYPES_H_
 #define TYPES_H_
 
+#include <pthread.h>
+
+
 typedef struct{
 	int countriesAmm;
 	int *country;
@@ -29,6 +32,7 @@ typedef struct{
 	country *head;
 	int *index;
 	set **sets;
+	int maxCountries;
 	}condPack;
 	
 typedef struct{
@@ -43,5 +47,17 @@ typedef struct{
 	int countriesAmm;
 	country **countries;
 	}subFixture;
+
+typedef struct{
+	pthread_t index;
+	void *(**conditions)(void *condArgs);
+	int type;
+	}threadsStruct;
+	
+typedef struct{
+	threadsStruct * threadsTable;
+	int conditionsAmm;
+	}conditions;
+
 
 #endif
