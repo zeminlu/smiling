@@ -84,7 +84,7 @@ int serializeInteger(void **buffer, int *bufferSize, int number){
 	tpl_node *tn;
 	int ret = 0;
 	
-	tn = tpl_map("i#", number, 1);
+	tn = tpl_map("i#", &number, 1);
 	tpl_pack(tn, 0);
 	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
 	tpl_free(tn);

@@ -197,13 +197,11 @@ int main (void){
 					}  
 				}
 			}
-			fprintf(stderr, "groupH: %s, seccion: preasignacion de reqCountry\n", data->name);
 			reqCountry = aux[j]->country[rand() % aux[j]->countriesAmm];
-			fprintf(stderr, "groupH: %s, seccion: reqCountry = %d\n", data->name, reqCountry);
 		}
 		
 		serializeInteger(&buffer, &bufferSize, reqCountry);
-		
+		write(_stdout_, &bufferSize, sizeof(int));
 		write(_stdout_, buffer, bufferSize);
 		read(_stdin_, &bufferSize, sizeof(int));
 		free(buffer);
