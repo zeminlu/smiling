@@ -4,7 +4,7 @@
  *	de cada IPC.
  */
 
-#include "../int/serializable.h"
+#include "../inc/serializable.h"
 
 /*
  *	Serializa el circuito por completo.
@@ -14,7 +14,7 @@
  *		- El tamaño del buffer
  */
 
-int serializeGate( gates *gate, void **buffer, int *bufferSize)
+int serializeGate( gate *gate, void **buffer, int *bufferSize)
 {
 	tpl_node *tn;
 	int ret;

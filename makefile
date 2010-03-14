@@ -34,7 +34,7 @@ OBJECTS1 = main.o
 TARGET2 = parallel.bin
 OBJECTS2 = parallel.o tpl.o
 TARGET3 = pipe.bin
-OBJECTS3 = pipe.o tpl.o
+OBJECTS3 = pipe.o tpl.o serializable.o
 TARGET4 = fifaGen.bin
 OBJECTS4 = fifaGen.o conditions.o
 TARGET5 = fifa.bin
@@ -43,6 +43,8 @@ TARGET6 = grouph.bin
 OBJECTS6 = grouph.o tpl.o conditions.o
 TARGET7 = gates.bin
 OBJECTS7 = gates.o tpl.o
+TARGET8 = serializable.bin
+OBJECT8 = serializable.o tpl.o
 ###############################################################################
 .SILENT:
 .PHONY: clean
@@ -84,6 +86,11 @@ $(TARGET7): $(OBJECTS7)
 	$(LD) $(LDFLAGS) $(OUTPUT_DIR)$@ $^ 
 	@echo "Done."
 
+$(TARGET8): $(OBJECTS8)
+	@echo "Linking" $@"..."
+	$(LD) $(LDFLAGS) $(OUTPUT_DIR)$@ $^ 
+	@echo "Done."
+
 %.o: %.c
 	@echo "Compiling" $< "into" $@...
 	$(COMPILE.c) $@ $<
@@ -99,6 +106,7 @@ grouph.o: grouph.c grouph.h
 gates.o: gates.c gates.h
 tpl.o: tpl.c tpl.h
 definitions.o: definitions.c definitions.h
+serializable.o: serializable.c serializable.h
 
 cleanObjects:
 	@echo "Clearing Objects..."
