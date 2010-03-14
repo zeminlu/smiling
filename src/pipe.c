@@ -4,22 +4,24 @@
  *			Programa encargado de verificar cuando se agrega un archivo en el directorio
  *			pipeDir.
  */
+
 #include "../inc/pipe.h"
 
 /*
  *	Funcion encargada de leer el directorio de archivos de pipeDir, llamar a la funcion
  *	que los parsea y finaliza enviando por IPC la tabla con los circuitos a gates.
  */
+
 int main(void){
 	
 	DIR *dp;
 	struct dirent *d = NULL;
-	int i, qtyFiles = 0, pos = 0;
+	int i,j,gate = 0, qtyFiles = 0, pos = 0, pipeChannel[2], tLevel = 0, bufferSize;
 	FILE *dataFile = NULL;
 	circuitTable **table = NULL;
-	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir;
+	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;
+	void * buffer;
 	
-
 	if ((dp = opendir(dir)) == NULL){
 		perror("No se puede abrir el directorio\n");
 		return errno;
@@ -28,16 +30,20 @@ int main(void){
 		sleep(1);
 		rewinddir(dp);
 	}
+	sleep(2);
+	rewinddir(dp);
+	
 	qtyFiles = getFilesAmm(dp);
 	printf("qtyFiles: %d\n", qtyFiles);
 	
-	if( (table = (circuitTable**)malloc( sizeof(circuitTable*) * qtyFiles)) == NULL )
+	if( (table = (circuitTable**)malloc( sizeof(circuitTable*) * (qtyFiles - 3))) == NULL )
 	{
 		closedir(dp);
 		perror("Error en la alocacion de memoria de table\n");
 		return errno;	
 	}
-	for( i = 0 ; i < qtyFiles ; ++i )
+	
+	for( i = 0 ; i < qtyFiles - 3 ; ++i )
 	{
 		if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable))) == NULL )
 		{
@@ -46,63 +52,106 @@ int main(void){
 			return errno;	
 		}
 	}
+	
 	rewinddir(dp);
-	while( getFilesAmm(dp) > 3 && (d = readdir(dp)) )
+	while( getFilesAmm(dp) > 3 )
 	{
-		printf("%s\n", d->d_name );
-		if(d->d_ino == 0 )
+		rewinddir(dp);
+		while( (d = readdir(dp)) )
 		{
-			continue;
-		}
-		if (strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0 || strcmp(d->d_name, ".svn") == 0){
-			continue;
-		}
-		else{
-			if( ( dirFile = (char*)malloc(sizeof(char) + strlen(dir) + strlen(d->d_name) + 1 )) == NULL )
+			printf("%s\n", d->d_name );
+			if(d->d_ino == 0 )
+			{
+				continue;
+			}
+			if (strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0 || strcmp(d->d_name, ".svn") == 0){
+				continue;
+			}
+			else{
+				if( ( dirFile = (char*)malloc(sizeof(char) + strlen(dir) + strlen(d->d_name) + 1 )) == NULL )
+				{
+					closedir(dp);
+					perror("Error en la alocacion de memoria\n");
+					return errno;
+				}
+				strcpy(dirFile, dir);
+				strcat(dirFile, d->d_name);
+				if( (dataFile = fopen(dirFile, "r")) ==  NULL )
+				{
+					closedir(dp);
+					perror("No se pudo abrir el archivo de las compuertas\n");
+					return errno;
+				}
+				table[pos++] = parseXMLGate( dirFile);
+			}
+			
+			if( ( procCopyDir = (char*)realloc(procCopyDir, sizeof(char) + strlen(procDir) + strlen(d->d_name) + 1 )) == NULL )
 			{
 				closedir(dp);
 				perror("Error en la alocacion de memoria\n");
 				return errno;
 			}
-			strcpy(dirFile, dir);
-			strcat(dirFile, d->d_name);
-			if( (dataFile = fopen(dirFile, "r")) ==  NULL )
-			{
-				closedir(dp);
-				perror("No se pudo abrir el archivo de las compuertas\n");
-				return errno;
-			}
-			table[pos++] = parseXMLGate( dirFile);
-			
-			/* Aca hay que cargar el archivo de las compuertas */
+			strcpy(procCopyDir,procDir);
+			strcat(procCopyDir,d->d_name);
+			fclose( dataFile );
+			link(dirFile,procCopyDir);
+			unlink(dirFile);
 		}
 	}
-	if( ( procCopyDir = (char*)malloc(sizeof(char) + strlen(procDir) + strlen(d->d_name) + 1 )) == NULL )
-	{
-		closedir(dp);
-		perror("Error en la alocacion de memoria\n");
-		return errno;
-	}
-	strcpy(procCopyDir,procDir);
-	strcat(procCopyDir,d->d_name);
-	fclose( dataFile );
-	link(dirFile,procCopyDir);
-	unlink(dirFile);
 	
-	/*switch( fork() ){
-		case 0:
+	pipe(pipeChannel);
+	
+	switch( fork() ){
+		case _FORK_SON_:
+			close(pipeChannel[1]);
+			dup2(pipeChannel[0], 0);
 			execv("./gates.bin", NULL);
 			break;
-		case -1:
+		case _FORK_ERROR_:
 			perror("Error en el fork del pipeline\n");
 			break;
 		default:
+			for( i = 0 ; i < pos ; ++i )
+			{
+				close(pipeChannel[0]);
+				tLevel = table[i]->(circuit[0].totalLevels);
+				write(pipeChannel[1], &(tLevel), sizeof(int) );
+				for( j = 0 ; j < tLevel ; ++j )
+				{
+					serializeGate( ((table[i])->circuit[i]).eachLevel->gates, &buffer, &bufferSize);
+					write( pipeChannel[1], ((table[i])->circuit[i]).eachLevel->qtyFiles, sizeof(int) );
+					write( pipeChannel[1], buffer, bufferSize);
+					free(buffer);
+				}
+			}
 			wait(&gate);
 			break;
-	}*/
+	}
+	
 	free(dirFile);
 	free(procCopyDir);
+	freeCircuits(table, pos);
 	return 0;
+}
+
+/*
+ *	Libera toda la lista de circuitos levantados
+ */
+
+void freeCircuits( circuitTable **table, int qtyFile )
+{
+	int i,j;
+	
+	for( i = 0 ; i < qtyFile ; ++i )
+	{
+		for( j = 0 ; j < ((table[i])->circuit[0]).totalLevels ; ++j )
+		{
+			free( (((table[i])->circuit[j]).eachLevel)->gates );
+			free( ((table[i])->circuit[j]).eachLevel );
+			free( ((table[i])->circuit[j]) );
+		}
+		free( table[i] );
+	}
 }
 
 /*
@@ -197,6 +246,7 @@ circuitTable * parseCircuit( xmlDocPtr doc, xmlNodePtr cur )
 			return NULL;
 		}
 		circuit[i].level = i;
+		circuit[i].curLevel = 0;
 	}
 	for( i = 0; i < _MAX_GATES_LEVELS_ ; ++i)
 	{
@@ -228,7 +278,7 @@ circuitTable * parseCircuit( xmlDocPtr doc, xmlNodePtr cur )
 		}
 		cur = cur->next;
 	}
-	printCircuitTable(circuit);
+	/*printCircuitTable(circuit);*/
 	return circuit;
 }
 
@@ -295,7 +345,7 @@ void parseGatesTags( char *father, xmlNodePtr cur, circuitTable * circuit, int c
 					(circuit[curLevel].eachLevel)->gates[pos].output = _INVALID_OUTPUT_;
 
 					type = (xmlChar*)xmlGetProp(cur,(xmlChar*)"type");
-					(circuit[curLevel].eachLevel)->gates[pos].fnGate = getHandler((char*)type, &((circuit[curLevel].eachLevel)->gates[pos].type));
+					(circuit[curLevel].eachLevel)->gates[pos].type = getType(atoi((char*)type));
 					xmlFree(type);
 					(circuit[curLevel].eachLevel)->qtyGates++;
 					
@@ -307,38 +357,28 @@ void parseGatesTags( char *father, xmlNodePtr cur, circuitTable * circuit, int c
 }
 
 /*
- *	Devuelve la funcion encargada de resolver la compuerta y se le pasa un puntero
- *	al tipo de compuerta que es, correspondiente a esa compuerta, y se almacena ahi
- *	el valor indicado.
+ *	Devuelve el numero correspondiente al tipo de compuerta que es.
+ *	En caso de error devuelve -1.
  */
 
-handler getHandler( char * typeH, int *typeInt)
+int getType( int type)
 {
-	int type = 0;
-	
-	type = atoi(typeH);
 	switch( type )
 	{
 		case AND:
-			*typeInt = AND;
-			return gateAnd;			
+			return AND;
 		case OR:
-			*typeInt = OR;
-			return gateOr;			
+			return OR;
 		case XOR:
-			*typeInt = XOR;
-			return gateXor;
+			return XOR;
 		case NAND:
-			*typeInt = NAND;
-			return gateNand;
+			return NAND;
 		case NOR:
-			*typeInt = NOR;
-			return gateNor;
+			return NOR;
 		case XNOR:
-			*typeInt = XNOR;
-			return gateXnor;
+			return XNOR;
 	}
-	return NULL;
+	return -1;
 }
 
 /* 
@@ -416,7 +456,7 @@ int gateXnor( int in1, int in2 )
 }
 
 /*
- *	Funcion para debagueo de la tabla levantada por el XML
+ *	Funcion para debug de la tabla levantada por el XML
  */
 
 void printCircuitTable( circuitTable * circuit)
