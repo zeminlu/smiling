@@ -10,11 +10,11 @@
  *	Funcion encargada de leer el directorio de archivos de pipeDir, llamar a la funcion
  *	que los parsea y finaliza enviando por IPC la tabla con los circuitos a gates.
  */
-int initializeGates(){
+int main(void){
 	
 	DIR *dp;
 	struct dirent *d = NULL;
-	int i,gate = 0, qtyFiles = 0, pos = 0;
+	int i, qtyFiles = 0, pos = 0;
 	FILE *dataFile = NULL;
 	circuitTable **table = NULL;
 	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir;
