@@ -17,6 +17,8 @@ typedef	char * String;
 #define		_stdout_	1
 #define		_stdin_		0
 
+#define		_FORK_ERROR_	-1
+#define		_FORK_SON_		0
 
 /* Gates */
 

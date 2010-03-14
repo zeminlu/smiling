@@ -14,6 +14,7 @@
 
 #include "../inc/definitions.h"
 #include "../inc/types.h"
+#include "../int/serializable.h"
 
 typedef int (*handler)(int in1,int in2);
 
@@ -26,6 +27,7 @@ typedef struct{
 	gatesOfEachLevel *eachLevel;
 	int level;
 	int	totalLevels;
+	int curLevel;
 }circuitTable;
 
 int initializeGates();
@@ -34,7 +36,7 @@ int getFilesAmm (DIR *dp);
 circuitTable * parseXMLGate( char * docName );
 circuitTable * parseCircuit( xmlDocPtr doc, xmlNodePtr cur );
 void parseGatesTags( char *father, xmlNodePtr cur, circuitTable * circuit, int curLevel );
-handler getHandler( char * typeH, int *typeInt);
+int getType( int typeInt);
 int countLevels( circuitTable * circuit);
 int checkGateIsLoaded( circuitTable *circuit, char *name, int curLevel);
 

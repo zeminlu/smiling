@@ -37,7 +37,6 @@ typedef struct{
 	char *fathers[2];
 	int output;
 	int input[2];
-	int (*fnGate)(int in1, int in2);
 	} gate;
 
 typedef struct{
