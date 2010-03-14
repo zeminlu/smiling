@@ -6,7 +6,7 @@ int main (void){
 }
 
 int fifoServer (){
-	int i, j, bufferSize, status, **p = NULL, auxP1[2], auxP2[2], reqCountry = 0, headsAmm = 0, flag = FALSE, countriesTableEntriesAmm;
+	int i, j, x, bufferSize, status, **p = NULL, auxP1[2], auxP2[2], reqCountry = 0, headsAmm = 0, flag = FALSE, countriesTableEntriesAmm;
 	pid_t *pids, actPid;
 	void *buffer = NULL;
 	fd_set master, set;
@@ -89,8 +89,8 @@ int fifoServer (){
 					close(auxP2[0]);
 					
 					write(auxP2[1], &countriesTableEntriesAmm, sizeof(int));
-					for (j = 0 ; j < i ; ++j){
-						serializeCountryStruct(&buffer, &bufferSize, countriesTable[j]);
+					for (x = 0 ; x < countriesTableEntriesAmm ; ++x){
+						serializeCountryStruct(&buffer, &bufferSize, countriesTable[x]);
 						write(auxP2[1], &bufferSize, sizeof(int));
 						write(auxP2[1], buffer, bufferSize);
 						free(buffer);	
@@ -120,6 +120,7 @@ int fifoServer (){
 				printf("Por desserializar reqCountry\n");
 				reqCountry = unserializeInteger(buffer, bufferSize);
 				printf("reqCountry desserializado\n");
+				getchar();
 				if (reqCountry < 0){
 						read(p[j][0], &bufferSize, sizeof(int));
 						read(p[j][0], buffer, bufferSize);
