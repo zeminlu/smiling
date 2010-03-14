@@ -36,7 +36,7 @@ int main (void){
 		unserializeCountryStruct(buffer, bufferSize, countriesTable[i]);
 		free(buffer);		
 	}
-	
+	i = 0;
 	read(_stdin_, &bufferSize, sizeof(int));
 	if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL ||
 		(data = malloc(sizeof(country))) == NULL){
@@ -125,8 +125,7 @@ int main (void){
 		}
 		else{
 			fprintf(stderr, "groupH: %s, seccion: Pre-threadin\n", data->name);
-			for (j = 0 ; j < i ; ++j){
-				
+			for (j = 0 ; j < i ; ++j){	
 				pthread_create(&threads[j], NULL, conditions[j], (void *)(condArgs));
 			}
 			for (j = 0 ; j < i ; ++j){
