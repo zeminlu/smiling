@@ -12,6 +12,31 @@ int main (void){
 	int i = 0, j = 0, k = 0, x = 0, y = 0, index = 0, reqCountry, freePt = 0, bufferSize = 0, countriesTableEntriesAmm;
 	country **countriesTable = NULL;
 	
+	read(_stdin_, &countriesTableEntriesAmm, sizeof(int));
+	if ((countriesTable = malloc(sizeof(void *) * countriesTableEntriesAmm)) == NULL){
+		perror("Error de memoria");
+		return errno;
+	}
+	for (i = 0 ; i < countriesTableEntriesAmm ; ++i){
+		
+		read(_stdin_, &bufferSize, sizeof(int));
+		
+		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL ||
+			(countriesTable[i] = malloc(sizeof(country))) == NULL){
+			perror("Error de memoria");
+			free(buffer);
+			for(j = 0 ; j < i ; ++j){
+				free(countriesTable[j]);
+			}
+			free(countriesTable);
+			return errno;
+		}
+		
+		read(_stdin_, buffer, bufferSize);
+		unserializeCountryStruct(buffer, bufferSize, countriesTable[i]);
+		free(buffer);		
+	}
+	
 	read(_stdin_, &bufferSize, sizeof(int));
 	if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL ||
 		(data = malloc(sizeof(country))) == NULL){
@@ -232,5 +257,8 @@ int main (void){
 	free(condArgs);
 	free(conditions);
 	free(threads);
+	close(_stdin_);
+	close(_stdout_);
+	
 	return 0;
 }
