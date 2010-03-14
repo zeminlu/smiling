@@ -106,10 +106,14 @@ int fifoServer (){
 	
 	while(set = master, select(FD_SETSIZE, &set, NULL, NULL, &timeout) > 0 && flag == FALSE){
 		for (j = 0 ; j < i ; ++j){
+			printf("Por chequear pipe %d\n", j);
 			if (FD_ISSET(p[j][0], &set)){
 				read(p[j][0], &bufferSize, sizeof(int));
 				read(p[j][0], buffer, bufferSize);
+				printf("Por desserializar reqCountry\n");
 				reqCountry = unserializeCountry(buffer, bufferSize);
+				printf("reqCountry desserializado\n");
+				getchar();
 				if (reqCountry < 0){
 						read(p[j][0], &bufferSize, sizeof(int));
 						read(p[j][0], buffer, bufferSize);
