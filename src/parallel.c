@@ -75,9 +75,6 @@ int main(){
 		}
 		countriesTableEntriesAmm = i;
 		
-		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
-			printf("ANTES Nombre: %s, Head: %d\n", countriesTable[j]->name, countriesTable[j]->isHead);
-		}
 		pipe(auxP);
 		switch (fork()){
 			case 0:
