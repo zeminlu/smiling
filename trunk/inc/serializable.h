@@ -12,7 +12,7 @@
 
 int serializeSubfixture(void **buffer, int *bufferSize, country **subFixture);
 
-int serializeSubfixture(void **buffer, int *bufferSize, subFixture *group);
+int serializeSubfixture(void **buffer, int *bufferSize, country **subFixture);
 
 int unserializeSubfixture(void *buffer, int bufferSize, country **subFixture);
 

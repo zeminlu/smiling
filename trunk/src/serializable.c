@@ -14,16 +14,11 @@
  *		- El tamaño del buffer
  */
 
-int serializeSubfixture(void **buffer, int *bufferSize, subFixture *group){
+int serializeSubfixture(void **buffer, int *bufferSize, country **subFixture){
 	tpl_node *tn;
-	int ret, i;
-	country countArr[4];
+	int ret;
 	
-	for (i = 0 ; i < 4 ; ++i){
-		countArr[i] = *(group->countries[i]);
-	}
-	
-	tn = tpl_map("S(c#iiiiiiiii)#", countArr, 45, 4);
+	tn = tpl_map("S(c#iiiiiiiii)#", subFixture, 45, 4);
 	tpl_pack(tn, 0);
 	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
 	tpl_free(tn);
@@ -33,7 +28,7 @@ int serializeSubfixture(void **buffer, int *bufferSize, subFixture *group){
 
 int unserializeSubfixture(void *buffer, int bufferSize, country **subFixture){
 	tpl_node *tn;
-	int ret, *moe;
+	int ret;
 		
 	tn = tpl_map("S(c#iiiiiiiii)#", subFixture, 45, 4);
 	getchar();
