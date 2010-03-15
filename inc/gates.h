@@ -8,9 +8,14 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <stdarg.h>
+#include <errno.h>
 
 #include "../inc/definitions.h"
+#include "../inc/types.h"
+#include "../inc/serializable.h"
+#include "../inc/pipe.h"
 
-/*float ** productTwoMatrix( float ** matrix1, float **matrix2, int qtyF1, int qtyC1, int qtyF2, int qtyC2 );*/
+int gateServer( void );
 
 #endif
