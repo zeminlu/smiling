@@ -1,11 +1,15 @@
 #ifndef _SERIALIZABLE
 #define _SERIALIZABLE_
 
+#include <stdio.h>
+
 #include "../inc/definitions.h"
 #include "../inc/types.h"
 #include "../inc/tpl.h"
 
-int serializeGate( gate * gate, void **buffer, int *bufferSize);
+int serializeGate( gate *gate, void **buffer, int *bufferSize );
+
+int unserializeGate( gate *gate, void *buffer, int bufferSize );
 
 int serializeSubfixture(void **buffer, int *bufferSize, subFixture *group);
 
