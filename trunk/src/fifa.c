@@ -10,9 +10,9 @@ int fifoServer (){
 	pid_t *pids, actPid;
 	void *buffer = NULL;
 	fd_set master, set;
-	country subFixture[4], **fixture = NULL;
+	country **subFixture, ***fixture = NULL, **countriesTable = NULL;	
 	struct timeval timeout = {10, 0};
-	country **countriesTable = NULL;
+	
 	read(_stdin_, &countriesTableEntriesAmm, sizeof(int));
 	if ((countriesTable = malloc(sizeof(void *) * countriesTableEntriesAmm)) == NULL){
 		perror("Error de memoria");
@@ -101,7 +101,6 @@ int fifoServer (){
 					break;
 			}
 			++j;
-			printf("Cabeza %d procesada\n", j);
 		}
 	}
 	i = j;
@@ -111,25 +110,43 @@ int fifoServer (){
 	}
 	printf("Entro al while del server\n");
 	
+	
+	if ((subFixture = malloc(sizeof(void *) * countriesTableEntriesAmm / 4)) == NULL){
+		perror("Error de memoria");
+		return errno;
+	}
+	
+	for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
+		if ((subFixture[j] = malloc(sizeof(country))) == NULL){
+			perror("Error de memoria");
+			for (x = 0 ; x < j ; ++x){
+				free(subFixture[x]);
+			}
+			free(subFixture);
+			return errno;
+		}
+	}
+	
 	while(set = master, select(FD_SETSIZE, &set, NULL, NULL, &timeout) > 0 && flag == FALSE){
 		for (j = 0 ; j < i ; ++j){
-			printf("Por chequear pipe %d\n", j);
 			if (FD_ISSET(p[j][0], &set)){
 				read(p[j][0], &bufferSize, sizeof(int));
 				read(p[j][0], buffer, bufferSize);
-				printf("Por desserializar reqCountry\n");
+				
 				reqCountry = unserializeInteger(buffer, bufferSize);
-				printf("reqCountry desserializado\n");
-				getchar();
+				printf("reqCountry desserializado = %d \n", reqCountry);
+
 				if (reqCountry < 0){
-						read(p[j][0], &bufferSize, sizeof(int));
-						read(p[j][0], buffer, bufferSize);
-						unserializeSubfixture(buffer, bufferSize, (country **)&subFixture);
-						fixture[j] = subFixture;
-						if (--headsAmm == 0){
-							flag = TRUE;
-							break;
-						}
+					read(p[j][0], &bufferSize, sizeof(int));
+					read(p[j][0], buffer, bufferSize);
+					fprintf(stderr, "FIFA: Por desserializar subfixture\n");
+					unserializeSubfixture(buffer, bufferSize, subFixture);
+					fprintf(stderr, "FIFA: desserializo el subfixture\n");
+					fixture[j] = subFixture;
+					if (--headsAmm == 0){
+						flag = TRUE;
+						break;
+					}
 				}
 				else{
 					if (countriesTable[reqCountry]->used){
@@ -176,10 +193,15 @@ int fifoServer (){
 	free(pids);
 	for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
 		for(i = 0; i < 4; ++i){
-			printf("%s\n", fixture[i]->name);
+			printf("%s\n", (fixture[j][i])->name);
+			free(fixture[j][i]);
 		}
 		free(fixture[j]);
 	}
+	for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
+		free(subFixture[i]);
+	}
+	free(subFixture);
 	free(fixture);
 	close(_stdin_);
 	close(_stdout_);

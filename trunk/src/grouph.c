@@ -49,7 +49,6 @@ int main (void){
 	unserializeCountryStruct(buffer, bufferSize, data);
 	
 	free(buffer);
-	fprintf(stderr, "groupH: %s, seccion: comienzo\n", data->name);
 	
 	if (data->sameContinent){
 		if ((conditions = realloc(conditions, sizeof(void *) * (++i))) == NULL){
@@ -111,10 +110,8 @@ int main (void){
 	}
 	group->countries[0] = data;
 	group->countriesAmm = 1;
-	fprintf(stderr, "groupH: %s, seccion: Pre-While\n", data->name);
-	
+	condArgs->maxCountries = countriesTableEntriesAmm;
 	while (group->countriesAmm < 4){
-		fprintf(stderr, "groupH: %s, seccion: Comienzo de While\n", data->name);
 		if (i == 0){
 			noCondition(condArgs);
 			reqCountry = condArgs->sets[0]->country[0];
@@ -124,7 +121,6 @@ int main (void){
 			reqCountry = condArgs->sets[0]->country[rand() % condArgs->sets[0]->countriesAmm];
 		}
 		else{
-			fprintf(stderr, "groupH: %s, seccion: Pre-threadin\n", data->name);
 			for (j = 0 ; j < i ; ++j){	
 				pthread_create(&threads[j], NULL, conditions[j], (void *)(condArgs));
 			}
@@ -150,7 +146,6 @@ int main (void){
 					perror("Error de memoria");
 					return errno;
 				}
-			fprintf(stderr, "groupH: %s, seccion: precarga de head\n", data->name);
 			for (j = 0 ; j < ((condArgs->sets)[0])->countriesAmm ; ++j){
 				((aux[0])->country)[j] = (((condArgs->sets)[0])->country)[j]; 
 			}
@@ -199,7 +194,7 @@ int main (void){
 			}
 			reqCountry = aux[j]->country[rand() % aux[j]->countriesAmm];
 		}
-		
+
 		serializeInteger(&buffer, &bufferSize, reqCountry);
 		write(_stdout_, &bufferSize, sizeof(int));
 		write(_stdout_, buffer, bufferSize);
@@ -229,6 +224,7 @@ int main (void){
 			continue;
 		}
 		
+		countriesTable[reqCountry]->used = TRUE;
 		group->countries[(group->countriesAmm)++] = countriesTable[reqCountry];
 		
 		free(buffer);
@@ -244,9 +240,12 @@ int main (void){
 	}
 	
 	serializeInteger(&buffer, &bufferSize, -1);
+	write(_stdout_, &bufferSize, sizeof(int));
 	write(_stdout_, buffer, bufferSize);
 	free(buffer);
-	serializeSubfixture(&buffer, &bufferSize, group);
+	serializeSubfixture(&buffer, &bufferSize, group->countries);
+	
+	write(_stdout_, &bufferSize, sizeof(int));
 	write(_stdout_, buffer, bufferSize);
 	
 	free(buffer);

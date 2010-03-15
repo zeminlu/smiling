@@ -14,35 +14,6 @@
  *		- El tamaño del buffer
  */
 
-int serializeGate( gate *gate, void **buffer, int *bufferSize )
-{
-	tpl_node *tn;
-	int ret;
-	
-	tn = tpl_map("S(c#is#ii#)", gate, 30, 2, 2);
-	tpl_pack(tn,0);
-	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize );
-	tpl_free(tn);
-	
-	return ret;
-}
-
-
-int unserializeGate( gate *gate, void *buffer, int bufferSize )
-{
-	tpl_node *tn;
-	int ret;
-	
-	tn = tpl_map("S(c#is#ii#)", gate, 30, 2, 2);
-	ret = tpl_load(tn, TPL_MEM, buffer, bufferSize );
-	printf("After tpl_load of unserializeGate\n");
-	tpl_unpack(tn,0);
-	tpl_free(tn);
-	
-	return ret;
-	
-}
-
 int serializeSubfixture(void **buffer, int *bufferSize, subFixture *group){
 	tpl_node *tn;
 	int ret, i;
@@ -62,12 +33,15 @@ int serializeSubfixture(void **buffer, int *bufferSize, subFixture *group){
 
 int unserializeSubfixture(void *buffer, int bufferSize, country **subFixture){
 	tpl_node *tn;
-	int ret;
+	int ret, *moe;
+		
+	tn = tpl_map("S(c#iiiiiiiii)#", subFixture, 45, 4);
+	getchar();
 	
-	tn = tpl_map("S(c#iiiiiiiii)#", *subFixture, 45, 4);
 	ret = tpl_load(tn, TPL_MEM, buffer, bufferSize);
 	tpl_unpack(tn, 0);
 	tpl_free(tn);
+	fprintf(stderr, "UNSERIALIZE: post free");
 	
 	return ret;
 }

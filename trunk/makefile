@@ -16,7 +16,7 @@ vpath %.c $(SRC_DIR)
 #Sets the C compiler used to create object files from source code.
 CC = gcc
 #Sets compiler options.
-CFLAGS = -O -Wall -Wuninitialized -pedantic -errors -ansi -fno-builtin -c -o
+CFLAGS = -O -Wall -Wuninitialized -pedantic -errors -ansi -fno-builtin -g -c -o
 #Sets the location of the header files.
 INCLUDES = -I $(INC_DIR)
 #Set the libraries variables
@@ -27,7 +27,7 @@ COMPILE.c = $(CC) $(INCLUDES) $(CFLAGS)
 #Sets the linker for the project
 LD = gcc
 #
-LDFLAGS = $(LIBRARIES) -o
+LDFLAGS = $(LIBRARIES) -g -o
 #
 TARGET1 = main.bin
 OBJECTS1 = main.o
@@ -47,7 +47,7 @@ OBJECTS7 = gates.o tpl.o serializable.o
 .SILENT:
 .PHONY: clean
 
-all: clean $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5) $(TARGET6) $(TARGET7) cleanObjects
+all: clean $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5) $(TARGET6) $(TARGET7)
 
 $(TARGET1): $(OBJECTS1)
 	@echo "Linking" $@"..."
