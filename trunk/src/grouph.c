@@ -93,6 +93,8 @@ int main (void){
 	condArgs->countries = countriesTable;
 	condArgs->head = data;
 	condArgs->index = &index;
+	condArgs->maxCountries = countriesTableEntriesAmm;
+	
 	if ((condArgs->sets = malloc(sizeof(void *) * i)) == NULL || (threads = malloc(sizeof(pthread_t) * i)) == NULL || (group = malloc(sizeof(subFixture))) == NULL || (group->countries = malloc(sizeof(void *) * 4)) == NULL){
 			free(condArgs->sets);
 			free(threads);
@@ -102,9 +104,10 @@ int main (void){
 			perror("Error de memoria");
 			return errno;
 	}
+	
 	group->countries[0] = data;
 	group->countriesAmm = 1;
-	condArgs->maxCountries = countriesTableEntriesAmm;
+	
 	while (group->countriesAmm < 4){
 		if (i == 0){
 			noCondition(condArgs);
@@ -146,9 +149,7 @@ int main (void){
 			(aux[0])->countriesAmm = j;
 
 			for (j = 1 ; j < i ; ++j){	
-				if ((aux = realloc(aux, sizeof(void *) * (j + 1))) == NULL||
-					(aux[j] = malloc(sizeof(subFixture))) == NULL ||
-					(aux[j]->country = malloc(sizeof(int) * aux[0]->countriesAmm)) == NULL){
+				if ((aux = realloc(aux, sizeof(void *) * (j + 1))) == NULL || (aux[j] = malloc(sizeof(subFixture))) == NULL || ((aux[j])->country = malloc(sizeof(int) * (aux[0])->countriesAmm)) == NULL){
 						for(freePt = 0 ; freePt <= j ; ++freePt){
 							free(aux[freePt]->country);
 							free(aux[freePt]);
@@ -166,7 +167,7 @@ int main (void){
 						free(condArgs);
 						perror("Error de memoria");
 						return errno;
-					}
+				}
 				
 				fprintf(stderr, "groupH: %s, seccion: preinterseccion\n", data->name);
 				
@@ -190,10 +191,10 @@ int main (void){
 		}
 
 		serializeInteger(&buffer, &bufferSize, reqCountry);
-		write(_stdout_, &bufferSize, sizeof(int));
-		write(_stdout_, buffer, bufferSize);
-		read(_stdin_, &bufferSize, sizeof(int));
+		writeIPC(_stdout_, &bufferSize, sizeof(int));
+		writeIPC(_stdout_, buffer, bufferSize);
 		free(buffer);
+		readIPC(_stdin_, &bufferSize, sizeof(int));
 		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL){
 			perror("Error de memoria");
 			for (j = 0 ; j < i ; ++j){
@@ -211,18 +212,17 @@ int main (void){
 			free(data);
 			return errno;
 		}
-		read(_stdin_, buffer, bufferSize);
+		readIPC(_stdin_, buffer, bufferSize);
 		
 		if (unserializeInteger(buffer, bufferSize) == FALSE){
 			countriesTable[reqCountry]->used = TRUE;
+			free(buffer);
 			continue;
 		}
-		
+		free(buffer);
 		countriesTable[reqCountry]->used = TRUE;
 		group->countries[group->countriesAmm] = countriesTable[reqCountry];
 		++(group->countriesAmm);
-		
-		free(buffer);
 		
 		for (j = 0 ; j < i ; ++j){
 			free(condArgs->sets[j]->country);
@@ -235,14 +235,14 @@ int main (void){
 	}
 	fprintf(stderr, "GroupH: %s Termino.\n", data->name);
 	serializeInteger(&buffer, &bufferSize, -1);
-	write(_stdout_, &bufferSize, sizeof(int));
-	write(_stdout_, buffer, bufferSize);
+	writeIPC(_stdout_, &bufferSize, sizeof(int));
+	writeIPC(_stdout_, buffer, bufferSize);
 	free(buffer);
 	for (i = 0 ; i < 4 ; ++i){
 		fprintf(stderr, "Mandando pais %d\n", i);
 		serializeCountryStruct(&buffer, &bufferSize, group->countries[i]);
-		write(_stdout_, &bufferSize, sizeof(int));
-		write(_stdout_, buffer, bufferSize);
+		writeIPC(_stdout_, &bufferSize, sizeof(int));
+		writeIPC(_stdout_, buffer, bufferSize);
 		free(buffer);
 	}
 	
@@ -250,6 +250,13 @@ int main (void){
 	free(condArgs);
 	free(conditions);
 	free(threads);
+	
+	for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
+		free(countriesTable[i]);
+	}
+	free(countriesTable);
+	free(data);
+	
 	close(_stdin_);
 	close(_stdout_);
 	

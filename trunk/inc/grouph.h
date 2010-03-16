@@ -14,5 +14,6 @@
 #include "../inc/types.h"
 #include "../inc/tpl.h"
 #include "../inc/serializable.h"
+#include "../inc/ipcAPI.h"
 
 #endif
