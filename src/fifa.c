@@ -137,13 +137,15 @@ int fifoServer (){
 				printf("reqCountry desserializado = %d \n", reqCountry);
 
 				if (reqCountry < 0){
-					read(p[j][0], &bufferSize, sizeof(int));
-					read(p[j][0], buffer, bufferSize);
-					fprintf(stderr, "FIFA: Por desserializar subfixture\n");
-					unserializeSubfixture(buffer, bufferSize, subFixture);
-					fprintf(stderr, "FIFA: desserializo el subfixture\n");
+					/*for (x = 0 ; x < 4 ; ++x){
+						read(p[j][0], &bufferSize, sizeof(int));
+						read(p[j][0], buffer, bufferSize);
+						fprintf(stderr, "FIFA: Por desserializar subfixture\n");
+						unserializeCountryStruct(buffer, bufferSize, subFixture[x]);
+						fprintf(stderr, "FIFA: desserializo el subfixture\n");
+					}
 					fixture[j] = subFixture;
-					if (--headsAmm == 0){
+					*/if (--headsAmm == 0){
 						flag = TRUE;
 						break;
 					}
@@ -193,7 +195,7 @@ int fifoServer (){
 	free(pids);
 	for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
 		for(i = 0; i < 4; ++i){
-			printf("%s\n", (fixture[j][i])->name);
+			/*printf("%s\n", (fixture[j][i])->name);*/
 			free(fixture[j][i]);
 		}
 		free(fixture[j]);

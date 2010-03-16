@@ -14,33 +14,6 @@
  *		- El tamaño del buffer
  */
 
-int serializeSubfixture(void **buffer, int *bufferSize, country **subFixture){
-	tpl_node *tn;
-	int ret;
-	
-	tn = tpl_map("S(c#iiiiiiiii)#", subFixture, 45, 4);
-	tpl_pack(tn, 0);
-	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
-	tpl_free(tn);
-	
-	return ret;	
-}
-
-int unserializeSubfixture(void *buffer, int bufferSize, country **subFixture){
-	tpl_node *tn;
-	int ret;
-		
-	tn = tpl_map("S(c#iiiiiiiii)#", subFixture, 45, 4);
-	getchar();
-	
-	ret = tpl_load(tn, TPL_MEM, buffer, bufferSize);
-	tpl_unpack(tn, 0);
-	tpl_free(tn);
-	fprintf(stderr, "UNSERIALIZE: post free");
-	
-	return ret;
-}
-
 int serializeCountryStruct(void **buffer, int *bufferSize, country *country){
 	tpl_node *tn;
 	int ret;
