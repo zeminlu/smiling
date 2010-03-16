@@ -10,7 +10,6 @@
 #include "../inc/tpl.h"
 
 
-int serializeSubfixture(void **buffer, int *bufferSize, country **subFixture);
 
 int serializeSubfixture(void **buffer, int *bufferSize, country **subFixture);
 
