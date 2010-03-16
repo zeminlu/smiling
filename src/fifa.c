@@ -5,7 +5,6 @@ int main (void){
 	pid_t *pids, actPid;
 	void *buffer = NULL, *master = NULL, *set = NULL;
 	country **subFixture, ***fixture = NULL, **countriesTable = NULL;
-	struct timeval timeout = {10, 0};
 	
 	readIPC(_stdin_, &countriesTableEntriesAmm, sizeof(int));
 		
