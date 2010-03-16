@@ -37,5 +37,9 @@ enum 	logicGates { AND = 0, OR, XOR, NAND, NOR, XNOR };
 #define		_MAX_GATES_LEVELS_		10
 #define		_MAX_CIRCUITS_			5
 
+/*	Types of Connection */
+	
+enum	typeOfConnection	{ FIFO, SH_MEM, MSG_QUEUE, SOCKET };
+
 #endif
 
