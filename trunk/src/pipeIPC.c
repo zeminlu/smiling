@@ -91,8 +91,6 @@ int selectIPC(void *set, int seconds){
 	
 	ret = select(FD_SETSIZE, set, NULL, NULL, &timeout);
 	
-	fprintf(stderr, "Ret en select = %d", ret);
-	
 	return ret;
 }
 

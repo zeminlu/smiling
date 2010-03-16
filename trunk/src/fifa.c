@@ -99,22 +99,22 @@ int main (void){
 				readIPC(ipcIDs[j][0], &bufferSize, sizeof(int));
 				buffer = malloc(sizeof(char) * bufferSize);
 				readIPC(ipcIDs[j][0], buffer, bufferSize);
-				
 				reqCountry = unserializeInteger(buffer, bufferSize);
 				free(buffer);
+				
 				printf("IPC : %d, reqCountry desserializado = %d \n", j, reqCountry);
 
 				if (reqCountry < 0){
-					for (x = 0 ; x < 4 ; ++x){
+					/*for (x = 0 ; x < 4 ; ++x){
 						readIPC(ipcIDs[j][0], &bufferSize, sizeof(int));
 						buffer = malloc(sizeof(char) * bufferSize);
 						readIPC(ipcIDs[j][0], buffer, bufferSize);
-						/*fprintf(stderr, "FIFA: Por desserializar subfixture\n");
+						fprintf(stderr, "FIFA: Por desserializar subfixture\n");
 						unserializeCountryStruct(buffer, bufferSize, subFixture[x]);
-						fprintf(stderr, "FIFA: desserializo el subfixture\n");*/
+						fprintf(stderr, "FIFA: desserializo el subfixture\n");
 						free(buffer);
 					}
-					fixture[j] = subFixture;
+					fixture[j] = subFixture;*/
 					if (--headsAmm == 0){
 						flag = TRUE;
 						break;
