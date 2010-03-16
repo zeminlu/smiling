@@ -59,5 +59,10 @@ typedef struct{
 	int conditionsAmm;
 	}conditions;
 
+typedef struct{
+	int qtyFiles;
+	int curFile;
+	int curLevel;
+	} curGateProcess;
 
 #endif

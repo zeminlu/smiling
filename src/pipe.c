@@ -16,10 +16,12 @@ int main(void){
 	
 	DIR *dp;
 	struct dirent *d = NULL;
-	int i, j, k, gate = 0, qtyFiles = 0, pos = 0, pipeChannelGo[2], tLevel = 0;
+	int i, j, k, gate = 0, qtyFiles = 0, pos = 0, pipeChannelGo[2], tLevel = 0, writeSize;
 	FILE *dataFile = NULL;
 	circuitTable **table = NULL;
 	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;
+	curGateProcess curCircuit;
+	
 	
 	if ((dp = opendir(dir)) == NULL){
 		perror("No se puede abrir el directorio\n");
@@ -113,7 +115,11 @@ int main(void){
 			dup2(pipeChannelGo[1], _stdout_);
 			close(pipeChannelGo[0]);
 			
-			write(pipeChannelGo[1], &(pos), sizeof(int));				/* cantidad de archivos */
+			curCircuit.qtyFiles = pos;
+			curCircuit.curFile = 0;
+			curCircuit.curLevel = 0;
+			
+			write(pipeChannelGo[1], &curCircuit, sizeof(curCircuit));				/* cantidad de archivos */
 			for( i = 0 ; i < pos ; ++i )
 			{	
 				printCircuitTable(table[i]);
@@ -124,7 +130,8 @@ int main(void){
 					write(pipeChannelGo[1], &((table[i][j].eachLevel)->qtyGates), sizeof(int) ); 			/* cant de compuertas */
 					for( k = 0 ; k < (table[i][j].eachLevel)->qtyGates ; ++k )
 					{
-						write( pipeChannelGo[1], &((table[i][j].eachLevel)->gates[k]), sizeof(((table[i][j].eachLevel)->gates[k])) ); 	/* la compuerta */
+						writeSize = sizeof(((table[i][j].eachLevel)->gates[k]));
+						write( pipeChannelGo[1], &((table[i][j].eachLevel)->gates[k]), writeSize ); 	/* la compuerta */
 					}
 				}
 			}
@@ -132,10 +139,6 @@ int main(void){
 			wait(&gate);
 			break;
 	}
-	/*
-	for( i = 0 ; i < pos ; ++i )
-		printCircuitTable(table[i]);
-	*/	
 	free(dirFile);
 	free(procCopyDir);
 	return 0;
