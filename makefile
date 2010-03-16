@@ -38,7 +38,7 @@ OBJECTS3 = pipe.o tpl.o serializable.o
 TARGET4 = fifaGen.bin
 OBJECTS4 = fifaGen.o conditions.o
 TARGET5 = fifa.bin
-OBJECTS5 = fifa.o tpl.o serializable.o
+OBJECTS5 = fifa.o tpl.o serializable.o pipeIPC.o
 TARGET6 = grouph.bin
 OBJECTS6 = grouph.o tpl.o conditions.o serializable.o
 TARGET7 = gates.bin
@@ -105,6 +105,7 @@ gates.o: gates.c gates.h
 tpl.o: tpl.c tpl.h
 definitions.o: definitions.c definitions.h
 serializable.o: serializable.c serializable.h
+pipeIPC.o: pipeIPC.c ipcAPI.h
 
 cleanObjects:
 	@echo "Clearing Objects..."
