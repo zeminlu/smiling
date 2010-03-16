@@ -16,12 +16,10 @@ int main(void){
 	
 	DIR *dp;
 	struct dirent *d = NULL;
-	/*int bufferSize;*/
-	int i, j, k, gate = 0, qtyFiles = 0, pos = 0, pipeChannel[2], tLevel = 0;
+	int i, j, k, gate = 0, qtyFiles = 0, pos = 0, pipeChannelGo[2], tLevel = 0;
 	FILE *dataFile = NULL;
 	circuitTable **table = NULL;
 	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;
-	/*void * buffer;*/
 	
 	if ((dp = opendir(dir)) == NULL){
 		perror("No se puede abrir el directorio\n");
@@ -100,62 +98,37 @@ int main(void){
 		}
 	}
 	
-	pipe(pipeChannel);
+	pipe(pipeChannelGo);
 	
 	switch( fork() ){
 		case _FORK_SON_:
-			close(pipeChannel[1]);
-			dup2(pipeChannel[0], _stdin_);
+			close(pipeChannelGo[1]);
+			dup2(pipeChannelGo[0], _stdin_);
 			execv("./gates.bin", NULL);
 			break;
 		case _FORK_ERROR_:
 			perror("Error en el fork del pipeline\n");
 			break;
 		default:
-			close(pipeChannel[0]);
+			dup2(pipeChannelGo[1], _stdout_);
+			close(pipeChannelGo[0]);
 			
-			/*serializeInteger( &buffer, &bufferSize, &pos);
-			printf("BufferSize: %d\n", bufferSize );
-			write( pipeChannel[1], &bufferSize, sizeof(int));
-			printf("buffer: %s bufferSize: %d\n", buffer, bufferSize );
-			write( pipeChannel[1], buffer, bufferSize );*/
-			write(pipeChannel[1], &(pos), sizeof(int));
-			sleep(1);
+			write(pipeChannelGo[1], &(pos), sizeof(int));				/* cantidad de archivos */
 			for( i = 0 ; i < pos ; ++i )
 			{	
-				printf("Pipe ------------------------------\n");
 				printCircuitTable(table[i]);
-				printf("Pipe ------------------------------\n");
 				tLevel = table[i][0].totalLevels;
-				/*serializeInteger( &buffer, &bufferSize, &tLevel);
-				write(pipeChannel[1], &bufferSize, sizeof(int));
-				write(pipeChannel[1], buffer, bufferSize );
-				*/
-				write(pipeChannel[1], &tLevel, sizeof(int));
-				sleep(1);
+				write(pipeChannelGo[1], &tLevel, sizeof(int));		/* cantidad de niveles del circuito */
 				for( j = 0 ; j < tLevel ; ++j )
 				{
-					/*
-					serializeInteger( &buffer, &bufferSize, &((table[i][j].eachLevel)->qtyGates));
-					write( pipeChannel[1], &bufferSize, sizeof(int) );
-					write( pipeChannel[1], buffer, bufferSize );
-					*/
-					printf("Pipe -- qtyGates: %d\n", ((table[i][j].eachLevel)->qtyGates) );
-					write(pipeChannel[1], &((table[i][j].eachLevel)->qtyGates), sizeof(int) );
-					sleep(1);
+					write(pipeChannelGo[1], &((table[i][j].eachLevel)->qtyGates), sizeof(int) ); 			/* cant de compuertas */
 					for( k = 0 ; k < (table[i][j].eachLevel)->qtyGates ; ++k )
 					{
-						/*serializeGate( (table[i][j].eachLevel)->gates[k], &buffer, &bufferSize );
-						printf("J: %d\tbuffer: %s, bufferSize: %d after serializeGate\n", j, buffer, bufferSize );
-						write( pipeChannel[1], &bufferSize, sizeof(int) );
-						write( pipeChannel[1], buffer, bufferSize);
-						free(buffer);*/
-						printf("Pipe -- K: %d -- Gate: %s \n", k, (table[i][j].eachLevel)->gates[k].name );
-						write( pipeChannel[1], &(table[i][j].eachLevel)->gates[k], sizeof(gate) );
-						sleep(1);
+						write( pipeChannelGo[1], &((table[i][j].eachLevel)->gates[k]), sizeof(((table[i][j].eachLevel)->gates[k])) ); 	/* la compuerta */
 					}
 				}
 			}
+			freeCircuits(table, pos);
 			wait(&gate);
 			break;
 	}
@@ -165,7 +138,6 @@ int main(void){
 	*/	
 	free(dirFile);
 	free(procCopyDir);
-	freeCircuits(table, pos);
 	return 0;
 }
 
@@ -234,19 +206,7 @@ circuitTable * parseXMLGate( char * docName)
 		xmlFreeDoc(doc);
 		return NULL;
 	}
-	/* ---------- For debugging -------------*/
-	/*printf("Estoy en la funcion parseXMLGate y voy a entrar a parseCircuit\n");
-	printf("ParseXMLGate, Cur: %s\n", cur->name);
-	cur = cur->xmlChildrenNode;
-	while( cur != NULL )
-	{
-		if( !xmlIsBlankNode(cur) )
-		{
-			printf("ParseXMLGate, Children, Cur: %s\n", cur->name);
-		}
-		cur = cur->next;
-	}*/
-	/*--------- Finish Debugging ------*/
+
 	circuit = parseCircuit( doc, cur );
 	xmlFreeDoc(doc);
 	return circuit;
@@ -262,7 +222,7 @@ circuitTable * parseCircuit( xmlDocPtr doc, xmlNodePtr cur )
 {
 	circuitTable * circuit = NULL;
 	xmlNodePtr input;
-	int i, curLevel = 0;
+	int i, j, curLevel = 0;
 	
 	if( (circuit = (circuitTable*)realloc(NULL, sizeof(circuitTable) * _MAX_GATES_LEVELS_ )) == NULL )
 	{
@@ -288,11 +248,11 @@ circuitTable * parseCircuit( xmlDocPtr doc, xmlNodePtr cur )
 		}
 		
 		(circuit[i].eachLevel)->qtyGates = 0;
-		/*for( j = 0; j < _MAX_GATES_LEVELS_; ++j)
+		for( j = 0; j < _MAX_GATES_LEVELS_; ++j)
 		{
-			(circuit[i].eachLevel)->gates[j].fathers[0] = "";
-			(circuit[i].eachLevel)->gates[j].fathers[1] = "";
-		}*/
+			((circuit[i].eachLevel)->gates[j]).fathers[0][0] = '\0';
+			((circuit[i].eachLevel)->gates[j]).fathers[1][0] = '\0';
+		}
 	}
 	
 	
@@ -499,14 +459,15 @@ void printCircuitTable( circuitTable * circuit)
 	{
 		for( j = 0; j < (circuit[i].eachLevel)->qtyGates ; ++j)
 		{
-			printf("LEVEL: %d Name: %s, Father[0]: %s, Father[1]: %s, Type: %d, Input[0]: %d, Input[1]: %d\n", 
+			fprintf(stderr, "LEVEL: %d Name: %s, Father[0]: %s, Father[1]: %s, Type: %d, Input[0]: %d, Input[1]: %d, Output: %d\n", 
 						i,
 						(circuit[i].eachLevel)->gates[j].name,
 						(circuit[i].eachLevel)->gates[j].fathers[0],
 						(circuit[i].eachLevel)->gates[j].fathers[1],
 						(circuit[i].eachLevel)->gates[j].type,
 						(circuit[i].eachLevel)->gates[j].input[0],
-						(circuit[i].eachLevel)->gates[j].input[1]);
+						(circuit[i].eachLevel)->gates[j].input[1],
+						(circuit[i].eachLevel)->gates[j].output);
 		}
 	}
 }
