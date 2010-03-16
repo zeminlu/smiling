@@ -238,7 +238,8 @@ int main (void){
 	writeIPC(_stdout_, &bufferSize, sizeof(int));
 	writeIPC(_stdout_, buffer, bufferSize);
 	free(buffer);
-	for (i = 0 ; i < 4 ; ++i){
+	
+	/*for (i = 0 ; i < 4 ; ++i){
 		fprintf(stderr, "Mandando pais %d\n", i);
 		serializeCountryStruct(&buffer, &bufferSize, group->countries[i]);
 		writeIPC(_stdout_, &bufferSize, sizeof(int));
@@ -259,6 +260,6 @@ int main (void){
 	
 	close(_stdin_);
 	close(_stdout_);
-	
+	*/
 	return 0;
 }
