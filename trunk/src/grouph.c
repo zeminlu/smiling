@@ -238,17 +238,19 @@ int main (void){
 			free(aux[x]);
 		}
 	}
-	
+	fprintf(stderr, "GroupH: %s Termino.\n", data->name);
 	serializeInteger(&buffer, &bufferSize, -1);
 	write(_stdout_, &bufferSize, sizeof(int));
 	write(_stdout_, buffer, bufferSize);
 	free(buffer);
-	serializeSubfixture(&buffer, &bufferSize, group->countries);
+	/*for (i = 0 ; i < 4 ; ++i){
+		fprintf(stderr, "Mandando pais %d\n", i);
+		serializeCountryStruct(&buffer, &bufferSize, group->countries[i]);
+		write(_stdout_, &bufferSize, sizeof(int));
+		write(_stdout_, buffer, bufferSize);
+	}
 	
-	write(_stdout_, &bufferSize, sizeof(int));
-	write(_stdout_, buffer, bufferSize);
-	
-	free(buffer);
+	free(buffer);*/
 	free(condArgs->sets);
 	free(condArgs);
 	free(conditions);

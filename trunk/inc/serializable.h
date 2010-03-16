@@ -9,12 +9,6 @@
 #include "../inc/types.h"
 #include "../inc/tpl.h"
 
-
-
-int serializeSubfixture(void **buffer, int *bufferSize, country **subFixture);
-
-int unserializeSubfixture(void *buffer, int bufferSize, country **subFixture);
-
 int serializeCountryStruct(void **buffer, int *bufferSize, country *country);
 
 int unserializeCountryStruct(void *buffer, int bufferSize, country *country);
