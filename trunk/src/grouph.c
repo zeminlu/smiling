@@ -50,6 +50,8 @@ int main (void){
 	
 	free(buffer);
 	
+	fprintf(stderr, "GroupH: %s\n", data->name);
+	
 	if (data->sameContinent){
 		if ((conditions = realloc(conditions, sizeof(void *) * (++i))) == NULL){
 			perror("Error de memoria");

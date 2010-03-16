@@ -15,7 +15,6 @@
 #include "../inc/types.h"
 #include "../inc/tpl.h"
 #include "../inc/serializable.h"
-
-int fifoServer();
+#include "../inc/ipcAPI.h"
 
 #endif
