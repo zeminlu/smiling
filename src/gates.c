@@ -40,24 +40,17 @@ int main(void){
 
 int gateServer( void )
 {
-	int i,j,k, qtyFileCom, qtyLevelsCom, qtyGatesCom;
-	/*int bufferSize;*/
+	int i,j,k, qtyFileCom, qtyLevelsCom, qtyGatesCom, readBytes;
 	circuitTable **table = NULL;
-	/*void *buffer = NULL;*/
 	
-	if( (table = (circuitTable**)malloc( sizeof(circuitTable*) * _MAX_CIRCUITS_) ) == NULL )
+	readBytes = read(_stdin_, &qtyFileCom, sizeof(int));
+	printf("Gate -- qtyFileCom: %d\n", qtyFileCom);
+	
+	if( (table = (circuitTable**)malloc( sizeof(circuitTable*) * qtyFileCom) ) == NULL )
 	{
 		perror("Error en la alocacion de memoria\n");
 		return errno;
 	}
-	
-	/*read( _stdin_ , &bufferSize, sizeof(int));
-	printf("BufferSize: %d\n", bufferSize);
-	read( _stdin_, buffer, bufferSize );
-	printf("buffer: %s\n", buffer );
-	qtyFileCom = unserializeInteger( buffer, bufferSize);*/
-	read(_stdin_, &qtyFileCom, sizeof(int));
-	printf("Gate -- qtyFileCom: %d\n", qtyFileCom);
 	
 	for( i = 0 ; i < qtyFileCom ; ++i )
 	{
@@ -70,11 +63,8 @@ int gateServer( void )
 	
 	for( i = 0 ; i < qtyFileCom ; ++i )
 	{
-		/*read(_stdin_, &bufferSize, sizeof(int));
-		read(_stdin_ , buffer, bufferSize );
-		qtyLevelsCom = unserializeInteger( buffer, bufferSize);*/
-		read(_stdin_, &qtyLevelsCom, sizeof(int));
-		printf("Gate -- qtyLevelsCom: %d\n", qtyLevelsCom );
+		readBytes = read(_stdin_, &qtyLevelsCom, sizeof(int));\
+		printf("Gate -- NEW CIRCUIT n: %d -- qtyLevelsCom: %d\n", i, qtyLevelsCom );
 		table[i][0].totalLevels = qtyLevelsCom;
 		for( j = 0 ; j < qtyLevelsCom ; ++j )
 		{
@@ -83,10 +73,7 @@ int gateServer( void )
 				perror("Error en la alocacion de cada nivel\n");
 				return errno;
 			}
-			/*read(_stdin_, &bufferSize, sizeof(int) );
-			read(_stdin_, buffer, bufferSize );
-			qtyGatesCom = unserializeInteger( buffer, bufferSize);*/
-			read(_stdin_, &qtyGatesCom, sizeof(int));
+			readBytes = read(_stdin_, &qtyGatesCom, sizeof(int));
 			printf("Gate -- qtyGatesCom: %d\n", qtyGatesCom);
 			(table[i][j].eachLevel)->qtyGates = qtyGatesCom;
 			
@@ -97,12 +84,7 @@ int gateServer( void )
 			}
 			for( k = 0 ; k < qtyGatesCom ; ++k )
 			{
-				/*read(_stdin_, &bufferSize, sizeof(int) );
-				read(_stdin_, buffer, bufferSize );
-				printf("-- Gates -- J: %d\tbuffer: %s, bufferSize: %d after reading\n", j, buffer, bufferSize );
-				unserializeGate( (table[i][j].eachLevel)->gates[k], buffer, bufferSize);
-				free(buffer);*/
-				read( _stdin_, &((table[i][j].eachLevel)->gates[k]), sizeof(gate) );
+				readBytes = read( _stdin_, &(((table[i][j].eachLevel)->gates)[k]), sizeof(gate) );
 				printf("K: %d --- Gate: %s\n", k, (table[i][j].eachLevel)->gates[k].name);
 			}
 		}
