@@ -8,15 +8,11 @@ int main (void){
 	struct timeval timeout = {10, 0};
 	
 	readIPC(_stdin_, &countriesTableEntriesAmm, sizeof(int));
-	
-	printf("1\n");
-	
+		
 	if ((countriesTable = malloc(sizeof(void *) * countriesTableEntriesAmm)) == NULL){
 		perror("Error de memoria");
 		return errno;
 	}
-	
-	printf("2\n");
 	
 	for (i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		
@@ -37,16 +33,12 @@ int main (void){
 		free(buffer);		
 	}
 	
-	printf("3\n");
-	
 	if ((pids = malloc(sizeof(pid_t) * countriesTableEntriesAmm)) == NULL || (ipcIDs = malloc(sizeof(int *) * (countriesTableEntriesAmm / 4))) == NULL || (fixture = malloc(sizeof(void *) * (countriesTableEntriesAmm / 4))) == NULL){
 		perror("Error de memoria");
 		free(pids);
 		free(ipcIDs);
 		return errno;
 	}
-	
-	printf("4\n");
 	
 	for (j = 0, i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		if ((countriesTable[i])->isHead){
@@ -72,23 +64,20 @@ int main (void){
 				serializeCountryStruct(&buffer, &bufferSize, countriesTable[x]);
 				writeIPC(ipcIDs[j][1], &bufferSize, sizeof(int));
 				writeIPC(ipcIDs[j][1], buffer, bufferSize);
-				free(buffer);	
+				free(buffer);
 			}
 			serializeCountryStruct(&buffer, &bufferSize, countriesTable[i]);
 			writeIPC(ipcIDs[j][1], &bufferSize, sizeof(int));
 			writeIPC(ipcIDs[j][1], buffer, bufferSize);
+			free(buffer);
 			++j;
 		}
 	}
 		
-	printf("5\n");
-	
 	if ((subFixture = malloc(sizeof(void *) * countriesTableEntriesAmm / 4)) == NULL){
 		perror("Error de memoria");
 		return errno;
 	}
-	
-	printf("6\n");
 	
 	for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
 		if ((subFixture[j] = malloc(sizeof(country))) == NULL){
@@ -101,30 +90,30 @@ int main (void){
 		}
 	}
 	
-	printf("7\n");
-	
 	master = prepareIPC(ipcIDs, countriesTableEntriesAmm / 4, &allocSize);
 	
 	set = malloc(sizeof(char) * allocSize);
 	
-	printf("8\n");
-
 	while(memcpy(set, master, allocSize), selectIPC(set, 10) > 0 && flag == FALSE){
 		for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
 			if (getIPCStatus(ipcIDs[j][0], set)){
 				readIPC(ipcIDs[j][0], &bufferSize, sizeof(int));
+				buffer = malloc(sizeof(char) * bufferSize);
 				readIPC(ipcIDs[j][0], buffer, bufferSize);
 				
 				reqCountry = unserializeInteger(buffer, bufferSize);
+				free(buffer);
 				printf("IPC : %d, reqCountry desserializado = %d \n", j, reqCountry);
 
 				if (reqCountry < 0){
 					for (x = 0 ; x < 4 ; ++x){
 						readIPC(ipcIDs[j][0], &bufferSize, sizeof(int));
+						buffer = malloc(sizeof(char) * bufferSize);
 						readIPC(ipcIDs[j][0], buffer, bufferSize);
 						/*fprintf(stderr, "FIFA: Por desserializar subfixture\n");
 						unserializeCountryStruct(buffer, bufferSize, subFixture[x]);
 						fprintf(stderr, "FIFA: desserializo el subfixture\n");*/
+						free(buffer);
 					}
 					fixture[j] = subFixture;
 					if (--headsAmm == 0){
@@ -142,20 +131,17 @@ int main (void){
 					}
 					writeIPC(ipcIDs[j][1], &bufferSize, sizeof(int));
 					writeIPC(ipcIDs[j][1], buffer, bufferSize);
+					free(buffer);
 				}
 			}
 		}
 	}
-	
-	printf("9, headsAmm = %d\n", headsAmm);
 	
 	if (headsAmm != 0){
 		perror("No solution found");
 		printf("No se encontro una solucion al problema planteado");
 		return -1;
 	}
-	
-	printf("10\n");
 	
 	for (i = 0 ; i < headsAmm ; ++i){
 		wait(&status);
@@ -171,7 +157,7 @@ int main (void){
 	
 	printf("TODO BIEN!!\n");
 	
-	for (j = 0 ; j < i - 1 ; ++j){
+	for (j = 0 ; j < i ; ++j){
 		free(ipcIDs[j]);
 	}
 	free(ipcIDs);
@@ -185,6 +171,9 @@ int main (void){
 	}
 	
 	free(fixture);
+	
+	free(set);
+	free(master);
 	
 	closeIPC(_stdin_);
 	closeIPC(_stdout_);
