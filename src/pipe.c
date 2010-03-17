@@ -122,9 +122,9 @@ int main(void){
 			write(pipeChannelGo[1], &curCircuit, sizeof(curCircuit) );				/* cantidad de archivos */
 			for( i = 0 ; i < pos ; ++i )
 			{	
-				fprintf(stderr, "PIPE---Inicio\n");
+				/*fprintf(stderr, "PIPE---Inicio\n");
 				printCircuitTable(table[i]);
-				fprintf(stderr, "PIPE---Fin\n");
+				fprintf(stderr, "PIPE---Fin\n");*/
 				write(pipeChannelGo[1], &(table[i][0].totalLevels), sizeof(int));		/* cantidad de niveles del circuito */
 				for( j = 0 ; j < table[i][0].totalLevels ; ++j )
 				{
