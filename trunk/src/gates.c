@@ -46,7 +46,7 @@ int gateServer( void )
 	curGateProcess curCircuit;
 	char fa1[30], fa2[30];
 	
-	read(_stdin_, &curCircuit, sizeof(curCircuit));
+	read(_stdin_, &curCircuit, sizeof(curGateProcess));
 	qtyFileCom = curCircuit.qtyFiles;
 	
 	if( curCircuit.qtyFiles == curCircuit.curFile )
@@ -70,6 +70,7 @@ int gateServer( void )
 	for( i = 0 ; i < qtyFileCom ; ++i )
 	{
 		read(_stdin_, &(table[i][0].totalLevels), sizeof(int));
+		fprintf(stderr, "Levels: %d\n", table[i][0].totalLevels );
 		for( j = 0 ; j < table[i][0].totalLevels ; ++j )
 		{
 			if( ((table[i][j].eachLevel) = (gatesOfEachLevel*)malloc( sizeof(gatesOfEachLevel))) == NULL )
@@ -80,7 +81,7 @@ int gateServer( void )
 			read(_stdin_, &qtyGatesCom, sizeof(int));
 			(table[i][j].eachLevel)->qtyGates = qtyGatesCom;
 			
-			if( ((table[i][j].eachLevel)->gates = (gate*)malloc( sizeof(gate) * (qtyGatesCom+1))) == NULL )
+			if( ((table[i][j].eachLevel)->gates = (gate*)malloc( sizeof(gate) * (qtyGatesCom))) == NULL )
 			{
 				perror("Error en la alocacion del arreglo de compuertas\n");
 				return errno;
@@ -88,17 +89,11 @@ int gateServer( void )
 			for( k = 0 ; k < qtyGatesCom ; ++k )
 			{
 				read( _stdin_, &(((table[i][j].eachLevel)->gates)[k]), sizeof(gate) );
-				/*fprintf(stderr, "LEVEL: %d Name: %s, Father[0]: %s, Father[1]: %s, Type: %d, Input[0]: %d, Input[1]: %d, Output: %d\n", 
-								j,
-								((table[i][j].eachLevel)->gates[k]).name,
-								((table[i][j].eachLevel)->gates[k]).fathers[0],
-								((table[i][j].eachLevel)->gates[k]).fathers[1],
-								((table[i][j].eachLevel)->gates[k]).type,
-								((table[i][j].eachLevel)->gates[k]).input[0],
-								((table[i][j].eachLevel)->gates[k]).input[1],
-								((table[i][j].eachLevel)->gates[k]).output);			*/
 			}
+			fprintf(stderr, "Name Gate: %s -- %d\n", ((table[0][0].eachLevel)->gates[0]).name, j );
 		}
+		/*fprintf(stderr, "---- DESPUES DE RECIBIR LOS DATOS POR PIPE ---- \n");
+		printCircuitTable(table[i]);*/
 	}
 	
 	for( i = 0 ; i < (table[curCircuit.curFile][curCircuit.curLevel].eachLevel)->qtyGates ; ++i )

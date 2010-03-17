@@ -119,7 +119,7 @@ int main(void){
 			curCircuit.curFile = 0;
 			curCircuit.curLevel = 0;
 			
-			write(pipeChannelGo[1], &curCircuit, sizeof(curCircuit) );				/* cantidad de archivos */
+			write(pipeChannelGo[1], &curCircuit, sizeof(curGateProcess) );				/* cantidad de archivos */
 			for( i = 0 ; i < pos ; ++i )
 			{	
 				/*fprintf(stderr, "PIPE---Inicio\n");
