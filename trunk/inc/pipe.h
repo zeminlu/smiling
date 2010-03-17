@@ -41,13 +41,6 @@ int getType( int typeInt);
 int countLevels( circuitTable * circuit);
 int checkGateIsLoaded( circuitTable *circuit, char *name, int curLevel);
 
-int gateAnd( int in1, int in2 );
-int gateOr( int in1, int in2 );
-int gateXor( int in1, int in2 );
-int gateNand( int in1, int in2 );
-int gateNor( int in1, int in2 );
-int gateXnor( int in1, int in2 );
-
 void printCircuitTable( circuitTable * circuit);
 
 #endif

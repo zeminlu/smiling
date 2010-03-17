@@ -40,9 +40,10 @@ int main(void){
 
 int gateServer( void )
 {
-	int i,j,k, qtyFileCom, qtyLevelsCom, qtyGatesCom, input1, input2, type;
+	int i,j,k, qtyFileCom, qtyLevelsCom, qtyGatesCom, *input1, *input2, type, pipeChannelGo[2], gateC = 0;
 	circuitTable **table = NULL;
 	curGateProcess curCircuit;
+	char fa1[30], fa2[30];
 	
 	read(_stdin_, &curCircuit, sizeof(curCircuit));
 	qtyFileCom = curCircuit.qtyFiles;
@@ -88,52 +89,44 @@ int gateServer( void )
 		}
 	}
 	
-	for( i = 0 ; i < (table[curCircuit.curFile][curCircuit.curLevel]->eachLevel)->qtyGates ; ++i )
+	for( i = 0 ; i < (table[curCircuit.curFile][curCircuit.curLevel].eachLevel)->qtyGates ; ++i )
 	{
-		type = ((table[curCircuit.curFile][curCircuit.curLevel]->eachLevel)->gates)[i].type;
-		if( curCircuit.curLevel == 0 )
+		type = ((table[curCircuit.curFile][curCircuit.curLevel].eachLevel)->gates)[i].type;
+		input1 = &((((table[curCircuit.curFile][curCircuit.curLevel].eachLevel)->gates)[i]).input[0]);
+		input2 = &((((table[curCircuit.curFile][curCircuit.curLevel].eachLevel)->gates)[i]).input[1]);
+		strcpy( fa1, (((table[curCircuit.curFile][curCircuit.curLevel].eachLevel)->gates)[i]).fathers[0] );
+		strcpy( fa2, (((table[curCircuit.curFile][curCircuit.curLevel].eachLevel)->gates)[i]).fathers[1] );
+		
+		if( curCircuit.curLevel != 0 )
 		{
-			input1 = ((table[curCircuit.curFile][curCircuit.curLevel]->eachLevel)->gates)[i].input[0];
-			input2 = ((table[curCircuit.curFile][curCircuit.curLevel]->eachLevel)->gates)[i].input[1];
-		}else{
-			if( ((table[curCircuit.curFile][curCircuit.curLevel]->eachLevel)->gates)[i].fathers[0] != '\0' )
+			if( strcmp(fa1, (char*)'@') != 0 )
 			{
-				if( ((table[curCircuit.curFile][curCircuit.curLevel]->eachLevel)->gates)[i].input[0] == -1 )
+				if( *input1 == -1 )
 				{
-					input1 = getInputFromFather( table, curCircuit.curLevel - 1, curCircuit.curFile,
-													((table[curCircuit.curFile][curCircuit.curLevel]->eachLevel)->gates)[i].fathers[0])
+					*input1 = getInputFromFather(table, curCircuit.curLevel, curCircuit.curFile, fa1);
 				}else
 				{
-					input2 = getInputFromFather( table, curCircuit.curLevel - 1, curCircuit.curFile,
-													((table[curCircuit.curFile][curCircuit.curLevel]->eachLevel)->gates)[i].fathers[0])
+					*input2 = getInputFromFather(table, curCircuit.curLevel, curCircuit.curFile, fa1);
 				}
-			}else
-			{
-				input1 = ((table[curCircuit.curFile][curCircuit.curLevel]->eachLevel)->gates)[i].input[0];
 			}
-			
-			if( ((table[curCircuit.curFile][curCircuit.curLevel]->eachLevel)->gates)[i].fathers[1] != '\0' )
+			if( strcmp( fa2, (char*)'@') != 0 )
 			{
-				if( ((table[curCircuit.curFile][curCircuit.curLevel]->eachLevel)->gates)[i].input[1] == -1 )
+				if( *input1 == -1 )
 				{
-					input1 = getInputFromFather( table, curCircuit.curLevel - 1, curCircuit.curFile,
-													((table[curCircuit.curFile][curCircuit.curLevel]->eachLevel)->gates)[i].fathers[1])
+					*input1 = getInputFromFather(table, curCircuit.curLevel, curCircuit.curFile, fa2);
 				}else
 				{
-					input2 = getInputFromFather( table, curCircuit.curLevel - 1, curCircuit.curFile,
-													((table[curCircuit.curFile][curCircuit.curLevel]->eachLevel)->gates)[i].fathers[1])
+					*input2 = getInputFromFather(table, curCircuit.curLevel, curCircuit.curFile, fa2);
 				}
-			}else
-			{
-				input1 = ((table[curCircuit.curFile][curCircuit.curLevel]->eachLevel)->gates)[i].input[1];
 			}
 		}
-		
-		((table[curCircuit.curFile][curCircuit.curLevel]->eachLevel)->gates)[i].output = getOutput(table, input1,input2,);
+		((table[curCircuit.curFile][curCircuit.curLevel].eachLevel)->gates)[i].output = getGateHandler(type, *input1, *input2);
 	}
 	
 	if( curCircuit.curLevel == (table[curCircuit.curFile][0]).totalLevels )
 	{
+		fprintf(stderr, "Archivo: %d --- Nivel: %d\n", curCircuit.curFile, curCircuit.curLevel );
+		printCircuitTable(table[curCircuit.curFile]);
 		curCircuit.curLevel = 0;
 		curCircuit.curFile++;
 		/* FALTA CREAR EL ARCHIVO DE SALIDA DEL CIRCUITO YA PROCESADO */
@@ -142,19 +135,65 @@ int gateServer( void )
 		curCircuit.curLevel++;
 	}
 	
-	/* aca hay que hacer el fork para sus hijos y volver a pasar todo */
+	pipe(pipeChannelGo);
 	
+	switch( fork() ){
+		case _FORK_SON_:
+			close(pipeChannelGo[1]);
+			dup2(pipeChannelGo[0], _stdin_);
+			execv("./gates.bin", NULL);
+			break;
+		case _FORK_ERROR_:
+			perror("Error en el fork del pipeline\n");
+			break;
+		default:
+			dup2(pipeChannelGo[1], _stdout_);
+			close(pipeChannelGo[0]);
+					
+			write(pipeChannelGo[1], &curCircuit, sizeof(curCircuit));				
+			
+			for( i = 0 ; i < curCircuit.qtyFiles ; ++i )
+			{	
+				fprintf(stderr, "GATE---Inicio\n");
+				printCircuitTable(table[i]);
+				fprintf(stderr, "GATE---Fin\n");
+				
+				write(pipeChannelGo[1], &(table[i][0].totalLevels), sizeof(int));		
+				for( j = 0 ; j < table[i][0].totalLevels ; ++j )
+				{
+					write(pipeChannelGo[1], &((table[i][j].eachLevel)->qtyGates), sizeof(int) ); 			/* cant de compuertas */
+					for( k = 0 ; k < (table[i][j].eachLevel)->qtyGates ; ++k )
+					{
+						write( pipeChannelGo[1], &((table[i][j].eachLevel)->gates[k]), sizeof(gate) ); 	/* la compuerta */
+					}
+				}
+			}
+			freeCircuits(table, curCircuit.qtyFiles);
+			wait(&gateC);
+			break;
+	}
 	return 0;
+}
+
+/*
+ *	Libera toda la lista de circuitos levantados
+ */
+
+void freeCircuits( circuitTable **table, int qtyFile )
+{
+	int i;
+	
+	for( i = 0 ; i < qtyFile ; ++i )
+	{
+		free( ((table[i])->eachLevel)->gates );
+		free( table[i]->eachLevel );
+		free( table[i] );
+	}
 }
 
 /*
  *	Funcion encargada de retornar el output de una compuerta.
  */
-
-int getOutput( int type, int in1, int in2 )
-{
-	return getGateHandler(type,in1,in2);
-}
 
 int getGateHandler( int type, int in1, int in2 )
 {
@@ -165,7 +204,7 @@ int getGateHandler( int type, int in1, int in2 )
 		case OR:
 			return gateOr(in1,in2);
 		case XOR:
-			return gateXor(in1.in2);
+			return gateXor(in1,in2);
 		case NAND:
 			return gateNand(in1,in2);
 		case NOR:
@@ -181,7 +220,7 @@ int getGateHandler( int type, int in1, int in2 )
  *	esta procesando.
  */
 
-int getInputFromFather( circuitTable **table, int level, int file, char[] fa)
+int getInputFromFather( circuitTable **table, int level, int file, char fa[])
 {
 	
 	int i;
@@ -192,4 +231,46 @@ int getInputFromFather( circuitTable **table, int level, int file, char[] fa)
 			return ((table[file][level].eachLevel)->gates)[i].output;
 	}
 	return -1;
+}
+
+/* Compuerta AND */
+
+int gateAnd( int in1, int in2 )
+{
+	return in1 & in2;
+}
+
+/* Compuerta OR */
+
+int gateOr( int in1, int in2 )
+{
+	return in1 | in2;
+}
+
+/* Compuerta XOR */
+
+int gateXor( int in1, int in2 )
+{
+	return in1 ^ in2; 
+}
+
+/* Compuerta NAND */
+
+int gateNand( int in1, int in2 )
+{
+	return !gateAnd(in1,in2);
+}
+
+/* Compuerta NOR */
+
+int gateNor( int in1, int in2 )
+{
+	return !gateOr(in1,in2);
+}
+
+/* Compuerta XNOR */
+
+int gateXnor( int in1, int in2 )
+{
+	return !gateXor(in1,in2);
 }
