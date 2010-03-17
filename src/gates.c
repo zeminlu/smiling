@@ -88,7 +88,7 @@ int gateServer( void )
 			for( k = 0 ; k < qtyGatesCom ; ++k )
 			{
 				read( _stdin_, &(((table[i][j].eachLevel)->gates)[k]), sizeof(gate) );
-				fprintf(stderr, "LEVEL: %d Name: %s, Father[0]: %s, Father[1]: %s, Type: %d, Input[0]: %d, Input[1]: %d, Output: %d\n", 
+				/*fprintf(stderr, "LEVEL: %d Name: %s, Father[0]: %s, Father[1]: %s, Type: %d, Input[0]: %d, Input[1]: %d, Output: %d\n", 
 								j,
 								((table[i][j].eachLevel)->gates[k]).name,
 								((table[i][j].eachLevel)->gates[k]).fathers[0],
@@ -96,7 +96,8 @@ int gateServer( void )
 								((table[i][j].eachLevel)->gates[k]).type,
 								((table[i][j].eachLevel)->gates[k]).input[0],
 								((table[i][j].eachLevel)->gates[k]).input[1],
-								((table[i][j].eachLevel)->gates[k]).output);			}
+								((table[i][j].eachLevel)->gates[k]).output);			*/
+			}
 		}
 	}
 	
