@@ -16,4 +16,18 @@
 #include "../inc/serializable.h"
 #include "../inc/ipcAPI.h"
 
+int loadHeadAndCountriesTable(country ***countriesTable, country **head);
+
+int checkConditions(country *data, void *(***conditions)(void *condArgs));
+
+int buildCondArgs(condPack **condArgs, country **countriesTable, int countriesTableEntriesAmm, country *data, int condAmm, int *index);
+
+int prepareGroup(subFixture **group, country *data);
+
+int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country *data, country **countriesTable, void *(**conditions)(void *condArgs));
+
+int intersect(int condAmm, condPack *condArgs, set **intersection);
+
+int sendSubfixture(subFixture *group);
+
 #endif
