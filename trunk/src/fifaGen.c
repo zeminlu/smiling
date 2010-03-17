@@ -30,29 +30,35 @@ int main (void){
 	printf("Ingrese cantidad de paises\n");
 	while (scanf("%d", &amm) != 1){
 		printf("Ingrese un numero ENTERO\n");
+		while(getchar() != '\n');
 	}	
 	
 	for (i = 0 ; i < amm ; ++i){
 		printf("Ingrese el nombre del pais\n");
 		while (scanf("%s", countries->name) != 1){
 			printf("Ingrese SOLO el nombre del pais\n");
+			while(getchar() != '\n');
 		}
 		printf("Ingrese el ID del continente\n");
 		while (scanf("%d", &(countries->continent)) != 1){
 			printf("Ingrese SOLO el ID del continente\n");
+			while(getchar() != '\n');
 		}
 		printf("Ingrese 1 si el pais fue campeón, 0 de lo contrario\n");
 		while (scanf("%d", &(countries->champ)) != 1){
 			printf("Ingrese SOLO 1 o 0\n");
+			while(getchar() != '\n');
 		}
 		printf("Ingrese el peso del pais\n");
 		while (scanf("%d", &(countries->weight)) != 1){
 			printf("Ingrese un numero ENTERO\n");
+			while(getchar() != '\n');
 		}
 		if (headsAmm < amm / 4){
 			printf("Debe ser Cabeza de Serie? Restan %d\n", amm/4 - headsAmm);
 			while (scanf("%d", &head) != 1){
 				printf("Ingrese SOLO 1 o 0");
+				while(getchar() != '\n');
 			}
 			if (head){
 				++headsAmm;
@@ -63,6 +69,7 @@ int main (void){
 					printf("Debe ser el grupo de la muerte?\n");
 					while (scanf("%d", &death) != 1){
 						printf("Ingrese SOLO 1 o 0\n");
+						while(getchar() != '\n');
 					}
 					if (death){
 						countries->deathGroup = TRUE;
@@ -73,6 +80,7 @@ int main (void){
 
 				while (scanf("%d", &c1) != 1){
 					printf("Ingrese SOLO 1 o 0\n");
+					while(getchar() != '\n');
 				}
 				if(c1 == FALSE){
 					countries->sameContinent = TRUE;
@@ -82,12 +90,14 @@ int main (void){
 					printf("Debe ser grupo debil?\n");
 					while (scanf("%d", &c2) != 1){
 						printf("Ingrese SOLO 1 o 0\n");
+						while(getchar() != '\n');
 					}
 
 					if(c2 == FALSE){
 						printf("Debe intentar incluir campeones?\n");
 						while (scanf("%d", &c3) != 1){
 							printf("Ingrese SOLO 1 o 0\n");
+							while(getchar() != '\n');
 						}
 						if (c3 == !FALSE){
 							countries->champGroup = TRUE;

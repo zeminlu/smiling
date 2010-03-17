@@ -165,18 +165,20 @@ int main (void){
 	Guardar a archivo la solucion
 	*/
 	
-	printf("TODO BIEN!!\n");
-	
 	for (j = 0 ; j < i ; ++j){
 		free(ipcIDs[j]);
 	}
 	free(ipcIDs);
 	free(pids);
+	
+	printf("\n");
 	for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
+		printf("Grupo %d:\n", j + 1);
 		for(i = 0; i < 4; ++i){
 			printf("%s\n", (fixture[j][i])->name);
 			free(fixture[j][i]);
 		}
+		printf("\n");
 		free(fixture[j]);
 	}
 	
