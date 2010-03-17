@@ -1,12 +1,12 @@
 <circuit>
 	<gates>
-		<A type="0" input1="1" input2="0">
-			<C type="0" input2="1">
-				<F type="3" />
-			</C>
-			<D type="1" input1="1">
-				<F type ="3" />
-			</D>
-		</A>
+		<H type="0" input1="1" input2="0">
+			<I type="0" input2="1">
+				<J type="3" />
+			</I>
+			<K type="1" input1="1">
+				<J type ="3" />
+			</K>
+		</H>
 	</gates>
 </circuit>

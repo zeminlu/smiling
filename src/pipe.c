@@ -16,7 +16,7 @@ int main(void){
 	
 	DIR *dp;
 	struct dirent *d = NULL;
-	int i, j, k, gateC = 0, qtyFiles = 0, pos = 0, pipeChannelGo[2], tLevel = 0;
+	int i, j, k, gateC = 0, qtyFiles = 0, pos = 0, pipeChannelGo[2];
 	FILE *dataFile = NULL;
 	circuitTable **table = NULL;
 	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;
@@ -119,15 +119,14 @@ int main(void){
 			curCircuit.curFile = 0;
 			curCircuit.curLevel = 0;
 			
-			write(pipeChannelGo[1], &curCircuit, sizeof(curCircuit));				/* cantidad de archivos */
+			write(pipeChannelGo[1], &curCircuit, sizeof(curCircuit) );				/* cantidad de archivos */
 			for( i = 0 ; i < pos ; ++i )
 			{	
 				fprintf(stderr, "PIPE---Inicio\n");
 				printCircuitTable(table[i]);
 				fprintf(stderr, "PIPE---Fin\n");
-				tLevel = table[i][0].totalLevels;
-				write(pipeChannelGo[1], &tLevel, sizeof(int));		/* cantidad de niveles del circuito */
-				for( j = 0 ; j < tLevel ; ++j )
+				write(pipeChannelGo[1], &(table[i][0].totalLevels), sizeof(int));		/* cantidad de niveles del circuito */
+				for( j = 0 ; j < table[i][0].totalLevels ; ++j )
 				{
 					write(pipeChannelGo[1], &((table[i][j].eachLevel)->qtyGates), sizeof(int) ); 			/* cant de compuertas */
 					for( k = 0 ; k < (table[i][j].eachLevel)->qtyGates ; ++k )
