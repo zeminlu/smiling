@@ -2,112 +2,206 @@
 
 int main (void){
 	
-	country *data = NULL;
+	country *data = NULL, **countriesTable = NULL;
 	condPack *condArgs;
-	set **aux = NULL;
 	subFixture *group = NULL;
-	void *buffer = NULL;
 	void *(**conditions)(void *condArgs) = NULL;
-	pthread_t *threads = NULL;
-	int i = 0, j = 0, k = 0, x = 0, y = 0, index = 0, reqCountry, freePt = 0, bufferSize = 0, countriesTableEntriesAmm;
-	country **countriesTable = NULL;
+	int i = 0, index = 0, countriesTableEntriesAmm, status, condAmm;
+	
+	if ((countriesTableEntriesAmm = loadHeadAndCountriesTable(&countriesTable, &data)) < 0){
+		return countriesTableEntriesAmm;
+	}
+
+	if ((condAmm = checkConditions(data, &conditions)) < 0){
+		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
+			free(countriesTable[i]);
+		}
+		free(countriesTable);
+		return condAmm;
+	}
+	
+	if ((status = buildCondArgs(&condArgs, countriesTable, countriesTableEntriesAmm, data, condAmm, &index)) != 0){
+		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
+			free(countriesTable[i]);
+		}
+		free(countriesTable);
+		free (conditions);
+		return status;
+	} 
+		
+	if ((status = prepareGroup(&group, data)) != 0){
+		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
+			free(countriesTable[i]);
+		}
+		free(countriesTable);
+		free (conditions);
+		free(condArgs->sets);
+		free(condArgs);
+		return status;
+	}
+		
+	if ((status = buildSubfixture(&group, condAmm, condArgs, data, countriesTable, conditions)) != 0){
+		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
+			free(countriesTable[i]);
+		}
+		free(countriesTable);
+		free (conditions);
+		for (i = 0 ; i < condAmm ; ++i){
+			free(condArgs->sets[i]);
+		}
+		free(condArgs->sets);
+		free(condArgs);
+		return status;
+	}
+	
+	status = sendSubfixture(group);
+	
+	for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
+		free(countriesTable[i]);
+	}
+	free(data);
+	free (conditions);
+	for (i = 0 ; i < condAmm ; ++i){
+		free(condArgs->sets[i]);
+	}
+	free(condArgs->sets);
+	free(condArgs);
+	for (i = 0 ; i < 4; ++i){
+		free (group->countries[i]);
+	}
+	free(group->countries);
+	free(group);	
+	closeIPC(_stdin_);
+	closeIPC(_stdout_);
+	
+	return status;
+}
+
+int loadHeadAndCountriesTable(country ***countriesTable, country **head){
+	int countriesTableEntriesAmm, i, j, bufferSize;
+	void *buffer;
 	
 	readIPC(_stdin_, &countriesTableEntriesAmm, sizeof(int));
-	if ((countriesTable = malloc(sizeof(void *) * countriesTableEntriesAmm)) == NULL){
+		
+	if (((*countriesTable) = malloc(sizeof(void *) * countriesTableEntriesAmm)) == NULL){
 		perror("Error de memoria");
 		return errno;
 	}
+	
 	for (i = 0 ; i < countriesTableEntriesAmm ; ++i){
+		
 		readIPC(_stdin_, &bufferSize, sizeof(int));
 		
-		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL ||	(countriesTable[i] = malloc(sizeof(country))) == NULL){
+		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL || ((*countriesTable)[i] = malloc(sizeof(country))) == NULL){
 			perror("Error de memoria");
 			free(buffer);
 			for(j = 0 ; j < i ; ++j){
-				free(countriesTable[j]);
+				free((*countriesTable)[j]);
 			}
-			free(countriesTable);
+			free((*countriesTable));
 			return errno;
 		}
 		
 		readIPC(_stdin_, buffer, bufferSize);
-		unserializeCountryStruct(buffer, bufferSize, countriesTable[i]);
+		unserializeCountryStruct(buffer, bufferSize, (*countriesTable)[i]);
 		free(buffer);		
 	}
+	
 	readIPC(_stdin_, &bufferSize, sizeof(int));
 	
-	if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL || (data = malloc(sizeof(country))) == NULL){
+	if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL || ((*head) = malloc(sizeof(country))) == NULL){
 		perror("Error de memoria");
+		for(j = 0 ; j < countriesTableEntriesAmm ; ++j){
+			free((*countriesTable)[j]);
+		}
+		free((*countriesTable));
 		free(buffer);
 		return errno;
 	}
 	readIPC(_stdin_, buffer, bufferSize);
-	unserializeCountryStruct(buffer, bufferSize, data);
+	unserializeCountryStruct(buffer, bufferSize, *head);
 	free(buffer);
+	
+	return countriesTableEntriesAmm;
+}
 
-	i = 0;
+int checkConditions(country *data, void *(***conditions)(void *condArgs)){
+	int i = 0;
 	if (data->sameContinent){
-		if ((conditions = realloc(conditions, sizeof(void *) * (++i))) == NULL){
+		if (((*conditions) = realloc((*conditions), sizeof(void *) * (++i))) == NULL){
 			perror("Error de memoria");
-			free(data);
 			return errno;
 		}	
-		conditions[i - 1] = sameContinent;
+		(*conditions)[i - 1] = sameContinent;
 	}
 	if (data->weakGroup){
-		if ((conditions = realloc(conditions, sizeof(void *) * (++i))) == NULL){
+		if (((*conditions) = realloc((*conditions), sizeof(void *) * (++i))) == NULL){
 			perror("Error de memoria");
 			free(conditions);
-			free(data);
 			return errno;
 		}
-		conditions[i - 1] = weakGroup;
+		(*conditions)[i - 1] = weakGroup;
 	}
 	if (data->champGroup){
-		if ((conditions = realloc(conditions, sizeof(void *) * (++i))) == NULL){
+		if (((*conditions) = realloc((*conditions), sizeof(void *) * (++i))) == NULL){
 			perror("Error de memoria");
 			free(conditions);
-			free(data);
 			return errno;
 		}
-		conditions[i - 1] = champGroup;
+		(*conditions)[i - 1] = champGroup;
 	}
 	if (data->deathGroup){
-		if ((conditions = realloc(conditions, sizeof(void *) * (++i))) == NULL){
+		if (((*conditions) = realloc((*conditions), sizeof(void *) * (++i))) == NULL){
 			perror("Error de memoria");
 			free(conditions);
-			free(data);
 			return errno;
 		}
-		conditions[i - 1] = deathGroup;
+		(*conditions)[i - 1] = deathGroup;
 	}
-	
-	if ((condArgs = malloc(sizeof(condPack))) == NULL){
+	return i;
+}
+
+int buildCondArgs(condPack **condArgs, country **countriesTable, int countriesTableEntriesAmm, country *data, int condAmm, int *index){
+	if (((*condArgs) = malloc(sizeof(condPack))) == NULL || ((*condArgs)->sets = malloc(sizeof(void *) * condAmm)) == NULL){
 		perror("Error de memoria");
-		free(conditions);
-		free(data);
+		free(*condArgs);
 		return errno;
 	}
 	
-	condArgs->countries = countriesTable;
-	condArgs->head = data;
-	condArgs->index = &index;
-	condArgs->maxCountries = countriesTableEntriesAmm;
+	(*condArgs)->countries = countriesTable;
+	(*condArgs)->head = data;
+	(*condArgs)->index = index;
+	(*condArgs)->maxCountries = countriesTableEntriesAmm;
 	
-	if ((condArgs->sets = malloc(sizeof(void *) * i)) == NULL || (threads = malloc(sizeof(pthread_t) * i)) == NULL || (group = malloc(sizeof(subFixture))) == NULL || (group->countries = malloc(sizeof(void *) * 4)) == NULL){
-			free(condArgs->sets);
-			free(threads);
-			free(group);
-			free(conditions);
-			free(data);
+	return 0;
+}
+
+int prepareGroup(subFixture **group, country *data){
+	if (((*group) = malloc(sizeof(subFixture))) == NULL || ((*group)->countries = malloc(sizeof(void *) * 4)) == NULL){
 			perror("Error de memoria");
+			free((*group));
 			return errno;
 	}
+	(*group)->countries[0] = data;
+	(*group)->countriesAmm = 1;
 	
-	group->countries[0] = data;
-	group->countriesAmm = 1;
+	return 0;
+}
+
+int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country *data, country **countriesTable, void *(**conditions)(void *condArgs)){
+	int i, j = 0, reqCountry, bufferSize;
+	pthread_t *threads = NULL;
+	void *buffer;
+	set *intersection = NULL;
 	
-	while (group->countriesAmm < 4){
+	if ((threads = malloc(sizeof(pthread_t) * condAmm)) == NULL){
+		perror("Error de memoria");
+		return errno;
+	}
+	
+	i = condAmm;
+	
+	while ((*group)->countriesAmm < 4){
 		if (i == 0){
 			noCondition(condArgs);
 			reqCountry = condArgs->sets[0]->country[0];
@@ -123,72 +217,18 @@ int main (void){
 			for (j = 0 ; j < i ; ++j){
 				pthread_join(threads[j], NULL);
 			}
-
-			if ((aux = malloc(sizeof(void *))) == NULL ||
-				(aux[0] = malloc(sizeof(subFixture))) == NULL ||			
-				(aux[0]->country = malloc(sizeof(int *) * ((condArgs->sets)[0])->countriesAmm)) == NULL){
-					free(aux[0]);
-					free(aux);
-					free(conditions);
-					free(threads);
-					free(group->countries);
-					free(group);
-					for(j = 0 ; j < i ; ++j){
-						free(condArgs->sets[j]);
-					}
-					free(condArgs->sets);
-					free(condArgs);
-					free(data);
-					perror("Error de memoria");
-					return errno;
-				}
-			for (j = 0 ; j < ((condArgs->sets)[0])->countriesAmm ; ++j){
-				((aux[0])->country)[j] = (((condArgs->sets)[0])->country)[j]; 
-			}
-			(aux[0])->countriesAmm = j;
-
-			for (j = 1 ; j < i ; ++j){	
-				if ((aux = realloc(aux, sizeof(void *) * (j + 1))) == NULL || (aux[j] = malloc(sizeof(subFixture))) == NULL || ((aux[j])->country = malloc(sizeof(int) * (aux[0])->countriesAmm)) == NULL){
-						for(freePt = 0 ; freePt <= j ; ++freePt){
-							free(aux[freePt]->country);
-							free(aux[freePt]);
-						}
-						free(aux);
-						free(data);
-						free(conditions);
-						free(threads);
-						free(group->countries);
-						free(group);
-						for(j = 0 ; j < i ; ++j){
-							free(condArgs->sets[j]);
-						}
-						free(condArgs->sets);
-						free(condArgs);
-						perror("Error de memoria");
-						return errno;
-				}
-				
-				fprintf(stderr, "groupH: %s, seccion: preinterseccion\n", data->name);
-				
-				y = 0; 
-				while (x < aux[j - 1]->countriesAmm && k < ((condArgs->sets)[j])->countriesAmm) {  
-					if (((aux[j - 1])->country)[x] == (((condArgs->sets)[j])->country)[k]) {  
-						aux[j]->country[y] = ((aux[j - 1])->country)[x];
-						x++;  
-						k++;
-						y++;  
-					}  
-					else if (((aux[j])->country)[x] < (((condArgs->sets)[j + 1])->country)[k]) {  
-						x++;  
-					}  
-					else {  
-						k++;  
-					}  
-				}
-			}
-			reqCountry = aux[j]->country[rand() % aux[j]->countriesAmm];
+			
+			intersect(condAmm, condArgs, &intersection);
+						
+			reqCountry = intersection->country[rand() % intersection->countriesAmm];
+			free(intersection->country);
+			free(intersection);
 		}
 
+		for (j = 0 ; j < i ; ++j){
+			free(condArgs->sets[j]->country);
+		}
+		
 		serializeInteger(&buffer, &bufferSize, reqCountry);
 		writeIPC(_stdout_, &bufferSize, sizeof(int));
 		writeIPC(_stdout_, buffer, bufferSize);
@@ -196,19 +236,7 @@ int main (void){
 		readIPC(_stdin_, &bufferSize, sizeof(int));
 		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL){
 			perror("Error de memoria");
-			for (j = 0 ; j < i ; ++j){
-				free(condArgs->sets[j]->country);
-				free(condArgs->sets[j]);
-			}
-			for (x = 0 ; x < i ; ++ x){
-				free(aux[x]->country);
-				free(aux[x]);
-			}
-			free(condArgs->sets);
-			free(condArgs);
-			free(conditions);
 			free(threads);
-			free(data);
 			return errno;
 		}
 		readIPC(_stdin_, buffer, bufferSize);
@@ -220,46 +248,87 @@ int main (void){
 		}
 		free(buffer);
 		countriesTable[reqCountry]->used = TRUE;
-		group->countries[group->countriesAmm] = countriesTable[reqCountry];
-		++(group->countriesAmm);
-		
-		for (j = 0 ; j < i ; ++j){
-			free(condArgs->sets[j]->country);
-			free(condArgs->sets[j]);
-		}
-		for (x = 0 ; x < i ; ++ x){
-			free(aux[x]->country);
-			free(aux[x]);
-		}
+		(*group)->countries[(*group)->countriesAmm] = countriesTable[reqCountry];
+		++((*group)->countriesAmm);
 	}
-	fprintf(stderr, "GroupH: %s Termino.\n", data->name);
+	
+	free(threads);
+	
+	return 0;
+}
+
+int intersect(int condAmm, condPack *condArgs, set **intersection){
+	set **aux = NULL;
+	int i, j = 0, k = 0, x = 0, y = 0;
+	
+	if ((aux = malloc(sizeof(void *) * condAmm)) == NULL ||
+		(aux[0] = malloc(sizeof(set))) == NULL ||			
+		(aux[0]->country = malloc(sizeof(int *) * ((condArgs->sets)[0])->countriesAmm)) == NULL){
+			perror("Error de memoria");
+			free(aux[0]);
+			free(aux);
+			return errno;
+		}
+	for (j = 0 ; j < ((condArgs->sets)[0])->countriesAmm ; ++j){
+		((aux[0])->country)[j] = (((condArgs->sets)[0])->country)[j]; 
+	}
+	(aux[0])->countriesAmm = j;
+
+	for (j = 1 ; j < condAmm ; ++j){	
+		if ((aux[j] = malloc(sizeof(set))) == NULL || ((aux[j])->country = malloc(sizeof(int) * (aux[j - 1])->countriesAmm)) == NULL){
+				perror("Error de memoria");
+				for(i = 0 ; i < j - 1 ; ++i){
+					free(aux[i]->country);
+					free(aux[i]);
+				}
+				free(aux[j]);
+				free(aux);
+				return errno;
+		}
+		
+		x = k = y = 0;
+		while (x < aux[j - 1]->countriesAmm && k < ((condArgs->sets)[j])->countriesAmm) {  
+			if (((aux[j - 1])->country)[x] == (((condArgs->sets)[j])->country)[k]) {  
+				aux[j]->country[y] = ((aux[j - 1])->country)[x];
+				x++;  
+				k++;
+				y++;  
+			}  
+			else if (((aux[j])->country)[x] < (((condArgs->sets)[j + 1])->country)[k]) {  
+				x++;  
+			}  
+			else {  
+				k++;  
+			}  
+		}
+		aux[j]->countriesAmm = y;
+	}
+	*intersection = aux[j - 1];
+	
+	for(i = 0 ; i < j - 2 ; ++i){
+		free(aux[i]->country);
+		free(aux[i]);
+	}
+	free(aux);
+	
+	return 0;
+}
+
+int sendSubfixture(subFixture *group){
+	int i, bufferSize;
+	void *buffer;
+	
 	serializeInteger(&buffer, &bufferSize, -1);
 	writeIPC(_stdout_, &bufferSize, sizeof(int));
 	writeIPC(_stdout_, buffer, bufferSize);
 	free(buffer);
 	
 	for (i = 0 ; i < 4 ; ++i){
-		fprintf(stderr, "Mandando pais %d\n", i);
 		serializeCountryStruct(&buffer, &bufferSize, group->countries[i]);
 		writeIPC(_stdout_, &bufferSize, sizeof(int));
-		fprintf(stderr, "Buffersize en groupH = %d\n", bufferSize);
 		writeIPC(_stdout_, buffer, bufferSize);
 		free(buffer);
 	}
-	
-	free(condArgs->sets);
-	free(condArgs);
-	free(conditions);
-	free(threads);
-	
-	for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
-		free(countriesTable[i]);
-	}
-	free(countriesTable);
-	free(data);
-	
-	close(_stdin_);
-	close(_stdout_);
 	
 	return 0;
 }
