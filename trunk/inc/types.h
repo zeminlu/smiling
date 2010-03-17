@@ -38,7 +38,7 @@ typedef struct{
 typedef struct{
 	char name[30];
 	int type;
-	char fathers[2][30];
+	char fathers[2][15];
 	int output;
 	int input[2];
 	} gate;
