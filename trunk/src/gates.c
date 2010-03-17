@@ -18,7 +18,7 @@ void printCircuitTable( circuitTable * circuit)
 		{
 			fprintf(stderr, "LEVEL: %d Name: %s, Father[0]: %s, Father[1]: %s, Type: %d, Input[0]: %d, Input[1]: %d, Output: %d\n", 
 						i,
-						(circuit[i].eachLevel)->gates[j].name,
+						((circuit[i].eachLevel)->gates[j]).name,
 						(circuit[i].eachLevel)->gates[j].fathers[0],
 						(circuit[i].eachLevel)->gates[j].fathers[1],
 						(circuit[i].eachLevel)->gates[j].type,
@@ -41,7 +41,7 @@ int main(void){
 
 int gateServer( void )
 {
-	int i,j,k, qtyFileCom, qtyLevelsCom, qtyGatesCom, *input1, *input2, type, pipeChannelGo[2], gateC = 0;
+	int i,j,k, qtyFileCom, qtyGatesCom, *input1, *input2, type, pipeChannelGo[2], gateC = 0;
 	circuitTable **table = NULL;
 	curGateProcess curCircuit;
 	char fa1[30], fa2[30];
@@ -53,13 +53,11 @@ int gateServer( void )
 	{
 		exit(0);
 	}
-	
 	if( (table = (circuitTable**)malloc( sizeof(circuitTable*) * qtyFileCom) ) == NULL )
 	{
 		perror("Error en la alocacion de memoria\n");
 		return errno;
 	}
-	
 	for( i = 0 ; i < qtyFileCom ; ++i )
 	{
 		if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable))) == NULL )
@@ -71,9 +69,8 @@ int gateServer( void )
 	
 	for( i = 0 ; i < qtyFileCom ; ++i )
 	{
-		read(_stdin_, &qtyLevelsCom, sizeof(int));\
-		table[i][0].totalLevels = qtyLevelsCom;
-		for( j = 0 ; j < qtyLevelsCom ; ++j )
+		read(_stdin_, &(table[i][0].totalLevels), sizeof(int));
+		for( j = 0 ; j < table[i][0].totalLevels ; ++j )
 		{
 			if( ((table[i][j].eachLevel) = (gatesOfEachLevel*)malloc( sizeof(gatesOfEachLevel))) == NULL )
 			{
@@ -83,7 +80,7 @@ int gateServer( void )
 			read(_stdin_, &qtyGatesCom, sizeof(int));
 			(table[i][j].eachLevel)->qtyGates = qtyGatesCom;
 			
-			if( ((table[i][j].eachLevel)->gates = (gate*)malloc( sizeof(gate) * qtyGatesCom)) == NULL )
+			if( ((table[i][j].eachLevel)->gates = (gate*)malloc( sizeof(gate) * (qtyGatesCom+1))) == NULL )
 			{
 				perror("Error en la alocacion del arreglo de compuertas\n");
 				return errno;
@@ -91,8 +88,15 @@ int gateServer( void )
 			for( k = 0 ; k < qtyGatesCom ; ++k )
 			{
 				read( _stdin_, &(((table[i][j].eachLevel)->gates)[k]), sizeof(gate) );
-				fprintf(stderr, "Gate Name: %s\n", (((table[i][j].eachLevel)->gates)[k]).name );
-			}
+				fprintf(stderr, "LEVEL: %d Name: %s, Father[0]: %s, Father[1]: %s, Type: %d, Input[0]: %d, Input[1]: %d, Output: %d\n", 
+								j,
+								((table[i][j].eachLevel)->gates[k]).name,
+								((table[i][j].eachLevel)->gates[k]).fathers[0],
+								((table[i][j].eachLevel)->gates[k]).fathers[1],
+								((table[i][j].eachLevel)->gates[k]).type,
+								((table[i][j].eachLevel)->gates[k]).input[0],
+								((table[i][j].eachLevel)->gates[k]).input[1],
+								((table[i][j].eachLevel)->gates[k]).output);			}
 		}
 	}
 	
@@ -127,14 +131,13 @@ int gateServer( void )
 				}
 			}
 		}
-		if( curCircuit.curFile == 1 )
-			fprintf(stderr, "Fa1: %s, Fa2: %s, Input1: %d, Input2: %d\n", fa1,fa2,*input1,*input2);
 		((table[curCircuit.curFile][curCircuit.curLevel].eachLevel)->gates)[i].output = getGateHandler(type, *input1, *input2);
 	}
 	
 	fprintf(stderr, "Archivo: %d --- Nivel: %d\n", curCircuit.curFile, curCircuit.curLevel );
 	printCircuitTable(table[curCircuit.curFile]);
-	
+	fprintf(stderr, "----------------------------------------\n");
+
 	if( curCircuit.curLevel == (table[curCircuit.curFile][0]).totalLevels - 1 )
 	{
 		fprintf(stderr, "Final de un circuito, Archivo: %d --- Nivel: %d\n", curCircuit.curFile, curCircuit.curLevel );
@@ -159,7 +162,6 @@ int gateServer( void )
 			perror("Error en el fork del pipeline\n");
 			break;
 		default:
-			dup2(pipeChannelGo[1], _stdout_);
 			close(pipeChannelGo[0]);
 					
 			write(pipeChannelGo[1], &curCircuit, sizeof(curCircuit));				
@@ -169,10 +171,10 @@ int gateServer( void )
 				write(pipeChannelGo[1], &(table[i][0].totalLevels), sizeof(int));		
 				for( j = 0 ; j < table[i][0].totalLevels ; ++j )
 				{
-					write(pipeChannelGo[1], &((table[i][j].eachLevel)->qtyGates), sizeof(int) ); 			/* cant de compuertas */
+					write(pipeChannelGo[1], &((table[i][j].eachLevel)->qtyGates), sizeof(int) );
 					for( k = 0 ; k < (table[i][j].eachLevel)->qtyGates ; ++k )
 					{
-						write( pipeChannelGo[1], &((table[i][j].eachLevel)->gates[k]), sizeof(gate) ); 	/* la compuerta */
+						write( pipeChannelGo[1], &((table[i][j].eachLevel)->gates[k]), sizeof(gate) ); 
 					}
 				}
 			}
