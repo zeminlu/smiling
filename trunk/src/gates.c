@@ -48,6 +48,11 @@ int gateServer( void )
 	read(_stdin_, &curCircuit, sizeof(curCircuit));
 	qtyFileCom = curCircuit.qtyFiles;
 	
+	if( curCircuit.qtyFiles == curCircuit.curFile )
+	{
+		exit(0);
+	}
+	
 	if( (table = (circuitTable**)malloc( sizeof(circuitTable*) * qtyFileCom) ) == NULL )
 	{
 		perror("Error en la alocacion de memoria\n");
@@ -99,7 +104,7 @@ int gateServer( void )
 		
 		if( curCircuit.curLevel != 0 )
 		{
-			if( strcmp(fa1, (char*)'@') != 0 )
+			if( fa1[0] != '\0' )
 			{
 				if( *input1 == -1 )
 				{
@@ -109,7 +114,7 @@ int gateServer( void )
 					*input2 = getInputFromFather(table, curCircuit.curLevel, curCircuit.curFile, fa1);
 				}
 			}
-			if( strcmp( fa2, (char*)'@') != 0 )
+			if( fa2[0] != '\0' )
 			{
 				if( *input1 == -1 )
 				{
