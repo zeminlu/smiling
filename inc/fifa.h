@@ -17,4 +17,10 @@
 #include "../inc/serializable.h"
 #include "../inc/ipcAPI.h"
 
+int loadCountriesTable(country ***countriesTable);
+
+int startChildProcesses(int ***ipcIDs, country **countriesTable, int countriesTableEntriesAmm, country ****fixture, pid_t **pids);
+
+int childsListener(void *set, void *master, int allocSize, int **ipcIDs, country **countriesTable, int countriesTableEntriesAmm, country ***fixture);
+
 #endif
