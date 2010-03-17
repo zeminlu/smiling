@@ -1,7 +1,7 @@
 #include "../inc/fifa.h"
 
 int main (void){
-	int i, j, x, bufferSize, status, **ipcIDs = NULL, reqCountry = 0, headsAmm = 0, flag = FALSE, countriesTableEntriesAmm, ipcStatus, allocSize;
+	int i, j, x, bufferSize, status, **ipcIDs = NULL, reqCountry = 0, headsAmm = 0, flag = FALSE, countriesTableEntriesAmm, ipcStatus, allocSize, finished[2];
 	pid_t *pids, actPid;
 	void *buffer = NULL, *master = NULL, *set = NULL;
 	country **subFixture, ***fixture = NULL, **countriesTable = NULL;
@@ -38,12 +38,19 @@ int main (void){
 		free(ipcIDs);
 		return errno;
 	}
-	
-	for (j = 0, i = 0 ; i < countriesTableEntriesAmm ; ++i){
+
+	for (j = 0, i = 0 ; i < countriesTableEntriesAmm && j < countriesTableEntriesAmm / 4 ; ++i){
 		if ((countriesTable[i])->isHead){
 			countriesTable[i]->used = TRUE;
-			
-			if((ipcIDs[j] = malloc(sizeof(int) * 2)) == NULL){
+		}
+		++j;
+	}
+	
+	fixture = malloc(sizeof(void *) * j);
+	
+	for (j = 0, i = 0 ; i < countriesTableEntriesAmm && j < countriesTableEntriesAmm / 4 ; ++i){
+		if ((countriesTable[i])->isHead){
+			if((ipcIDs[j] = malloc(sizeof(int) * 2)) == NULL || (fixture[j] = malloc(sizeof(void *) * 4)) == NULL){
 				perror("Error de memoria");
 				for (j -= 1; j >= 0 ; --j){
 					free(ipcIDs[j]);
@@ -53,8 +60,9 @@ int main (void){
 				free(fixture);
 				return errno;
 			}
-			
+			finished[j] = FALSE;
 			ipcStatus = setupIPC(_FULL_DUPLEX_, ipcIDs[j], "./grouph.bin", &actPid);
+			printf("ipcStatus de %d = %d y pid = %d\n", j, ipcStatus, actPid);
 			
 			pids[headsAmm++] = actPid;
 
@@ -73,12 +81,12 @@ int main (void){
 		}
 	}
 		
-	if ((subFixture = malloc(sizeof(void *) * countriesTableEntriesAmm / 4)) == NULL){
+	if ((subFixture = malloc(sizeof(void *) * 4)) == NULL){
 		perror("Error de memoria");
 		return errno;
 	}
 	
-	for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
+	for (j = 0 ; j < 4 ; ++j){
 		if ((subFixture[j] = malloc(sizeof(country))) == NULL){
 			perror("Error de memoria");
 			for (x = 0 ; x < j ; ++x){
@@ -95,7 +103,7 @@ int main (void){
 	
 	while(memcpy(set, master, allocSize), selectIPC(set, 10) > 0 && flag == FALSE){
 		for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
-			if (getIPCStatus(ipcIDs[j][0], set)){
+			if (getIPCStatus(ipcIDs[j][0], set) && finished[j] == FALSE){
 				readIPC(ipcIDs[j][0], &bufferSize, sizeof(int));
 				buffer = malloc(sizeof(char) * bufferSize);
 				readIPC(ipcIDs[j][0], buffer, bufferSize);
@@ -103,26 +111,28 @@ int main (void){
 				free(buffer);
 				
 				printf("IPC : %d, reqCountry desserializado = %d \n", j, reqCountry);
-
+				
 				if (reqCountry < 0){
-					/*for (x = 0 ; x < 4 ; ++x){
+					for (x = 0 ; x < 4 ; ++x){
 						readIPC(ipcIDs[j][0], &bufferSize, sizeof(int));
 						buffer = malloc(sizeof(char) * bufferSize);
 						readIPC(ipcIDs[j][0], buffer, bufferSize);
-						fprintf(stderr, "FIFA: Por desserializar subfixture\n");
 						unserializeCountryStruct(buffer, bufferSize, subFixture[x]);
-						fprintf(stderr, "FIFA: desserializo el subfixture\n");
 						free(buffer);
+						fixture[j][x] = malloc(sizeof(country));
+						memcpy(fixture[j][x], subFixture[x], sizeof(country));
 					}
-					fixture[j] = subFixture;*/
 					if (--headsAmm == 0){
 						flag = TRUE;
+						finished[j] = TRUE;
 						break;
 					}
+					finished[j] = TRUE;
 				}
 				else{
 					if (countriesTable[reqCountry]->used){
 						serializeInteger(&buffer, &bufferSize, FALSE);
+						printf("Repetido\n");
 					}
 					else{
 						countriesTable[reqCountry]->used = TRUE;
@@ -131,6 +141,7 @@ int main (void){
 					writeIPC(ipcIDs[j][1], &bufferSize, sizeof(int));
 					writeIPC(ipcIDs[j][1], buffer, bufferSize);
 					free(buffer);
+					
 				}
 			}
 		}
@@ -163,7 +174,7 @@ int main (void){
 	free(pids);
 	for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
 		for(i = 0; i < 4; ++i){
-			/*printf("%s\n", (fixture[j][i])->name);*/
+			printf("%s\n", (fixture[j][i])->name);
 			free(fixture[j][i]);
 		}
 		free(fixture[j]);
