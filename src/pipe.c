@@ -16,7 +16,7 @@ int main(void){
 	
 	DIR *dp;
 	struct dirent *d = NULL;
-	int i, j, k, gate = 0, qtyFiles = 0, pos = 0, pipeChannelGo[2], tLevel = 0, writeSize;
+	int i, j, k, gateC = 0, qtyFiles = 0, pos = 0, pipeChannelGo[2], tLevel = 0;
 	FILE *dataFile = NULL;
 	circuitTable **table = NULL;
 	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;
@@ -122,7 +122,9 @@ int main(void){
 			write(pipeChannelGo[1], &curCircuit, sizeof(curCircuit));				/* cantidad de archivos */
 			for( i = 0 ; i < pos ; ++i )
 			{	
+				fprintf(stderr, "PIPE---Inicio\n");
 				printCircuitTable(table[i]);
+				fprintf(stderr, "PIPE---Fin\n");
 				tLevel = table[i][0].totalLevels;
 				write(pipeChannelGo[1], &tLevel, sizeof(int));		/* cantidad de niveles del circuito */
 				for( j = 0 ; j < tLevel ; ++j )
@@ -130,13 +132,12 @@ int main(void){
 					write(pipeChannelGo[1], &((table[i][j].eachLevel)->qtyGates), sizeof(int) ); 			/* cant de compuertas */
 					for( k = 0 ; k < (table[i][j].eachLevel)->qtyGates ; ++k )
 					{
-						writeSize = sizeof(((table[i][j].eachLevel)->gates[k]));
-						write( pipeChannelGo[1], &((table[i][j].eachLevel)->gates[k]), writeSize ); 	/* la compuerta */
+						write( pipeChannelGo[1], &((table[i][j].eachLevel)->gates[k]), sizeof(gate) ); 	/* la compuerta */
 					}
 				}
 			}
 			freeCircuits(table, pos);
-			wait(&gate);
+			wait(&gateC);
 			break;
 	}
 	free(dirFile);
@@ -253,8 +254,8 @@ circuitTable * parseCircuit( xmlDocPtr doc, xmlNodePtr cur )
 		(circuit[i].eachLevel)->qtyGates = 0;
 		for( j = 0; j < _MAX_GATES_LEVELS_; ++j)
 		{
-			((circuit[i].eachLevel)->gates[j]).fathers[0][0] = '\0';
-			((circuit[i].eachLevel)->gates[j]).fathers[1][0] = '\0';
+			((circuit[i].eachLevel)->gates[j]).fathers[0][0] = '@';
+			((circuit[i].eachLevel)->gates[j]).fathers[1][0] = '@';
 		}
 	}
 	
@@ -406,48 +407,6 @@ int checkGateIsLoaded( circuitTable *circuit, char *name, int curLevel)
 			return i;
 	}
 	return -1;
-}
-
-/* Compuerta AND */
-
-int gateAnd( int in1, int in2 )
-{
-	return in1 & in2;
-}
-
-/* Compuerta OR */
-
-int gateOr( int in1, int in2 )
-{
-	return in1 | in2;
-}
-
-/* Compuerta XOR */
-
-int gateXor( int in1, int in2 )
-{
-	return in1 ^ in2; 
-}
-
-/* Compuerta NAND */
-
-int gateNand( int in1, int in2 )
-{
-	return !gateAnd(in1,in2);
-}
-
-/* Compuerta NOR */
-
-int gateNor( int in1, int in2 )
-{
-	return !gateOr(in1,in2);
-}
-
-/* Compuerta XNOR */
-
-int gateXnor( int in1, int in2 )
-{
-	return !gateXor(in1,in2);
 }
 
 /*
