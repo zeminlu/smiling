@@ -14,6 +14,11 @@
 #include "../inc/definitions.h"
 #include "../inc/tpl.h"
 #include "../inc/serializable.h"
+#include "../inc/ipcAPI.h"
+
+int filesListener();
+
+int processFile(DIR *dp, country ***countriesTable);
 
 int getFilesAmm (DIR *dp);
 

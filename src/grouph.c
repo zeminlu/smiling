@@ -18,7 +18,6 @@ int main (void){
 		return errno;
 	}
 	for (i = 0 ; i < countriesTableEntriesAmm ; ++i){
-		
 		readIPC(_stdin_, &bufferSize, sizeof(int));
 		
 		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL ||	(countriesTable[i] = malloc(sizeof(country))) == NULL){
@@ -239,10 +238,11 @@ int main (void){
 	writeIPC(_stdout_, buffer, bufferSize);
 	free(buffer);
 	
-	/*for (i = 0 ; i < 4 ; ++i){
+	for (i = 0 ; i < 4 ; ++i){
 		fprintf(stderr, "Mandando pais %d\n", i);
 		serializeCountryStruct(&buffer, &bufferSize, group->countries[i]);
 		writeIPC(_stdout_, &bufferSize, sizeof(int));
+		fprintf(stderr, "Buffersize en groupH = %d\n", bufferSize);
 		writeIPC(_stdout_, buffer, bufferSize);
 		free(buffer);
 	}
@@ -260,6 +260,6 @@ int main (void){
 	
 	close(_stdin_);
 	close(_stdout_);
-	*/
+	
 	return 0;
 }
