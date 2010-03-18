@@ -225,6 +225,8 @@ int countryFree( condPack * cond){
 	}
 	
 	if(j == 0){
+		free(countryInt);
+		free(ans);
 		return FALSE;
 	}else{
 		ans->countriesAmm = j;
@@ -261,14 +263,14 @@ void * noCondition(void * condi){
 		return NULL;
 	}else if(amm > 1){
 		countryAns = countryAux[rand() % (amm)];
-		
+		countryAux[0] = countryAns;
 	}else{
 		countryAns = countryAux[0];
 	}
-	free(countryAux);
-	
+	countryAux = realloc(countryAux, sizeof(int));
+
 	(cond->sets[*(cond->index)])->countriesAmm = 1;
-	*(cond->sets[*(cond->index)++])->country = countryAns;
+			(cond->sets[*(cond->index)++])->country = countryAux;
 	
 	return cond;
 }   
