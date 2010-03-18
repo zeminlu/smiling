@@ -15,18 +15,15 @@
 #include "../inc/types.h"
 #include "../inc/serializable.h"
 #include "../inc/pipe.h"
+#include "../inc/ipcAPI.h"
 
-int gateServer( void );
+int gateInitializer( void );
+int buildCircuitsTable( circuitTable *** circuits, int qtyFileCom );
 void freeCircuits( circuitTable **table, int qtyFile );
+void startCircuitsPipeline( circuitTable **table, int **levels, pid_t **childPids, int ***ipcChannels, int qtyFiles);
 
-int getGateHandler( int type, int in1, int in2 );
-int getInputFromFather( circuitTable **table, int level, int file, char fa[]);
-
-int gateAnd( int in1, int in2 );
-int gateOr( int in1, int in2 );
-int gateXor( int in1, int in2 );
-int gateNand( int in1, int in2 );
-int gateNor( int in1, int in2 );
-int gateXnor( int in1, int in2 );
+void initLevels( int **levels, int qtyFiles );
+void incLevels( int **levels, int qtyFiles );
+int checkAvailableFiles( int ** levels, int qtyFiles );
 
 #endif

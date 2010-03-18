@@ -3,6 +3,8 @@
 
 #include <pthread.h>
 
+#define		_MAX_FATHER_		15
+
 
 typedef struct{
 	int countriesAmm;
@@ -38,7 +40,7 @@ typedef struct{
 typedef struct{
 	char name[30];
 	int type;
-	char fathers[2][15];
+	char fathers[2][_MAX_FATHER_];
 	int output;
 	int input[2];
 	} gate;

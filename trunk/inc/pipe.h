@@ -15,6 +15,7 @@
 #include "../inc/definitions.h"
 #include "../inc/types.h"
 #include "../inc/serializable.h"
+#include "../inc/ipcAPI.h"
 
 typedef int (*handler)(int in1,int in2);
 

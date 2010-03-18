@@ -16,7 +16,7 @@ int main(void){
 	
 	DIR *dp;
 	struct dirent *d = NULL;
-	int i, j, k, gateC = 0, qtyFiles = 0, pos = 0, pipeChannelGo[2];
+	int i, j, k, gateC = 0, qtyFiles = 0, pos = 0, pipeChannelGo[2], pid;
 	FILE *dataFile = NULL;
 	circuitTable **table = NULL;
 	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;
@@ -35,7 +35,6 @@ int main(void){
 	rewinddir(dp);
 	
 	qtyFiles = getFilesAmm(dp);
-	/*printf("qtyFiles: %d\n", qtyFiles);*/
 	
 	if( (table = (circuitTable**)malloc( sizeof(circuitTable*) * (qtyFiles - 3))) == NULL )
 	{
@@ -60,7 +59,6 @@ int main(void){
 		rewinddir(dp);
 		while( (d = readdir(dp)) )
 		{
-			/*printf("%s\n", d->d_name );*/
 			if(d->d_ino == 0 )
 			{
 				continue;
@@ -100,45 +98,29 @@ int main(void){
 		}
 	}
 	
-	pipe(pipeChannelGo);
+	setupIPC( _HALF_DUPLEX_, pipeChannelGo, "./gates.bin", &pid);
 	
-	switch( fork() ){
-		case _FORK_SON_:
-			close(pipeChannelGo[1]);
-			dup2(pipeChannelGo[0], _stdin_);
-			execv("./gates.bin", NULL);
-			break;
-		case _FORK_ERROR_:
-			perror("Error en el fork del pipeline\n");
-			break;
-		default:
-			dup2(pipeChannelGo[1], _stdout_);
-			close(pipeChannelGo[0]);
-			
-			curCircuit.qtyFiles = pos;
-			curCircuit.curFile = 0;
-			curCircuit.curLevel = 0;
-			
-			write(pipeChannelGo[1], &curCircuit, sizeof(curGateProcess) );				/* cantidad de archivos */
-			for( i = 0 ; i < pos ; ++i )
-			{	
-				/*fprintf(stderr, "PIPE---Inicio\n");
-				printCircuitTable(table[i]);
-				fprintf(stderr, "PIPE---Fin\n");*/
-				write(pipeChannelGo[1], &(table[i][0].totalLevels), sizeof(int));		/* cantidad de niveles del circuito */
-				for( j = 0 ; j < table[i][0].totalLevels ; ++j )
-				{
-					write(pipeChannelGo[1], &((table[i][j].eachLevel)->qtyGates), sizeof(int) ); 			/* cant de compuertas */
-					for( k = 0 ; k < (table[i][j].eachLevel)->qtyGates ; ++k )
-					{
-						write( pipeChannelGo[1], &((table[i][j].eachLevel)->gates[k]), sizeof(gate) ); 	/* la compuerta */
-					}
-				}
+	curCircuit.qtyFiles = pos;
+	curCircuit.curFile = 0;
+	curCircuit.curLevel = 0;
+	
+	writeIPC(pipeChannelGo[1], &curCircuit, sizeof(curGateProcess) );				
+	for( i = 0 ; i < pos ; ++i )
+	{	
+
+		writeIPC(pipeChannelGo[1], &(table[i][0].totalLevels), sizeof(int));
+		for( j = 0 ; j < table[i][0].totalLevels ; ++j )
+		{
+			writeIPC(pipeChannelGo[1], &((table[i][j].eachLevel)->qtyGates), sizeof(int) );
+			for( k = 0 ; k < (table[i][j].eachLevel)->qtyGates ; ++k )
+			{
+				writeIPC( pipeChannelGo[1], &((table[i][j].eachLevel)->gates[k]), sizeof(gate) );
 			}
-			freeCircuits(table, pos);
-			wait(&gateC);
-			break;
+		}
 	}
+	freeCircuits(table, pos);
+	wait(&gateC);
+	
 	free(dirFile);
 	free(procCopyDir);
 	return 0;
