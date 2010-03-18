@@ -66,9 +66,9 @@ int main (void){
 	}
 	free(condArgs->sets);
 	free(condArgs);
-	for (i = 0 ; i < 4; ++i){
+	/*for (i = 0 ; i < 4; ++i){
 		free (group->countries[i]);
-	}
+	}*/
 	free(group->countries);
 	free(group);	
 	closeIPC(_stdin_);
