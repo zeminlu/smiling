@@ -168,7 +168,7 @@ void startCircuitsPipeline( circuitTable **table, int **levels, pid_t **childPid
 				if( (*childPids)[i] != 0 )
 				{
 					/* TENGO QUE LEER LO QUE ME MANDA EL PROCESO CON ID PID[I] */
-					readIPC( (*ipcChannels)[i][0], &(((table[i][ ((*levels)[i])]).eachLevel)->gates[j]), sizeof(gate) );
+					readIPC( _stdout_, &(((table[i][ ((*levels)[i])]).eachLevel)->gates[j]), sizeof(gate) );
 					while( waitpid( (*childPids)[i]	, &status , WNOHANG) == 0 )
 						;
 				}
@@ -176,6 +176,9 @@ void startCircuitsPipeline( circuitTable **table, int **levels, pid_t **childPid
 		}
 		incLevels(levels,qtyFiles);
 	}
+	closeIPC(_stdin_);
+	closeIPC(_stdout_);
+	
 	for( i = 0 ; i < qtyFiles ; ++i )
 		printCircuitTable(table[i]);
 }
