@@ -65,6 +65,7 @@ int gateInitializer( void )
 		if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable))) == NULL )
 		{
 			perror("Error en la alocacion de memoria de table[i]\n");
+			free(table);
 			return errno;	
 		}
 	}
@@ -72,24 +73,31 @@ int gateInitializer( void )
 	if( buildCircuitsTable(&table, qtyFileCom) != 0 )
 	{
 		perror("Error al construir la tabla de los circuitos\n");
+		freeCircuits(table, qtyFileCom);
 		return errno;
 	}
 	
 	if( ( levels = (int*)malloc( sizeof(int) * curCircuit.qtyFiles) ) == NULL )
 	{
 		perror("Error en la alocacion del arreglo de niveles\n");
+		freeCircuits(table, qtyFileCom);
 		return errno;
 	}
 	initLevels( &levels, curCircuit.qtyFiles );
 	if( ( childPids = (int*)malloc( sizeof(pid_t) * curCircuit.qtyFiles) ) == NULL )
 	{
 		perror("Error en la alocacion del arreglo de pids\n");
+		freeCircuits(table, qtyFileCom);
+		free(levels);
 		return errno;
 	}
 	memset(childPids, 0, qtyFileCom);
 	if( (ipcChannels = malloc( sizeof(int*) * qtyFileCom)) == NULL )
 	{
 		perror("Error en la alocacion del arreglo de ipcs\n");
+		freeCircuits(table, qtyFileCom);
+		free(levels);
+		free(childPids);
 		return errno;
 	}
 	for( i = 0 ; i < qtyFileCom ; ++i )
@@ -97,6 +105,7 @@ int gateInitializer( void )
 		if( (ipcChannels[i] = malloc( sizeof(int) * 2)) == NULL )
 		{
 			perror("Error en la alocacion del arreglo de ipcs[i]\n");
+			free(ipcChannels);
 			return errno;
 		}	
 	}
@@ -136,7 +145,7 @@ void startCircuitsPipeline( circuitTable **table, int **levels, pid_t **childPid
 				{	
 					setupIPC( _FULL_DUPLEX_, (*ipcChannels)[i], "./levels", &pid );
 					(*childPids)[i] = pid;
-				
+					
 					writeIPC( (*ipcChannels)[i][1], (void*)&(notFirst), sizeof(int) );
 					writeIPC( (*ipcChannels)[i][1], (void*)&(((table[i][ ((*levels)[i])-1 ]).eachLevel)->qtyGates) , sizeof(int) );
 					for( j = 0 ; j < ((table[i][ ((*levels)[i])-1 ]).eachLevel)->qtyGates ; ++j )
@@ -209,6 +218,7 @@ int buildCircuitsTable( circuitTable *** circuits, int qtyFileCom )
 			if( ((table[i][j].eachLevel)->gates = (gate*)malloc( sizeof(gate) * (qtyGatesCom))) == NULL )
 			{
 				perror("Error en la alocacion del arreglo de compuertas\n");
+				free( (table[i][j].eachLevel) );
 				return errno;
 			}
 			for( k = 0 ; k < qtyGatesCom ; ++k )

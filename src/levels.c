@@ -41,6 +41,7 @@ int proccessLevel( void )
 	if( (prevLevel = malloc( sizeof(gate) * qtyGatesCur)) == NULL )
 	{
 		perror("Error en la alocacion de memoria de prevLevel\n");
+		free(prevLevel);
 		return errno;
 	}
 	for( i = 0 ; i < qtyGatesCur ; ++i )
