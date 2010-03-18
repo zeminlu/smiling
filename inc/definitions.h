@@ -24,6 +24,7 @@ enum 	logicGates { AND = 0, OR, XOR, NAND, NOR, XNOR };
 
 #define		_INVALID_OUTPUT_		-1
 #define		_INVALID_INPUT_			-1
+#define		_MAX_FATHER_			15
 
 #define		_WEAK_GROUP_TYPE_		10
 #define		_DEATH_GROUP_TYPE_		11
@@ -39,6 +40,8 @@ enum 	logicGates { AND = 0, OR, XOR, NAND, NOR, XNOR };
 
 #define		_MAX_GATES_LEVELS_		10
 #define		_MAX_CIRCUITS_			5
+
+#define 	_MAX_LEVELS_			50
 
 /*	Types of Connection */
 	
