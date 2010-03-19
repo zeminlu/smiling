@@ -115,7 +115,6 @@ int gateInitializer( void )
 	
 	while( (aux = checkAvailableFiles( levels, qtyFileCom, maxLevel )) <= qtyFileCom && flag == TRUE)
 	{
-		fprintf(stderr, "Aux: %d\n", aux);
 		flag = aux == 3 ? FALSE : TRUE;
 		if( (status = startCircuitsPipeline( table, &childPids, &ipcChannels, qtyFileCom, levels, maxLevel )) != 0 ||
 				(master = prepareIPC(&childPids, qtyFileCom, &allocSize)) == NULL 
@@ -136,9 +135,10 @@ int gateInitializer( void )
 				free( ipcChannels[i]);	
 			return status;
 		}
-		incLevels(&levels,qtyFileCom);	
+		incLevels(&levels,qtyFileCom);
 	}
-	
+	for( i = 0 ; i < qtyFileCom ; ++i )
+		printCircuitTable(table[i]);
 	free(childPids);
 	for( i = 0 ; i < qtyFileCom ; ++i )
 		free( ipcChannels[i]);
@@ -164,7 +164,7 @@ int startCircuitsPipeline( circuitTable **table, pid_t **childPids, int ***ipcCh
 	{	
 		if( levels[i] < maxLevel[i] && levels[i] >= 0 )
 		{	
-			fprintf(stderr, "I = %d level: %d MaxLevel: %d\n",i, levels[i], maxLevel[i] );
+			/*fprintf(stderr, "I = %d level: %d MaxLevel: %d\n",i, levels[i], maxLevel[i] );*/
 			setupIPC( _FULL_DUPLEX_, (*ipcChannels)[i], "./levels.bin", &pid );
 			(*childPids)[i] = pid;
 
@@ -180,6 +180,7 @@ int startCircuitsPipeline( circuitTable **table, pid_t **childPids, int ***ipcCh
 			}else
 			{
 				writeIPC( (*ipcChannels)[i][1], (void*)&(notFirst), sizeof(int) );
+				
 				writeIPC( (*ipcChannels)[i][1], (void*)&(((table[i][ levels[i]-1 ]).eachLevel)->qtyGates) , sizeof(int) );
 				for( j = 0 ; j < ((table[i][levels[i]-1 ]).eachLevel)->qtyGates ; ++j )
 				{
@@ -203,21 +204,22 @@ int listenToMyChildren( void *set, void *master, int allocSize, circuitTable **t
 	
 	while( memcpy(set, master, allocSize), (aux=selectIPC(set,10)) > 0 && flag == TRUE )
 	{
-		fprintf(stderr, "SelectIPC: %d\n", aux);
+		/*fprintf(stderr, "SelectIPC: %d\n", aux);*/
 		for( i = 0 ; i < qtyFiles ; ++i )
 		{
 			fprintf(stderr, "listenToMyChildren I: %d\n", i);
-			if( (aux = getIPCStatus(ipcChannels[i][0],set)) && levels[i] >= 0 && levels[i] < maxLevel[i] )
+			if( (aux = getIPCStatus(ipcChannels[i][0], set)) && levels[i] >= 0 && levels[i] < maxLevel[i] )
 			{
 				for( j = 0 ; j < ((table[i][levels[i]]).eachLevel)->qtyGates ; ++j )
 				{
 					readBytes = readIPC(ipcChannels[i][0], &auxGate, sizeof(gate) );
+					fprintf(stderr, "Reading -- Gate: %s Output: %d\n", auxGate.name, auxGate.output );
 					if( readBytes < 0 )
 						return readBytes;
 					memcpy( &(((table[i][levels[i]]).eachLevel)->gates)[j], &auxGate, sizeof(gate));
 				}
 			}
-			fprintf(stderr, "getIPCStatus: %d\n", aux);
+			fprintf(stderr, "Aux: %d\n", aux);
 		}
 		if( i == qtyFiles )
 			flag = FALSE;

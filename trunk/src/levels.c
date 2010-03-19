@@ -30,7 +30,7 @@ int proccessLevel( void )
 		perror("Error en la alocacion de memoria de prevLevel\n");
 		return errno;
 	}
-	fprintf(stderr, "ReadBytes Level: %d qtyGatesCur: %d\n", aux, qtyGatesCur);
+	
 	for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
 		readIPC( _stdin_, &(curLevel[i]), sizeof(gate) );
@@ -53,11 +53,16 @@ int proccessLevel( void )
 	}
 	
 	evaluateLevel( prevLevel, &curLevel, qtyGatesPrev, qtyGatesCur, first );
+	/*for( i = 0 ; i < qtyGatesCur ; ++i )
+	{
+		fprintf(stderr, "Gate Name:%s Output: %d\n", curLevel[i].name, curLevel[i].output);
+	}*/
 	for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
 		writeIPC( _stdout_, &(curLevel[i]), sizeof(gate) );
 	}
-	free(prevLevel);
+	if( first != 0 )
+		free(prevLevel);
 	free(curLevel);
 	return 0;
 }
