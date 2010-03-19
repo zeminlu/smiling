@@ -49,7 +49,7 @@ OBJECTS8 = levels.o pipeIPC.o
 .SILENT:
 .PHONY: clean
 
-all: clean $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5) $(TARGET6) $(TARGET7)
+all: clean $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5) $(TARGET6) $(TARGET7) $(TARGET8)
 
 $(TARGET1): $(OBJECTS1)
 	@echo "Linking" $@"..."
@@ -108,6 +108,7 @@ tpl.o: tpl.c tpl.h
 definitions.o: definitions.c definitions.h
 serializable.o: serializable.c serializable.h
 pipeIPC.o: pipeIPC.c ipcAPI.h
+levels.o: levels.c levels.h
 
 cleanObjects:
 	@echo "Clearing Objects..."
