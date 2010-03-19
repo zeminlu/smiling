@@ -21,16 +21,17 @@ int main ( void )
 
 int proccessLevel( void )
 {
-	int i, first, qtyGatesPrev, qtyGatesCur;
+	int aux, i, first, qtyGatesPrev, qtyGatesCur;
 	gate *prevLevel = NULL, *curLevel;
 	
-	readIPC( _stdin_, &qtyGatesCur, sizeof(int));
+	aux = readIPC( _stdin_, &qtyGatesCur, sizeof(int));
 	if( (curLevel = malloc( sizeof(gate) * qtyGatesCur)) == NULL )
 	{
 		perror("Error en la alocacion de memoria de prevLevel\n");
 		return errno;
 	}
-	for( i = 0 ; i < qtyGatesPrev ; ++i )
+	fprintf(stderr, "ReadBytes Level: %d qtyGatesCur: %d\n", aux, qtyGatesCur);
+	for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
 		readIPC( _stdin_, &(curLevel[i]), sizeof(gate) );
 	}
@@ -45,18 +46,17 @@ int proccessLevel( void )
 			free(prevLevel);
 			return errno;
 		}
-		for( i = 0 ; i < qtyGatesCur ; ++i )
+		for( i = 0 ; i < qtyGatesPrev ; ++i )
 		{
-			readIPC( _stdin_, &(curLevel[i]), sizeof(gate) );
+			readIPC( _stdin_, &(prevLevel[i]), sizeof(gate) );
 		}
 	}
 	
-	evaluateLevel( &prevLevel, &curLevel, qtyGatesPrev, qtyGatesCur, first );
-	/*for( i = 0 ; i < qtyGatesCur ; ++i )
+	evaluateLevel( prevLevel, &curLevel, qtyGatesPrev, qtyGatesCur, first );
+	for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
 		writeIPC( _stdout_, &(curLevel[i]), sizeof(gate) );
-	}*/
-	
+	}
 	free(prevLevel);
 	free(curLevel);
 	return 0;
@@ -76,8 +76,8 @@ void evaluateLevel( gate *prev, gate **cur, int qtyPrev, int qtyCur, int first )
 		type = (*cur)[i].type;
 		input1 = &((*cur)[i].input[0]);
 		input2 = &((*cur)[i].input[1]);
-		strcpy( fa1, ((*cur)[i].fathers[0] );
-		strcpy( fa2, ((*cur)[i].fathers[1] );
+		strcpy( fa1, (*cur)[i].fathers[0] );
+		strcpy( fa2, (*cur)[i].fathers[1] );
 		
 		if( first != 0 )
 		{
