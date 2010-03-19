@@ -20,10 +20,10 @@
 int gateInitializer( void );
 int buildCircuitsTable( circuitTable *** circuits, int qtyFileCom );
 void freeCircuits( circuitTable **table, int qtyFile );
-void startCircuitsPipeline( circuitTable **table, int **levels, pid_t **childPids, int ***ipcChannels, int qtyFiles);
+int startCircuitsPipeline( circuitTable **table, pid_t **childPids, int ***ipcChannels, int qtyFiles);
 
 void initLevels( int **levels, int qtyFiles );
 void incLevels( int **levels, int qtyFiles );
-int checkAvailableFiles( int ** levels, int qtyFiles );
+int checkAvailableFiles( int * levels, int qtyFiles, int *maxLevel );
 
 #endif

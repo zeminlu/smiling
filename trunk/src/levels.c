@@ -22,38 +22,40 @@ int main ( void )
 int proccessLevel( void )
 {
 	int i, first, qtyGatesPrev, qtyGatesCur;
-	gate *prevLevel, *curLevel;
+	gate *prevLevel = NULL, *curLevel;
 	
-	readIPC( _stdin_, &first, sizeof(int));
-	
-	readIPC( _stdin_, &qtyGatesPrev, sizeof(int));
-	if( (prevLevel = malloc( sizeof(gate) * qtyGatesPrev)) == NULL )
+	readIPC( _stdin_, &qtyGatesCur, sizeof(int));
+	if( (curLevel = malloc( sizeof(gate) * qtyGatesCur)) == NULL )
 	{
 		perror("Error en la alocacion de memoria de prevLevel\n");
 		return errno;
 	}
 	for( i = 0 ; i < qtyGatesPrev ; ++i )
 	{
-		readIPC( _stdin_, &(prevLevel[i]), sizeof(gate) );
-	}
-	
-	readIPC( _stdin_, &qtyGatesCur, sizeof(int));
-	if( (prevLevel = malloc( sizeof(gate) * qtyGatesCur)) == NULL )
-	{
-		perror("Error en la alocacion de memoria de prevLevel\n");
-		free(prevLevel);
-		return errno;
-	}
-	for( i = 0 ; i < qtyGatesCur ; ++i )
-	{
 		readIPC( _stdin_, &(curLevel[i]), sizeof(gate) );
 	}
 	
-	evaluateLevel( prevLevel, &curLevel, qtyGatesPrev, qtyGatesCur, first );
-	for( i = 0 ; i < qtyGatesCur ; ++i )
+	readIPC( _stdin_, &first, sizeof(int));
+	if( first != 0)
+	{
+		readIPC( _stdin_, &qtyGatesPrev, sizeof(int));
+		if( (prevLevel = malloc( sizeof(gate) * qtyGatesPrev)) == NULL )
+		{
+			perror("Error en la alocacion de memoria de prevLevel\n");
+			free(prevLevel);
+			return errno;
+		}
+		for( i = 0 ; i < qtyGatesCur ; ++i )
+		{
+			readIPC( _stdin_, &(curLevel[i]), sizeof(gate) );
+		}
+	}
+	
+	evaluateLevel( &prevLevel, &curLevel, qtyGatesPrev, qtyGatesCur, first );
+	/*for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
 		writeIPC( _stdout_, &(curLevel[i]), sizeof(gate) );
-	}
+	}*/
 	
 	free(prevLevel);
 	free(curLevel);
@@ -83,20 +85,20 @@ void evaluateLevel( gate *prev, gate **cur, int qtyPrev, int qtyCur, int first )
 			{
 				if( *input1 == -1 )
 				{
-					*input1 = getInputFromFather(*prev, qtyPrev, fa1);
+					*input1 = getInputFromFather(prev, qtyPrev, fa1);
 				}else
 				{
-					*input2 = getInputFromFather(*prev, qtyPrev, fa1);
+					*input2 = getInputFromFather(prev, qtyPrev, fa1);
 				}
 			}
 			if( fa2[0] != '\0' )
 			{
 				if( *input1 == -1 )
 				{
-					*input1 = getInputFromFather(*prev, qtyPrev, fa2);
+					*input1 = getInputFromFather(prev, qtyPrev, fa2);
 				}else
 				{
-					*input2 = getInputFromFather(*prev, qtyPrev, fa2);
+					*input2 = getInputFromFather(prev, qtyPrev, fa2);
 				}
 			}
 		}
