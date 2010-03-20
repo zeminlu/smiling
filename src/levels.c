@@ -46,7 +46,7 @@ int proccessLevel( void )
 		if( (prevLevel = malloc( sizeof(gate) * qtyGatesPrev)) == NULL )
 		{
 			perror("Error en la alocacion de memoria de prevLevel\n");
-			free(prevLevel);
+			free(curLevel);
 			return errno;
 		}
 		for( i = 0 ; i < qtyGatesPrev ; ++i )
@@ -66,6 +66,7 @@ int proccessLevel( void )
 								curLevel[i].input[0],
 								curLevel[i].input[1]);
 	}
+	
 	writeIPC( getppid(), &cur, sizeof(curCircuit));
 	for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
@@ -73,9 +74,10 @@ int proccessLevel( void )
 	}
 	if( first != 0 )
 		free(prevLevel);
+	
 	free(curLevel);
 	
-	closeIPC(getppid());
+	/*finalizeIPC(getppid());*/
 	
 	return 0;
 }
