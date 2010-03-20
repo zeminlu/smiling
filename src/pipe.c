@@ -16,7 +16,7 @@ int main(void){
 	
 	DIR *dp;
 	struct dirent *d = NULL;
-	int i, j, k, qtyFiles = 0, pos = 0, pipeChannelGo[2], pid, writeBytes;
+	int i, j, k, qtyFiles = 0, pos = 0, pid, writeBytes;
 	FILE *dataFile = NULL;
 	circuitTable **table = NULL;
 	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;
@@ -98,24 +98,39 @@ int main(void){
 		}
 	}
 	
-	setupIPC( _HALF_DUPLEX_, pipeChannelGo, "./gates.bin", &pid);
+	setupIPC(1);
+
+	switch((pid = fork())){
+		case -1:
+			perror("Error de fork");
+			return errno;
+			break;
+		case 0:
+			addClient();
+			execv("./gates.bin", NULL);
+			break;
+		default:					
+			break;
+	}	
+	
+	synchronize();
 	
 	curCircuit.qtyFiles = pos;
 	curCircuit.curFile = 0;
 	curCircuit.curLevel = 0;
 	
-	writeIPC(pipeChannelGo[1], &curCircuit, sizeof(curGateProcess) );				
+	writeIPC(pid, &curCircuit, sizeof(curGateProcess) );				
 	for( i = 0 ; i < pos ; ++i )
 	{	
-		writeBytes = writeIPC(pipeChannelGo[1], &(table[i][0].totalLevels), sizeof(int));
+		writeBytes = writeIPC(pid, &(table[i][0].totalLevels), sizeof(int));
 		/*fprintf(stderr, "Pipe -- totalLevels -- writeBytes: %d\n", writeBytes );*/
 		for( j = 0 ; j < table[i][0].totalLevels ; ++j )
 		{
-			writeBytes = writeIPC(pipeChannelGo[1], &((table[i][j].eachLevel)->qtyGates), sizeof(int) );
+			writeBytes = writeIPC(pid, &((table[i][j].eachLevel)->qtyGates), sizeof(int) );
 			/*fprintf(stderr, "Pipe -- archivo:%d nivel: %d -- qtyGates -- writeBytes: %d\n", i,j, writeBytes );*/
 			for( k = 0 ; k < (table[i][j].eachLevel)->qtyGates ; ++k )
 			{
-				writeBytes = writeIPC( pipeChannelGo[1], &((table[i][j].eachLevel)->gates[k]), sizeof(gate) );
+				writeBytes = writeIPC(pid, &((table[i][j].eachLevel)->gates[k]), sizeof(gate) );
 				/*fprintf(stderr, "Pipe -- archivo: %d nivel: %d gate: %d Sizeof gates: %d\n", i,j,k,writeBytes );*/
 			}
 		}

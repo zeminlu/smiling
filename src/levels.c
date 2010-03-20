@@ -8,6 +8,7 @@
 
 int main ( void )
 {
+	loadIPC();
 	return proccessLevel();
 }
 
@@ -25,8 +26,8 @@ int proccessLevel( void )
 	gate *prevLevel = NULL, *curLevel;
 	curCircuit cur;
 	
-	readIPC( _stdin_, &cur, sizeof(curCircuit));
-	aux = readIPC( _stdin_, &qtyGatesCur, sizeof(int));
+	readIPC( getppid(), &cur, sizeof(curCircuit));
+	aux = readIPC( getppid(), &qtyGatesCur, sizeof(int));
 	if( (curLevel = malloc( sizeof(gate) * qtyGatesCur)) == NULL )
 	{
 		perror("Error en la alocacion de memoria de prevLevel\n");
@@ -35,13 +36,13 @@ int proccessLevel( void )
 	
 	for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
-		readIPC( _stdin_, &(curLevel[i]), sizeof(gate) );
+		readIPC( getppid(), &(curLevel[i]), sizeof(gate) );
 	}
 	
-	readIPC( _stdin_, &first, sizeof(int));
+	readIPC( getppid(), &first, sizeof(int));
 	if( first != 0)
 	{
-		readIPC( _stdin_, &qtyGatesPrev, sizeof(int));
+		readIPC( getppid(), &qtyGatesPrev, sizeof(int));
 		if( (prevLevel = malloc( sizeof(gate) * qtyGatesPrev)) == NULL )
 		{
 			perror("Error en la alocacion de memoria de prevLevel\n");
@@ -50,7 +51,7 @@ int proccessLevel( void )
 		}
 		for( i = 0 ; i < qtyGatesPrev ; ++i )
 		{
-			readIPC( _stdin_, &(prevLevel[i]), sizeof(gate) );
+			readIPC( getppid(), &(prevLevel[i]), sizeof(gate) );
 		}
 	}
 	
@@ -65,14 +66,17 @@ int proccessLevel( void )
 								curLevel[i].input[0],
 								curLevel[i].input[1]);
 	}
-	writeIPC( _stdout_, &cur, sizeof(curCircuit));
+	writeIPC( getppid(), &cur, sizeof(curCircuit));
 	for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
-		writeIPC( _stdout_, &(curLevel[i]), sizeof(gate) );
+		writeIPC( getppid(), &(curLevel[i]), sizeof(gate) );
 	}
 	if( first != 0 )
 		free(prevLevel);
 	free(curLevel);
+	
+	closeIPC(getppid());
+	
 	return 0;
 }
 
