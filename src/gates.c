@@ -230,7 +230,7 @@ int listenToMyChildren( circuitTable **table, int *childPids, int qtyFiles, int 
 	curCircuit cur;
 	
 	auxLevel = levelsAmm = getCurrentPipeFiles(*levels, qtyFiles, maxLevel);
-	/*printf("levelsAmm: %d\n", levelsAmm);*/
+	printf("levelsAmm: %d\n", levelsAmm);
 	if( (finished = calloc(1, sizeof(int) * levelsAmm)) == NULL )
 	{
 		perror("Error de memoria listenToMyChildren");
@@ -241,7 +241,7 @@ int listenToMyChildren( circuitTable **table, int *childPids, int qtyFiles, int 
 	{
 		for( i = 0 ; i < qtyFiles ; ++i )
 		{
-			/*printf( "I: %d -- levelsAmm: %d childPids: %d\n",i, auxLevel, childPids[i]);*/
+			printf( "I: %d -- levelsAmm: %d childPids: %d\n",i, auxLevel, childPids[i]);
 			fprintf(stderr, "Antes del if getIPCStatus selectIPC: %d childPids: %d\n", aux);
 			if( childPids[i] != -1 && (aux = getIPCStatus(childPids[i])) && !(finished[i]))
 			{
