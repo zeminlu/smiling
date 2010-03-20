@@ -1,4 +1,4 @@
-#include "../inc/ipcAPI.h"
+#include "../inc/pipeIPC.h"
 
 int ***ipcIDs = NULL;
 int clientsAmm = 0, flag = FALSE;
@@ -19,7 +19,9 @@ int setupIPC(int channels){
 	itoa (getpid(), pid);
 	
 	strcpy(fileName, nameStart);
+	
 	strcat(fileName, pid);
+	
 	
 	if ((master = malloc(sizeof(fd_set))) == NULL || (slave = malloc(sizeof(fd_set))) == NULL){
 		perror("Error de memoria\n");
@@ -57,11 +59,6 @@ int synchronize(){
 	int i, *pid, ids[2];
 	char pidString[20], fileName[20], *nameStart = "./";
 	
-	itoa (getpid(), pidString);
-	
-	strcpy(fileName, nameStart);
-	strcat(fileName, pidString);
-	
 	if ((hashTable = hashCreateTable(clientsAmm, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "Error al crear la tabla de hash\n");
 		return -1;
@@ -81,6 +78,13 @@ int synchronize(){
 		kill (pid[i], SIGALRM);
 	}
 	close(info);
+	
+	itoa(getpid(), pidString);
+	
+	strcpy(fileName, nameStart);
+	
+	strcat(fileName, pidString);
+	
 	unlink(fileName);
 	
 	return 0;
