@@ -11,21 +11,39 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <signal.h>
 #include "../inc/definitions.h"
 #include "../inc/types.h"
+#include "../inc/linearHashADT.h"
 
-int setupIPC(int mode, int *ipcIDs, char *childName, int *childPID);
+void sigHandler (int signum);
 
-int readIPC(int ipcID, void *buffer, int bufferSize);
+int setupIPC(int channels);
 
-int writeIPC(int ipcID, void *buffer, int bufferSize);
+int addClient();
 
-int closeIPC(int ipcID);
+int synchronize();
 
-void * prepareIPC(int **ipcIDs, int amm, int *allocSize);
+int loadIPC();
 
-int selectIPC(void *data, int seconds);
+int readIPC(pid_t pid, void *buffer, int bufferSize);
 
-int getIPCStatus(int ipcID, void *data);
+int writeIPC(pid_t pid, void *buffer, int bufferSize);
+
+int closeIPC(pid_t pid);
+
+int selectIPC(int seconds);
+
+int getIPCStatus(pid_t pid);
+
+int compareIPCIDs(void *elem1, void *elem2);
+
+void * copyIPCID(void *elem);
+
+void freeIPCID(void *elem);
+
+void itoa(int n, char s[]);
+
+void reverse(char s[]);
 
 #endif

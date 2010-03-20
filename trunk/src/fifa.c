@@ -1,19 +1,20 @@
 #include "../inc/fifa.h"
 
 int main (void){
-	int i, j, status, **ipcIDs = NULL, countriesTableEntriesAmm, allocSize;
+	int i, j, status, countriesTableEntriesAmm;
 	pid_t *pids;
 	void *master = NULL, *set = NULL;
 	country ***fixture = NULL, **countriesTable = NULL;
+	
+	loadIPC();
 	
 	if ((countriesTableEntriesAmm = loadCountriesTable(&countriesTable)) < 0){
 		return countriesTableEntriesAmm;
 	}
 	
-	if ((pids = malloc(sizeof(pid_t) * countriesTableEntriesAmm)) == NULL || (ipcIDs = malloc(sizeof(int *) * (countriesTableEntriesAmm / 4))) == NULL || (fixture = malloc(sizeof(void *) * countriesTableEntriesAmm / 4)) == NULL){
+	if ((pids = malloc(sizeof(pid_t) * countriesTableEntriesAmm)) == NULL || (fixture = malloc(sizeof(void *) * countriesTableEntriesAmm / 4)) == NULL){
 		perror("Error de memoria");
 		free(pids);
-		free(ipcIDs);
 		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free(countriesTable[j]);
 		}
@@ -21,12 +22,8 @@ int main (void){
 		return errno;
 	}
 	
-	if ((status = startChildProcesses(&ipcIDs, countriesTable, countriesTableEntriesAmm, &fixture, &pids)) != 0 || (master = prepareIPC(ipcIDs, countriesTableEntriesAmm / 4, &allocSize)) == NULL || (set = malloc(sizeof(char) * allocSize)) == NULL){
+	if ((status = startChildProcesses(countriesTable, countriesTableEntriesAmm, &fixture, &pids)) != 0){
 		free(pids);
-		for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
-			free(ipcIDs[j]);
-		}
-		free(ipcIDs);
 		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free(fixture[j]);
 		}
@@ -35,16 +32,11 @@ int main (void){
 			free(countriesTable[j]);
 		}
 		free(countriesTable);
-		free(master);
 		return status;
 	}
 		
-	if ((status = childsListener(set, master, allocSize, ipcIDs, countriesTable, countriesTableEntriesAmm, fixture)) != 0){
+	if ((status = childsListener(pids, countriesTable, countriesTableEntriesAmm, fixture)) != 0){
 		free(pids);
-		for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
-			free(ipcIDs[j]);
-		}
-		free(ipcIDs);
 		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free(countriesTable[j]);
 		}
@@ -59,6 +51,9 @@ int main (void){
 		free(fixture);
 		return status;
 	}
+	
+	fprintf(stderr, "post child listener\n");
+	
 	
 	/*
 	Guardar a archivo la solucion
@@ -75,10 +70,6 @@ int main (void){
 		free(fixture[j]);
 	}
 	free(fixture);
-	for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
-		free(ipcIDs[j]);
-	}
-	free(ipcIDs);
 	free(pids);
 	free(set);
 	free(master);
@@ -87,9 +78,6 @@ int main (void){
 	}
 	free(countriesTable);
 	
-	closeIPC(_stdin_);
-	closeIPC(_stdout_);
-	
 	return 0;
 }
 
@@ -97,7 +85,7 @@ int loadCountriesTable(country ***countriesTable){
 	int countriesTableEntriesAmm, i, j, bufferSize;
 	void *buffer;
 	
-	readIPC(_stdin_, &countriesTableEntriesAmm, sizeof(int));
+	readIPC(getppid(), &countriesTableEntriesAmm, sizeof(int));
 		
 	if (((*countriesTable) = malloc(sizeof(void *) * countriesTableEntriesAmm)) == NULL){
 		perror("Error de memoria");
@@ -105,8 +93,7 @@ int loadCountriesTable(country ***countriesTable){
 	}
 	
 	for (i = 0 ; i < countriesTableEntriesAmm ; ++i){
-		
-		readIPC(_stdin_, &bufferSize, sizeof(int));
+		readIPC(getppid(), &bufferSize, sizeof(int));
 		
 		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL || ((*countriesTable)[i] = malloc(sizeof(country))) == NULL){
 			perror("Error de memoria");
@@ -118,16 +105,16 @@ int loadCountriesTable(country ***countriesTable){
 			return errno;
 		}
 		
-		readIPC(_stdin_, buffer, bufferSize);
+		readIPC(getppid(), buffer, bufferSize);
 		unserializeCountryStruct(buffer, bufferSize, (*countriesTable)[i]);
 		free(buffer);		
 	}
-	
+	closeIPC(getppid());
 	return countriesTableEntriesAmm;	
 }
 
-int startChildProcesses(int ***ipcIDs, country **countriesTable, int countriesTableEntriesAmm, country ****fixture, pid_t **pids){
-	int i, j, x, actPid, headsAmm = 0, bufferSize;
+int startChildProcesses(country **countriesTable, int countriesTableEntriesAmm, country ****fixture, pid_t **pids){
+	int i, j, headsAmm = 0, bufferSize;
 	void *buffer;
 	
 	for (j = 0, i = 0 ; i < countriesTableEntriesAmm && j < countriesTableEntriesAmm / 4 ; ++i){
@@ -137,38 +124,54 @@ int startChildProcesses(int ***ipcIDs, country **countriesTable, int countriesTa
 		++j;
 	}
 	
+	setupIPC(countriesTableEntriesAmm / 4);
+	
 	for (j = 0, i = 0 ; i < countriesTableEntriesAmm && j < countriesTableEntriesAmm / 4 ; ++i){
 		if ((countriesTable[i])->isHead){
-			if(((*ipcIDs)[j] = malloc(sizeof(int) * 2)) == NULL || ((*fixture)[j] = malloc(sizeof(void *) * 4)) == NULL){
+			if(((*fixture)[j] = malloc(sizeof(void *) * 4)) == NULL){
 				perror("Error de memoria");
 				for (j -= 1; j >= 0 ; --j){
-					free((*ipcIDs)[j]);
 					free((*fixture)[j]);
 				}
 				return errno;
 			}
 			
-			setupIPC(_FULL_DUPLEX_, (*ipcIDs)[j], "./grouph.bin", &actPid);
-			(*pids)[headsAmm++] = actPid;
-
-			writeIPC((*ipcIDs)[j][1], &countriesTableEntriesAmm, sizeof(int));
-			for (x = 0 ; x < countriesTableEntriesAmm ; ++x){
-				serializeCountryStruct(&buffer, &bufferSize, countriesTable[x]);
-				writeIPC((*ipcIDs)[j][1], &bufferSize, sizeof(int));
-				writeIPC((*ipcIDs)[j][1], buffer, bufferSize);
-				free(buffer);
-			}
-			serializeCountryStruct(&buffer, &bufferSize, countriesTable[i]);
-			writeIPC((*ipcIDs)[j][1], &bufferSize, sizeof(int));
-			writeIPC((*ipcIDs)[j][1], buffer, bufferSize);
-			free(buffer);
+				switch(((*pids)[headsAmm++] = fork())){
+					case -1:
+						perror("Error de fork");
+						return errno;
+						break;
+					case 0:
+						addClient();
+						execv("./grouph.bin", NULL);
+						break;
+					default:					
+						break;
+				}
 			++j;
 		}
 	}
+	
+	synchronize();
+	
+	for (i = 0 ; i < countriesTableEntriesAmm / 4 ; ++i){
+		writeIPC((*pids)[i], &countriesTableEntriesAmm, sizeof(int));
+		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
+			serializeCountryStruct(&buffer, &bufferSize, countriesTable[j]);
+			writeIPC((*pids)[i], &bufferSize, sizeof(int));
+			writeIPC((*pids)[i], buffer, bufferSize);
+			free(buffer);
+		}
+		serializeCountryStruct(&buffer, &bufferSize, countriesTable[i]);
+		writeIPC((*pids)[i], &bufferSize, sizeof(int));
+		writeIPC((*pids)[i], buffer, bufferSize);
+		free(buffer);
+	}
+	
 	return 0;
 }
 
-int childsListener(void *set, void *master, int allocSize, int **ipcIDs, country **countriesTable, int countriesTableEntriesAmm, country ***fixture){
+int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntriesAmm, country ***fixture){
 	void *buffer;
 	int bufferSize, status, i, j, x, reqCountry, flag = FALSE, headsAmm, *finished;
 	country **subFixture;
@@ -192,12 +195,13 @@ int childsListener(void *set, void *master, int allocSize, int **ipcIDs, country
 		}
 	}
 	
-	while(memcpy(set, master, allocSize), selectIPC(set, 10) > 0 && flag == FALSE){
+	
+	while(selectIPC(2) > 0 && flag == FALSE){
 		for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
-			if (getIPCStatus(ipcIDs[j][0], set) && finished[j] == FALSE){
-				readIPC(ipcIDs[j][0], &bufferSize, sizeof(int));
+			if (getIPCStatus(pids[j]) && finished[j] == FALSE){
+				readIPC(pids[j], &bufferSize, sizeof(int));
 				buffer = malloc(sizeof(char) * bufferSize);
-				readIPC(ipcIDs[j][0], buffer, bufferSize);
+				readIPC(pids[j], buffer, bufferSize);
 				reqCountry = unserializeInteger(buffer, bufferSize);
 				free(buffer);
 				
@@ -205,9 +209,9 @@ int childsListener(void *set, void *master, int allocSize, int **ipcIDs, country
 				
 				if (reqCountry < 0){
 					for (x = 0 ; x < 4 ; ++x){
-						readIPC(ipcIDs[j][0], &bufferSize, sizeof(int));
+						readIPC(pids[j], &bufferSize, sizeof(int));
 						buffer = malloc(sizeof(char) * bufferSize);
-						readIPC(ipcIDs[j][0], buffer, bufferSize);
+						readIPC(pids[j], buffer, bufferSize);
 						unserializeCountryStruct(buffer, bufferSize, subFixture[x]);
 						free(buffer);
 						fixture[j][x] = malloc(sizeof(country));
@@ -229,8 +233,8 @@ int childsListener(void *set, void *master, int allocSize, int **ipcIDs, country
 						countriesTable[reqCountry]->used = TRUE;
 						serializeInteger(&buffer, &bufferSize, TRUE);	
 					}
-					writeIPC(ipcIDs[j][1], &bufferSize, sizeof(int));
-					writeIPC(ipcIDs[j][1], buffer, bufferSize);
+					writeIPC(pids[j], &bufferSize, sizeof(int));
+					writeIPC(pids[j], buffer, bufferSize);
 					free(buffer);
 				}
 			}

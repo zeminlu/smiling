@@ -7,7 +7,7 @@ int main(){
 
 int filesListener(){
 	DIR *dp;
-	int j, fifa, auxP[2], bufferSize, pid, countriesTableEntriesAmm;
+	int j, fifa, bufferSize, pid = 0, countriesTableEntriesAmm;
 	void *buffer = NULL;
 	country **countriesTable = NULL;
 	
@@ -26,27 +26,37 @@ int filesListener(){
 	rewinddir(dp);
 	
 	while (getFilesAmm(dp) > 3){
-		
 		rewinddir(dp);
 		if ((countriesTableEntriesAmm =  processFile(dp, &countriesTable)) < 0){
 			return countriesTableEntriesAmm; 
 		}
-		
-		setupIPC(_HALF_DUPLEX_, auxP, "./fifa.bin", &pid);
-		
-		writeIPC(auxP[1], &countriesTableEntriesAmm, sizeof(int));
-		
-		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
-			serializeCountryStruct(&buffer, &bufferSize, countriesTable[j]);
-			writeIPC(auxP[1], &bufferSize, sizeof(int));
-			writeIPC(auxP[1], buffer, bufferSize);
-			free(buffer);	
+		setupIPC(1);
+		switch((pid = fork())){
+			case -1:
+				perror("Error de fork");
+				return errno;
+				break;
+			case 0:
+				addClient();
+				execv("./fifa.bin", NULL);
+				break;
+			default:					
+				break;
 		}
-		
-		wait(&fifa);
-		closeIPC(auxP[1]);
+	}
+	synchronize();
+	writeIPC(pid, &countriesTableEntriesAmm, sizeof(int));
+	
+	for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
+		serializeCountryStruct(&buffer, &bufferSize, countriesTable[j]);
+		writeIPC(pid, &bufferSize, sizeof(int));
+		writeIPC(pid, buffer, bufferSize);
+		free(buffer);	
 	}
 	
+	wait(&fifa);
+	closeIPC(pid);
+
 	return 0;
 }
 

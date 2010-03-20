@@ -1,100 +1,225 @@
 #include "../inc/ipcAPI.h"
 
-int setupIPC(int mode, int *ipcIDs, char *childName, int *childPID){
-	int auxP1[2], auxP2[2];
+int ***ipcIDs = NULL;
+int clientsAmm = 0, flag = FALSE;
+int info;
+hashTableADT hashTable = NULL;
+fd_set *master = NULL, *slave = NULL;
+
+void sigHandler (int signum){
+	flag = TRUE;
+	return;
+}
+
+int setupIPC(int channels){
+	int i;
+	char pid[10], fileName[20], nameStart[] = "./";
+	int data;
 	
-	if (mode == _FULL_DUPLEX_){
-		pipe(auxP1);
-		pipe(auxP2);
-		
-		switch((*childPID = fork())){
-			case -1:
-				perror("Error de fork");
-				return errno;
-				break;
-			case 0:
-				close(auxP1[0]);
-				close(auxP2[1]);
-				dup2(auxP1[1], 1);
-				dup2(auxP2[0], 0);
-				execv(childName, NULL);
-				break;
-			default:					
-				close(auxP1[1]);
-				close(auxP2[0]);		
-				break;
-		}
-		ipcIDs[0] = auxP1[0];
-		ipcIDs[1] = auxP2[1];
+	
+	/*strcpy(fileName, nameStart);
+	strcat(fileName, pid);
+	*/
+	
+	if ((master = malloc(sizeof(fd_set))) == NULL || (slave = malloc(sizeof(fd_set))) == NULL){
+		perror("Error de memoria\n");
+		free(master);
+		return errno;
 	}
-	else{
-		pipe(auxP1);
+	
+	FD_ZERO(master);
+	
+	itoa (getpid(), pid);
+	
+	data = open("./Luchano", O_WRONLY | O_CREAT, 0644);
 		
-		switch((*childPID = fork())){
-			case -1:
-				perror("Error de fork");
-				return errno;
-				break;
-			case 0:
-				close(auxP1[1]);
-				dup2(auxP1[0], 0);
-				execv(childName, NULL);
-				break;
-			default:					
-				close(auxP1[0]);
-				break;
-		}
-		ipcIDs[1] = auxP1[1];
+	ipcIDs = malloc (sizeof(void *) * channels);
+	for (i = 0 ; i < channels ; ++i){
+		ipcIDs[i] = malloc(sizeof(void *) * 2);
+		ipcIDs[i][0] = malloc(sizeof(int) * 2);
+		ipcIDs[i][1] = malloc(sizeof(int) * 2);
+		pipe(ipcIDs[i][0]);
+		write(data, &ipcIDs[i][0][0], sizeof(int));
+		pipe(ipcIDs[i][1]);
+		write(data, &ipcIDs[i][1][1], sizeof(int));
+		FD_SET(ipcIDs[i][1][0], master);
 	}
+	clientsAmm = channels;
+	close(data);
+	info = open("./Luchano", O_RDONLY);
+	
 	return 0;
 }
 
-int readIPC(int ipcID, void *buffer, int bufferSize){
-	return read(ipcID, buffer, bufferSize);
+int addClient(){
+	return dup2(info, 0);
 }
 
-
-int writeIPC(int ipcID, void *buffer, int bufferSize){
-	return write(ipcID, buffer, bufferSize);
-}
-
-int closeIPC(int ipcID){
-	return close(ipcID);
-}
-
-void * prepareIPC(int **ipcIDs, int amm, int *allocSize){
-	int j;
-	fd_set *tmp;
-	
-	*allocSize = sizeof(fd_set);
-	
-	if ((tmp = malloc(sizeof(fd_set))) == NULL){
-		perror("Error de memoria\n");
-		return NULL;
+int synchronize(){
+	int i, *pid, ids[2];
+	char pidString[10];
+	if ((hashTable = hashCreateTable(clientsAmm, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
+		fprintf(stderr, "Error al crear la tabla de hash\n");
+		return -1;
 	}
 	
-	FD_ZERO(tmp);
+	pid = malloc(sizeof(int) * clientsAmm);
 	
-	for (j = 0 ; j < amm ; ++j){
-		FD_SET(ipcIDs[j][0], tmp);
-	} 
+	for (i = 0 ; i < clientsAmm ; ++i){
+		ids[0] = ipcIDs[i][1][0];
+		ids[1] = ipcIDs[i][0][1];
+		read(ipcIDs[i][1][0], &(pid[i]), sizeof(pid_t));
+		itoa(pid[i], pidString);
+		hashInsert(&hashTable, ids, pidString, 0);
+	}
 	
-	return tmp;
+	for (i = 0 ; i < clientsAmm ; ++i){
+		kill (pid[i], SIGALRM);
+	}
+	close(info);
+	itoa(getpid(), pidString);
+	unlink("./Luchano");
+	
+	return 0;
 }
 
-int selectIPC(void *set, int seconds){
+int loadIPC(){
+	sigset_t mask, oldmask;
+	int ownID[2];
+	pid_t pid;
+	char pidString[10];
+	
+	pid = getpid();
+	signal(SIGALRM, sigHandler);
+	sigemptyset (&mask);
+	sigaddset (&mask, SIGALRM);
+	read(_stdin_, &(ownID[0]), sizeof(int));
+	read(_stdin_, &(ownID[1]), sizeof(int));
+	write(ownID[1], &pid, sizeof(pid_t));
+	
+	sleep(5);
+	
+	sigprocmask (SIG_BLOCK, &mask, &oldmask);
+    while (!flag){
+    	sigsuspend (&oldmask);
+	}
+    sigprocmask (SIG_UNBLOCK, &mask, NULL);
+	
+	fclose(_stdin_);
+	
+	hashTable = hashCreateTable(1, freeIPCID, compareIPCIDs, copyIPCID);
+	itoa(getppid(), pidString);
+	hashInsert(&hashTable, ownID, pidString, 0);
+	
+	return 0;
+}
+
+int readIPC(pid_t pid, void *buffer, int bufferSize){
+	int *ipcID;
+	unsigned int hkey;
+	char pidString[10];
+	
+	itoa(pid, pidString);
+	ipcID = hashSearch(hashTable, pidString, &hkey);
+	
+	read(ipcID[0], buffer, bufferSize);
+	free(ipcID);
+	
+	return 0;
+}
+
+int writeIPC(pid_t pid, void *buffer, int bufferSize){
+	int *ipcID;
+	unsigned int hkey;
+	char pidString[10];
+	
+	itoa(pid, pidString);
+	ipcID = hashSearch(hashTable, pidString, &hkey);
+	
+	write(ipcID[1], buffer, bufferSize);
+	free(ipcID);
+	
+	return 0;
+}
+
+int closeIPC(int pid){
+	int *ipcID;
+	char pidString[10];
+	
+	itoa(pid, pidString);
+	ipcID = (int *) hashDelete(&hashTable, pidString);
+	close(ipcID[0]);
+	close(ipcID[1]);
+	
+	return 0;
+}
+
+int selectIPC(int seconds){
 	int ret;
 	struct timeval timeout;
 	
+	*slave = *master;
+	
 	timeout.tv_sec = seconds;
 	timeout.tv_usec = 0;
+	ret = select(FD_SETSIZE, slave, NULL, NULL, &timeout);
+	return ret;
+}
+
+int getIPCStatus(pid_t pid){
+	int * ipcID = NULL, ret;
+	unsigned int hkey;
+	char pidString[10];
 	
-	ret = select(FD_SETSIZE, set, NULL, NULL, &timeout);
+	itoa(pid, pidString);
+	ipcID = hashSearch(hashTable, pidString, &hkey);
+	
+	ret = FD_ISSET(ipcID[0], slave);
+	free(ipcID);
 	
 	return ret;
 }
 
-int getIPCStatus(int ipcID, void *data){
+int compareIPCIDs(void *elem1, void *elem2){
+	return (((int *)elem1)[0] == ((int *)elem1)[0] && ((int *)elem1)[1] == ((int *)elem2)[1]);
+}
+
+void * copyIPCID(void *elem){
+	int *id;
 	
-	return FD_ISSET(ipcID, data);
+	id = malloc(sizeof(int) * 2);
+	id[0] = ((int *)elem)[0];
+	id[1] = ((int *)elem)[1];
+	
+	return id;
+}
+void freeIPCID(void *elem){
+	free(elem);
+	return;
+}
+
+void reverse(char s[]){
+    int i, j;
+    char c;
+
+    for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
+        c = s[i];
+        s[i] = s[j];
+        s[j] = c;
+    }
+}
+
+void itoa(int n, char s[]){
+    int i, sign;
+
+    if ((sign = n) < 0)
+        n = -n;
+    i = 0;
+    do {
+        s[i++] = n % 10 + '0';
+    } while ((n /= 10) > 0);
+    if (sign < 0)
+        s[i++] = '-';
+    s[i] = '\0';
+    reverse(s);
 }
