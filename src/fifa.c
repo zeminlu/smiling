@@ -50,7 +50,9 @@ int main (void){
 		}
 		free(fixture);
 		return status;
-	}	
+	}
+	
+	finalizeIPC();	
 	
 	/*
 	Guardar a archivo la solucion
@@ -214,12 +216,12 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 						fixture[j][x] = malloc(sizeof(country));
 						memcpy(fixture[j][x], subFixture[x], sizeof(country));
 					}
+					finished[j] = TRUE;
+					/*closeIPC(pids[j]);*/
 					if (--headsAmm == 0){
 						flag = TRUE;
-						finished[j] = TRUE;
 						break;
 					}
-					finished[j] = TRUE;
 				}
 				else{
 					if (countriesTable[reqCountry]->used){
@@ -237,6 +239,13 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 			}
 		}
 	}
+	
+	
+	free(finished);
+	for (x = 0 ; x < 4 ; ++x){
+		free(subFixture[x]);
+	}
+	free(subFixture);
 	
 	if (headsAmm != 0){
 		perror("No solution found");

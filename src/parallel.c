@@ -56,6 +56,7 @@ int filesListener(){
 	
 	wait(&fifa);
 	closeIPC(pid);
+	finalizeIPC();
 
 	return 0;
 }

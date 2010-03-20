@@ -56,7 +56,7 @@ void hashFreeTable(hashTableADT table)
 	unsigned int i;
 
 	for (i = 0 ; i < table->nbuckets ; ++i)
-		if (table->buckets[i].state != PHYSICAL)
+		if (table->buckets[i].state == USED)
 		{
 			table->freeElement(table->buckets[i].item);
 			free(table->buckets[i].key);
