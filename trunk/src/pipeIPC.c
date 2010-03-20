@@ -13,13 +13,13 @@ void sigHandler (int signum){
 
 int setupIPC(int channels){
 	int i;
-	char pid[10], fileName[20], nameStart[] = "./";
+	char pid[20], fileName[20], *nameStart = "./";
 	int data;
 	
+	itoa (getpid(), pid);
 	
-	/*strcpy(fileName, nameStart);
+	strcpy(fileName, nameStart);
 	strcat(fileName, pid);
-	*/
 	
 	if ((master = malloc(sizeof(fd_set))) == NULL || (slave = malloc(sizeof(fd_set))) == NULL){
 		perror("Error de memoria\n");
@@ -29,9 +29,7 @@ int setupIPC(int channels){
 	
 	FD_ZERO(master);
 	
-	itoa (getpid(), pid);
-	
-	data = open("./Luchano", O_WRONLY | O_CREAT, 0644);
+	data = open(fileName, O_WRONLY | O_CREAT, 0644);
 		
 	ipcIDs = malloc (sizeof(void *) * channels);
 	for (i = 0 ; i < channels ; ++i){
@@ -46,7 +44,7 @@ int setupIPC(int channels){
 	}
 	clientsAmm = channels;
 	close(data);
-	info = open("./Luchano", O_RDONLY);
+	info = open(fileName, O_RDONLY);
 	
 	return 0;
 }
@@ -57,7 +55,13 @@ int addClient(){
 
 int synchronize(){
 	int i, *pid, ids[2];
-	char pidString[10];
+	char pidString[20], fileName[20], *nameStart = "./";
+	
+	itoa (getpid(), pidString);
+	
+	strcpy(fileName, nameStart);
+	strcat(fileName, pidString);
+	
 	if ((hashTable = hashCreateTable(clientsAmm, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "Error al crear la tabla de hash\n");
 		return -1;
@@ -77,8 +81,7 @@ int synchronize(){
 		kill (pid[i], SIGALRM);
 	}
 	close(info);
-	itoa(getpid(), pidString);
-	unlink("./Luchano");
+	unlink(fileName);
 	
 	return 0;
 }

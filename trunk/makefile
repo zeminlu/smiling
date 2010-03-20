@@ -34,7 +34,7 @@ OBJECTS1 = main.o
 TARGET2 = parallel.bin
 OBJECTS2 = parallel.o tpl.o serializable.o linearHashADT.o pipeIPC.o
 TARGET3 = pipe.bin
-OBJECTS3 = pipe.o tpl.o serializable.o linearHashADT pipeIPC.o
+OBJECTS3 = pipe.o tpl.o serializable.o linearHashADT.o pipeIPC.o
 TARGET4 = fifaGen.bin
 OBJECTS4 = fifaGen.o conditions.o
 TARGET5 = fifa.bin
@@ -42,14 +42,14 @@ OBJECTS5 = fifa.o tpl.o serializable.o linearHashADT.o pipeIPC.o
 TARGET6 = grouph.bin
 OBJECTS6 = grouph.o tpl.o conditions.o serializable.o linearHashADT.o pipeIPC.o
 TARGET7 = gates.bin
-OBJECTS7 = gates.o tpl.o serializable.o pipeIPC.o
+OBJECTS7 = gates.o tpl.o serializable.o pipeIPC.o linearHashADT.o
 TARGET8 = levels.bin
-OBJECTS8 = levels.o pipeIPC.o
+OBJECTS8 = levels.o pipeIPC.o linearHashADT.o
 ###############################################################################
 .SILENT:
 .PHONY: clean
 
-all: clean $(TARGET1) $(TARGET2) $(TARGET4) $(TARGET5) $(TARGET6)
+all: clean $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5) $(TARGET6) $(TARGET7) $(TARGET8)
 
 $(TARGET1): $(OBJECTS1)
 	@echo "Linking" $@"..."
