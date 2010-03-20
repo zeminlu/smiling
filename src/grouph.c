@@ -8,6 +8,8 @@ int main (void){
 	void *(**conditions)(void *condArgs) = NULL;
 	int i = 0, index = 0, countriesTableEntriesAmm, status, condAmm;
 	
+	loadIPC();
+	
 	if ((countriesTableEntriesAmm = loadHeadAndCountriesTable(&countriesTable, &data)) < 0){
 		return countriesTableEntriesAmm;
 	}
@@ -28,7 +30,7 @@ int main (void){
 		free (conditions);
 		return status;
 	} 
-		
+	
 	if ((status = prepareGroup(&group, data)) != 0){
 		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
@@ -39,7 +41,6 @@ int main (void){
 		free(condArgs);
 		return status;
 	}
-		
 	if ((status = buildSubfixture(&group, condAmm, condArgs, data, countriesTable, conditions)) != 0){
 		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
@@ -56,7 +57,7 @@ int main (void){
 	
 	status = sendSubfixture(group);
 	
-	for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
+/*	for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		free(countriesTable[i]);
 	}
 	free(data);
@@ -66,13 +67,14 @@ int main (void){
 	}
 	free(condArgs->sets);
 	free(condArgs);
-	/*for (i = 0 ; i < 4; ++i){
+	*for (i = 0 ; i < 4; ++i){
 		free (group->countries[i]);
-	}*/
+	}
 	free(group->countries);
 	free(group);	
-	closeIPC(_stdin_);
-	closeIPC(_stdout_);
+	close(_stdin_);
+*/	
+	closeIPC(getppid());
 	
 	return status;
 }
@@ -81,7 +83,7 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 	int countriesTableEntriesAmm, i, j, bufferSize;
 	void *buffer;
 	
-	readIPC(_stdin_, &countriesTableEntriesAmm, sizeof(int));
+	readIPC(getppid(), &countriesTableEntriesAmm, sizeof(int));
 		
 	if (((*countriesTable) = malloc(sizeof(void *) * countriesTableEntriesAmm)) == NULL){
 		perror("Error de memoria");
@@ -90,7 +92,7 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 	
 	for (i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		
-		readIPC(_stdin_, &bufferSize, sizeof(int));
+		readIPC(getppid(), &bufferSize, sizeof(int));
 		
 		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL || ((*countriesTable)[i] = malloc(sizeof(country))) == NULL){
 			perror("Error de memoria");
@@ -102,12 +104,12 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 			return errno;
 		}
 		
-		readIPC(_stdin_, buffer, bufferSize);
+		readIPC(getppid(), buffer, bufferSize);
 		unserializeCountryStruct(buffer, bufferSize, (*countriesTable)[i]);
 		free(buffer);		
 	}
 	
-	readIPC(_stdin_, &bufferSize, sizeof(int));
+	readIPC(getppid(), &bufferSize, sizeof(int));
 	
 	if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL || ((*head) = malloc(sizeof(country))) == NULL){
 		perror("Error de memoria");
@@ -118,7 +120,7 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 		free(buffer);
 		return errno;
 	}
-	readIPC(_stdin_, buffer, bufferSize);
+	readIPC(getppid(), buffer, bufferSize);
 	unserializeCountryStruct(buffer, bufferSize, *head);
 	free(buffer);
 	
@@ -198,7 +200,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		perror("Error de memoria");
 		return errno;
 	}
-	
+		
 	i = condAmm;
 	
 	while ((*group)->countriesAmm < 4){
@@ -230,17 +232,16 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		}
 		
 		serializeInteger(&buffer, &bufferSize, reqCountry);
-		writeIPC(_stdout_, &bufferSize, sizeof(int));
-		writeIPC(_stdout_, buffer, bufferSize);
+		writeIPC(getppid(), &bufferSize, sizeof(int));
+		writeIPC(getppid(), buffer, bufferSize);
 		free(buffer);
-		readIPC(_stdin_, &bufferSize, sizeof(int));
+		readIPC(getppid(), &bufferSize, sizeof(int));
 		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL){
 			perror("Error de memoria");
 			free(threads);
 			return errno;
 		}
-		readIPC(_stdin_, buffer, bufferSize);
-		
+		readIPC(getppid(), buffer, bufferSize);
 		if (unserializeInteger(buffer, bufferSize) == FALSE){
 			countriesTable[reqCountry]->used = TRUE;
 			free(buffer);
@@ -319,14 +320,14 @@ int sendSubfixture(subFixture *group){
 	void *buffer;
 	
 	serializeInteger(&buffer, &bufferSize, -1);
-	writeIPC(_stdout_, &bufferSize, sizeof(int));
-	writeIPC(_stdout_, buffer, bufferSize);
+	writeIPC(getppid(), &bufferSize, sizeof(int));
+	writeIPC(getppid(), buffer, bufferSize);
 	free(buffer);
 	
 	for (i = 0 ; i < 4 ; ++i){
 		serializeCountryStruct(&buffer, &bufferSize, group->countries[i]);
-		writeIPC(_stdout_, &bufferSize, sizeof(int));
-		writeIPC(_stdout_, buffer, bufferSize);
+		writeIPC(getppid(), &bufferSize, sizeof(int));
+		writeIPC(getppid(), buffer, bufferSize);
 		free(buffer);
 	}
 	

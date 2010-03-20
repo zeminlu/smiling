@@ -15,6 +15,7 @@
 #include "../inc/tpl.h"
 #include "../inc/serializable.h"
 #include "../inc/ipcAPI.h"
+#include "../inc/linearHashADT.h"
 
 int filesListener();
 

@@ -47,5 +47,7 @@ enum 	logicGates { AND = 0, OR, XOR, NAND, NOR, XNOR };
 	
 enum	typeOfConnection	{ FIFO, SH_MEM, MSG_QUEUE, SOCKET };
 
+void varFree(int amm, ...);
+
 #endif
 
