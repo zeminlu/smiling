@@ -104,15 +104,13 @@ int loadIPC(){
 	read(_stdin_, &(ownID[1]), sizeof(int));
 	write(ownID[1], &pid, sizeof(pid_t));
 	
-	sleep(5);
-	
 	sigprocmask (SIG_BLOCK, &mask, &oldmask);
     while (!flag){
     	sigsuspend (&oldmask);
 	}
     sigprocmask (SIG_UNBLOCK, &mask, NULL);
 	
-	fclose(_stdin_);
+	close(_stdin_);
 	
 	hashTable = hashCreateTable(1, freeIPCID, compareIPCIDs, copyIPCID);
 	itoa(getppid(), pidString);
@@ -150,14 +148,14 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 }
 
 int closeIPC(int pid){
-	int *ipcID;
+	/*int *ipcID;
 	char pidString[10];
 	
 	itoa(pid, pidString);
 	ipcID = (int *) hashDelete(&hashTable, pidString);
 	close(ipcID[0]);
 	close(ipcID[1]);
-	
+	*/
 	return 0;
 }
 
@@ -187,6 +185,27 @@ int getIPCStatus(pid_t pid){
 	return ret;
 }
 
+int finalizeIPC(int pid){
+	int i;
+	
+	for (i = 0 ; i < clientsAmm ; ++i){
+		free(ipcIDs[i][0]);
+		free(ipcIDs[i][1]);
+		free(ipcIDs[i]);
+	}
+	free(ipcIDs);
+	if (master != NULL){
+		free(master);
+	}
+	if (slave != NULL){
+		free(slave);
+	}
+	if (hashTable != NULL){
+		hashFreeTable(hashTable);
+	}
+	return 0;
+}
+
 int compareIPCIDs(void *elem1, void *elem2){
 	return (((int *)elem1)[0] == ((int *)elem1)[0] && ((int *)elem1)[1] == ((int *)elem2)[1]);
 }
@@ -201,6 +220,8 @@ void * copyIPCID(void *elem){
 	return id;
 }
 void freeIPCID(void *elem){
+	close(((int *)elem)[0]);
+	close(((int *)elem)[1]);
 	free(elem);
 	return;
 }

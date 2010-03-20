@@ -72,8 +72,7 @@ int main (void){
 	}*/
 	free(group->countries);
 	free(group);	
-	close(_stdin_);
-
+	
 	closeIPC(getppid());
 	
 	return status;
