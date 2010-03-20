@@ -14,9 +14,6 @@
 #include <signal.h>
 #include "../inc/definitions.h"
 #include "../inc/types.h"
-#include "../inc/linearHashADT.h"
-
-void sigHandler (int signum);
 
 int setupIPC(int channels);
 
@@ -35,15 +32,5 @@ int closeIPC(pid_t pid);
 int selectIPC(int seconds);
 
 int getIPCStatus(pid_t pid);
-
-int compareIPCIDs(void *elem1, void *elem2);
-
-void * copyIPCID(void *elem);
-
-void freeIPCID(void *elem);
-
-void itoa(int n, char s[]);
-
-void reverse(char s[]);
 
 #endif
