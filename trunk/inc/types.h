@@ -67,4 +67,8 @@ typedef struct{
 	int curLevel;
 	} curGateProcess;
 
+typedef struct{
+	int curFile;
+	int curLevel;
+	} curCircuit;
 #endif

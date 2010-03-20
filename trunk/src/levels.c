@@ -23,7 +23,9 @@ int proccessLevel( void )
 {
 	int aux, i, first, qtyGatesPrev, qtyGatesCur;
 	gate *prevLevel = NULL, *curLevel;
+	curCircuit cur;
 	
+	readIPC( _stdin_, &cur, sizeof(curCircuit));
 	aux = readIPC( _stdin_, &qtyGatesCur, sizeof(int));
 	if( (curLevel = malloc( sizeof(gate) * qtyGatesCur)) == NULL )
 	{
@@ -53,10 +55,17 @@ int proccessLevel( void )
 	}
 	
 	evaluateLevel( prevLevel, &curLevel, qtyGatesPrev, qtyGatesCur, first );
-	/*for( i = 0 ; i < qtyGatesCur ; ++i )
+	for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
-		fprintf(stderr, "Gate Name:%s Output: %d\n", curLevel[i].name, curLevel[i].output);
-	}*/
+		fprintf(stderr, "CurLevel: %d CurFile: %d Gate Name:%s Output: %d Input1: %d Input2: %d\n", 
+								cur.curLevel,
+								cur.curFile,
+								curLevel[i].name, 
+								curLevel[i].output,
+								curLevel[i].input[0],
+								curLevel[i].input[1]);
+	}
+	writeIPC( _stdout_, &cur, sizeof(curCircuit));
 	for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
 		writeIPC( _stdout_, &(curLevel[i]), sizeof(gate) );

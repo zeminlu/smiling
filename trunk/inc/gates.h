@@ -23,7 +23,7 @@ void freeCircuits( circuitTable **table, int qtyFile );
 int startCircuitsPipeline( circuitTable **table, pid_t **childPids, int ***ipcChannels, int qtyFiles,
  						int *levels, int *maxLevel);
 int listenToMyChildren( void *set, void *master, int allocSize, circuitTable **table, int **ipcChannels, 
-						int *childPids, int qtyFiles, int *levels, int *maxLevel);
+						int *childPids, int qtyFiles, int **levels, int *maxLevel);
 
 void initLevels( int **levels, int qtyFiles );
 void incLevels( int **levels, int qtyFiles );
