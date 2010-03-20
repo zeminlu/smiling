@@ -16,7 +16,7 @@ int main(void){
 	
 	DIR *dp;
 	struct dirent *d = NULL;
-	int i, j, k, qtyFiles = 0, pos = 0, pid, writeBytes;
+	int i, j, k, qtyFiles = 0, pos = 0, pid;
 	FILE *dataFile = NULL;
 	circuitTable **table = NULL;
 	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;
@@ -122,22 +122,18 @@ int main(void){
 	writeIPC(pid, &curCircuit, sizeof(curGateProcess) );				
 	for( i = 0 ; i < pos ; ++i )
 	{	
-		writeBytes = writeIPC(pid, &(table[i][0].totalLevels), sizeof(int));
-		/*fprintf(stderr, "Pipe -- totalLevels -- writeBytes: %d\n", writeBytes );*/
+		writeIPC(pid, &(table[i][0].totalLevels), sizeof(int));
 		for( j = 0 ; j < table[i][0].totalLevels ; ++j )
 		{
-			writeBytes = writeIPC(pid, &((table[i][j].eachLevel)->qtyGates), sizeof(int) );
-			/*fprintf(stderr, "Pipe -- archivo:%d nivel: %d -- qtyGates -- writeBytes: %d\n", i,j, writeBytes );*/
+			writeIPC(pid, &((table[i][j].eachLevel)->qtyGates), sizeof(int) );
 			for( k = 0 ; k < (table[i][j].eachLevel)->qtyGates ; ++k )
 			{
-				writeBytes = writeIPC(pid, &((table[i][j].eachLevel)->gates[k]), sizeof(gate) );
-				/*fprintf(stderr, "Pipe -- archivo: %d nivel: %d gate: %d Sizeof gates: %d\n", i,j,k,writeBytes );*/
+				writeIPC(pid, &((table[i][j].eachLevel)->gates[k]), sizeof(gate) );
 			}
 		}
 	}
-	freeCircuits(table, pos);
 	wait(&pid);
-	
+	freeCircuits(table, pos);
 	free(dirFile);
 	free(procCopyDir);
 	return 0;
