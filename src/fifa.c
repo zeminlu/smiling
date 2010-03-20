@@ -50,10 +50,7 @@ int main (void){
 		}
 		free(fixture);
 		return status;
-	}
-	
-	fprintf(stderr, "post child listener\n");
-	
+	}	
 	
 	/*
 	Guardar a archivo la solucion

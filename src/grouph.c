@@ -57,7 +57,7 @@ int main (void){
 	
 	status = sendSubfixture(group);
 	
-/*	for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
+	for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		free(countriesTable[i]);
 	}
 	free(data);
@@ -67,13 +67,13 @@ int main (void){
 	}
 	free(condArgs->sets);
 	free(condArgs);
-	*for (i = 0 ; i < 4; ++i){
+	/*for (i = 0 ; i < 4; ++i){
 		free (group->countries[i]);
-	}
+	}*/
 	free(group->countries);
 	free(group);	
 	close(_stdin_);
-*/	
+
 	closeIPC(getppid());
 	
 	return status;
