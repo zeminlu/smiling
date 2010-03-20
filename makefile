@@ -32,19 +32,19 @@ LDFLAGS = $(LIBRARIES) -g -o
 TARGET1 = main.bin
 OBJECTS1 = main.o
 TARGET2 = parallel.bin
-OBJECTS2 = parallel.o tpl.o serializable.o linearHashADT.o msqIPC.o
+OBJECTS2 = parallel.o tpl.o serializable.o linearHashADT.o pipeIPC.o
 TARGET3 = pipe.bin
-OBJECTS3 = pipe.o tpl.o serializable.o linearHashADT.o msqIPC.o
+OBJECTS3 = pipe.o tpl.o serializable.o linearHashADT.o pipeIPC.o
 TARGET4 = fifaGen.bin
 OBJECTS4 = fifaGen.o conditions.o
 TARGET5 = fifa.bin
-OBJECTS5 = fifa.o tpl.o serializable.o linearHashADT.o msqIPC.o
+OBJECTS5 = fifa.o tpl.o serializable.o linearHashADT.o pipeIPC.o
 TARGET6 = grouph.bin
-OBJECTS6 = grouph.o tpl.o conditions.o serializable.o linearHashADT.o msqIPC.o
+OBJECTS6 = grouph.o tpl.o conditions.o serializable.o linearHashADT.o pipeIPC.o
 TARGET7 = gates.bin
-OBJECTS7 = gates.o tpl.o serializable.o msqIPC.o linearHashADT.o
+OBJECTS7 = gates.o tpl.o serializable.o pipeIPC.o linearHashADT.o
 TARGET8 = levels.bin
-OBJECTS8 = levels.o msqIPC.o linearHashADT.o
+OBJECTS8 = levels.o pipeIPC.o linearHashADT.o
 ###############################################################################
 .SILENT:
 .PHONY: clean
