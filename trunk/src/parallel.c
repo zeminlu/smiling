@@ -44,7 +44,9 @@ int filesListener(){
 				break;
 		}
 	}
+	printf("PARALEL: antes de Synchronize\n");
 	synchronize();
+	printf("PARALEL: despue de Synchronize\n");
 	writeIPC(pid, &countriesTableEntriesAmm, sizeof(int));
 	
 	for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
