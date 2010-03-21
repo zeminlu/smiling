@@ -185,7 +185,7 @@ int getIPCStatus(pid_t pid){
 	return ret;
 }
 
-int finalizeIPC(int pid){
+int finalizeIPC(){
 	int i;
 	
 	for (i = 0 ; i < clientsAmm ; ++i){
