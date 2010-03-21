@@ -116,15 +116,12 @@ int main(void){
 	
 	printf("cantidad de archivos: %d\n", pos);
 	writeIPC(pid, &pos, sizeof(int) );
-					
 	for( i = 0 ; i < pos ; ++i )
 	{	
 		writeIPC(pid, &(table[i][0].totalLevels), sizeof(int));
-		fprintf(stderr, "Estoy mandando la cantidad de niveles: %d\n", (table[i][0].totalLevels));
 		for( j = 0 ; j < table[i][0].totalLevels ; ++j )
 		{
 			writeIPC(pid, &((table[i][j].eachLevel)->qtyGates), sizeof(int) );
-			fprintf(stderr, "Estoy mandando la cantidad de compuertas: %d\n", ((table[i][j].eachLevel)->qtyGates) );
 			for( k = 0 ; k < (table[i][j].eachLevel)->qtyGates ; ++k )
 			{
 				writeIPC(pid, &((table[i][j].eachLevel)->gates[k]), sizeof(gate) );
@@ -236,8 +233,6 @@ circuitTable * parseCircuit( xmlDocPtr doc, xmlNodePtr cur )
 			perror("Error en la alocacion de memoria de los indices de circuit\n");
 			return NULL;
 		}
-		circuit[i].level = i;
-		circuit[i].curLevel = 0;
 	}
 	for( i = 0; i < _MAX_GATES_LEVELS_ ; ++i)
 	{
@@ -304,7 +299,7 @@ void parseGatesTags( char *father, xmlNodePtr cur, circuitTable * circuit, int c
 			if( !xmlIsBlankNode(cur) )
 			{
 				pos = (circuit[curLevel].eachLevel)->qtyGates;
-				if( (circuit[curLevel].eachLevel)->qtyGates % _MAX_GATES_LEVELS_ == 0 )
+				if( pos % _MAX_GATES_LEVELS_ == 0 )
 				{
 					
 					(circuit[curLevel].eachLevel)->gates = (gate*)realloc((circuit[curLevel].eachLevel)->gates, 
@@ -381,7 +376,7 @@ int countLevels( circuitTable* circuit)
 {
 	int level = 0;
 	
-	while( (circuit[level].eachLevel)->qtyGates != 0 )
+	while( (circuit[level].eachLevel)->qtyGates > 0 )
 	{
 		++level;
 	}
@@ -413,8 +408,10 @@ void printCircuitTable( circuitTable * circuit)
 {
 	int i,j;
 	
+	fprintf(stderr, "Cantidad de niveles: %d\n", circuit[0].totalLevels);
 	for( i = 0; i < circuit[0].totalLevels ; ++i)
 	{
+		fprintf(stderr, "Cantidad de compuertas: %d\n", (circuit[i].eachLevel)->qtyGates);
 		for( j = 0; j < (circuit[i].eachLevel)->qtyGates ; ++j)
 		{
 			fprintf(stderr, "LEVEL: %d Name: %s, Father[0]: %s, Father[1]: %s, Type: %d, Input[0]: %d, Input[1]: %d, Output: %d\n", 
