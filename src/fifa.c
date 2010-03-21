@@ -3,7 +3,6 @@
 int main (void){
 	int i, j, status, countriesTableEntriesAmm;
 	pid_t *pids;
-	void *master = NULL, *set = NULL;
 	country ***fixture = NULL, **countriesTable = NULL;
 	
 	loadIPC();
@@ -14,41 +13,38 @@ int main (void){
 	
 	if ((pids = malloc(sizeof(pid_t) * countriesTableEntriesAmm)) == NULL || (fixture = malloc(sizeof(void *) * countriesTableEntriesAmm / 4)) == NULL){
 		perror("Error de memoria");
-		free(pids);
 		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free(countriesTable[j]);
 		}
-		free(countriesTable);
+		varFree(2, countriesTable, pids);
+		
 		return errno;
 	}
 	
 	if ((status = startChildProcesses(countriesTable, countriesTableEntriesAmm, &fixture, &pids)) != 0){
-		free(pids);
 		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free(fixture[j]);
 		}
-		free(fixture);
 		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free(countriesTable[j]);
 		}
-		free(countriesTable);
+		varFree(3, countriesTable, pids, fixture);
+		
 		return status;
 	}
 		
 	if ((status = childsListener(pids, countriesTable, countriesTableEntriesAmm, fixture)) != 0){
-		free(pids);
 		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free(countriesTable[j]);
 		}
-		free(countriesTable);
-		free(master);
 		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			for(i = 0 ; i < 4 ; ++i){
 				free(fixture[j][i]);
 			}
 			free(fixture[j]);
 		}
-		free(fixture);
+		varFree(3, fixture, countriesTable, pids);
+		
 		return status;
 	}
 	
@@ -68,14 +64,11 @@ int main (void){
 		printf("\n");
 		free(fixture[j]);
 	}
-	free(fixture);
-	free(pids);
-	free(set);
-	free(master);
+	
 	for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 		free(countriesTable[j]);
 	}
-	free(countriesTable);
+	varFree(3, fixture, pids, countriesTable);
 	
 	return 0;
 }
@@ -96,11 +89,11 @@ int loadCountriesTable(country ***countriesTable){
 		
 		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL || ((*countriesTable)[i] = malloc(sizeof(country))) == NULL){
 			perror("Error de memoria");
-			free(buffer);
 			for(j = 0 ; j < i ; ++j){
 				free((*countriesTable)[j]);
 			}
-			free((*countriesTable));
+			varFree(2, (*countriesTable), buffer);
+			
 			return errno;
 		}
 		

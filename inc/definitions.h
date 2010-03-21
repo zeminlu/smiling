@@ -5,10 +5,12 @@
  *		durante la programacion del tp.
  */
 
-#ifndef _DECLARATIONS_
-#define _DECLARATIONS_
+#ifndef _DEFINITIONS_H
+#define _DEFINITIONS_H
 
+#include <stdlib.h>
 #include "../inc/types.h"
+#include <stdarg.h>
 
 #define		TRUE		1
 #define		FALSE		!TRUE
