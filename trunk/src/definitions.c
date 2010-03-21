@@ -4,11 +4,7 @@
 
 #include "definitions.h"
 
-country **countriesTable;
-int countriesTableEntriesAmm;
-
-void varFree(int amm, ...)
-{
+void varFree(int amm, ...){
 	va_list ap;
 	int i;
 

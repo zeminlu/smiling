@@ -17,11 +17,8 @@ int setupIPC(int channels){
 	int data;
 	
 	itoa (getpid(), pid);
-	
 	strcpy(fileName, nameStart);
-	
 	strcat(fileName, pid);
-	
 	
 	if ((master = malloc(sizeof(fd_set))) == NULL || (slave = malloc(sizeof(fd_set))) == NULL){
 		perror("Error de memoria\n");
@@ -189,9 +186,7 @@ int finalizeIPC(){
 	int i;
 	
 	for (i = 0 ; i < clientsAmm ; ++i){
-		free(ipcIDs[i][0]);
-		free(ipcIDs[i][1]);
-		free(ipcIDs[i]);
+		varFree(3, ipcIDs[i][0], ipcIDs[i][1], ipcIDs[i]);
 	}
 	free(ipcIDs);
 	if (master != NULL){

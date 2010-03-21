@@ -26,8 +26,7 @@ int main (void){
 		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
 		}
-		free(countriesTable);
-		free (conditions);
+		varFree(2, countriesTable, conditions);
 		return status;
 	} 
 	
@@ -35,23 +34,17 @@ int main (void){
 		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
 		}
-		free(countriesTable);
-		free (conditions);
-		free(condArgs->sets);
-		free(condArgs);
+		varFree(4, countriesTable, conditions, condArgs->sets, condArgs);
 		return status;
 	}
 	if ((status = buildSubfixture(&group, condAmm, condArgs, data, countriesTable, conditions)) != 0){
 		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
 		}
-		free(countriesTable);
-		free (conditions);
 		for (i = 0 ; i < condAmm ; ++i){
 			free(condArgs->sets[i]);
 		}
-		free(condArgs->sets);
-		free(condArgs);
+		varFree(4, countriesTable, conditions, condArgs->sets, condArgs);
 		return status;
 	}
 	
@@ -60,20 +53,13 @@ int main (void){
 	for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		free(countriesTable[i]);
 	}
-	free(data);
-	free (conditions);
 	for (i = 0 ; i < condAmm ; ++i){
 		free(condArgs->sets[i]);
 	}
-	free(condArgs->sets);
-	free(condArgs);
 	/*for (i = 0 ; i < 4; ++i){
 		free (group->countries[i]);
 	}*/
-	free(group->countries);
-	free(group);	
-	
-	closeIPC(getppid());
+	varFree(6, data, conditions, condArgs->sets, condArgs, group->countries, group);
 	
 	return status;
 }
@@ -95,11 +81,10 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 		
 		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL || ((*countriesTable)[i] = malloc(sizeof(country))) == NULL){
 			perror("Error de memoria");
-			free(buffer);
 			for(j = 0 ; j < i ; ++j){
 				free((*countriesTable)[j]);
 			}
-			free((*countriesTable));
+			varFree(2, buffer, (*countriesTable));
 			return errno;
 		}
 		
@@ -115,8 +100,7 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 		for(j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free((*countriesTable)[j]);
 		}
-		free((*countriesTable));
-		free(buffer);
+		varFree(2, (*countriesTable), buffer);
 		return errno;
 	}
 	readIPC(getppid(), buffer, bufferSize);
@@ -222,8 +206,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			intersect(condAmm, condArgs, &intersection);
 						
 			reqCountry = intersection->country[rand() % intersection->countriesAmm];
-			free(intersection->country);
-			free(intersection);
+			varFree(2, intersection->country, intersection);
 		}
 
 		for (j = 0 ; j < i ; ++j){
@@ -265,8 +248,7 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 		(aux[0] = malloc(sizeof(set))) == NULL ||			
 		(aux[0]->country = malloc(sizeof(int *) * ((condArgs->sets)[0])->countriesAmm)) == NULL){
 			perror("Error de memoria");
-			free(aux[0]);
-			free(aux);
+			varFree(2, aux[0], aux);
 			return errno;
 		}
 	for (j = 0 ; j < ((condArgs->sets)[0])->countriesAmm ; ++j){
@@ -278,11 +260,9 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 		if ((aux[j] = malloc(sizeof(set))) == NULL || ((aux[j])->country = malloc(sizeof(int) * (aux[j - 1])->countriesAmm)) == NULL){
 				perror("Error de memoria");
 				for(i = 0 ; i < j - 1 ; ++i){
-					free(aux[i]->country);
-					free(aux[i]);
+					varFree(2, aux[i]->country, aux[i]);
 				}
-				free(aux[j]);
-				free(aux);
+				varFree(2, aux[j], aux);
 				return errno;
 		}
 		
@@ -306,8 +286,7 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 	*intersection = aux[j - 1];
 	
 	for(i = 0 ; i < j - 2 ; ++i){
-		free(aux[i]->country);
-		free(aux[i]);
+		varFree(2, aux[i]->country, aux[i]);
 	}
 	free(aux);
 	
