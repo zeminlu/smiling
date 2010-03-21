@@ -55,17 +55,14 @@ SCK_OBJ = sckIPC.o
 .SILENT:
 .PHONY: clean
 
-all: clean pipe allTargets
-
-allTargets: $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5) $(TARGET6) $(TARGET7) $(TARGET8)
-
+all: pipeIPC.smiling
 
 allTargets = $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5) $(TARGET6) $(TARGET7) $(TARGET8)
 
-pipeIPC.bin: clean pipe $(allTargets)
-msqIPC.bin: clean msq $(allTargets)
-shmIPC.bin: clean shm $(allTargets)
-sckIPC.bin: clean sck $(allTargets)
+pipeIPC.smiling: clean pipe $(allTargets)
+msqIPC.smiling: clean msq $(allTargets)
+shmIPC.smiling: clean shm $(allTargets)
+sckIPC.smiling: clean sck $(allTargets)
 	
 $(TARGET1): $(OBJECTS1)
 	@echo "Linking" $@"..."
