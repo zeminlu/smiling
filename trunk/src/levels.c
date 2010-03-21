@@ -69,20 +69,15 @@ int proccessLevel( void )
 								curLevelTable[i].input[1]);
 	}*/
 	
-	fprintf(stderr, "Antes de la posible falla, getppid: %d\n", getppid() );
 	writeIPC( getppid(), &cur, sizeof(curCircuit));
-	fprintf(stderr, "Despues de la posible falla, getppid: %d\n", getppid() );
 	for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
-		fprintf(stderr, "Estoy enviando las compuertas del archivo: %d y nivel: %d\n", cur.curFile, cur.curLevel);
 		writeIPC( getppid(), &(curLevelTable[i]), sizeof(gate) );
 	}
 	if( first != 0 )
 		free(prevLevel);	
 	free(curLevelTable);
 	
-	finalizeIPC();
-	fprintf(stderr, "Estoy retornando de la funcion de levels, despues del finalizeIPC\n");
 	return 0;
 }
 

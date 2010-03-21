@@ -26,9 +26,7 @@ typedef struct{
 
 typedef struct{
 	gatesOfEachLevel *eachLevel;
-	int level;
 	int	totalLevels;
-	int curLevel;
 }circuitTable;
 
 int initializeGates();
