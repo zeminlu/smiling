@@ -12,10 +12,8 @@ void sigHandler (int signum){
 
 int init_queue(int newKey){
 	int queue_id;
-	int key;
-	
-	key = getpid();
-	queue_id = msgget((key_t)(key % newKey), IPC_CREAT | QPERM);
+		
+	queue_id = msgget((key_t)(newKey), IPC_CREAT | QPERM);
 	if(queue_id == -1){
 		perror("msgget Fallo");
 		return errno;
@@ -27,10 +25,11 @@ int setupIPC(int channels){
 	int i;
 	int data;
 	
-	queue_idR = init_queue(1);
-	queue_idW = init_queue(2);
+	queue_idR = init_queue(100);
+	queue_idW = init_queue(200);
 	data = open("./Luchano", O_WRONLY | O_CREAT, 0644);
-		
+	printf("SETUPIPC: queue_idR = %d queue_idW %d \n", queue_idR, queue_idW);
+	
 	for (i = 0 ; i < channels ; ++i){
 		write(data, &queue_idR, sizeof(int));
 		write(data, &queue_idW, sizeof(int));
@@ -39,11 +38,13 @@ int setupIPC(int channels){
 	clientsAmm = channels;
 	close(data);
 	info = open("./Luchano", O_RDONLY);
+	
 	return 0;
 }
 
+
 int addClient(){
-	return dup2(info, 0);
+	return 0;
 }
 
 int synchronize(){
@@ -52,17 +53,21 @@ int synchronize(){
 	pid_t * pid = NULL;
 	
 	pid = malloc(sizeof(pid_t)* clientsAmm);
-	printf("MSQAPI: antes del for que lee\n");
+	
+	printf("MSQAPI: antes del for que lee Cleintes AMM =  %d\n", clientsAmm);
 	for (i = 0 ; i < clientsAmm ; ++i){
-		printf("MSQAPI: %d\n", i);
+		printf("MSQAPI:Cliente Numero=  %d\n", i);
 		readIPC(0, &aux, sizeof(pid_t));
-		printf("MSQAPI: %d\n", aux);
+		printf("MSQAPI:PID del Hijo %d\n", aux);
 		pid[i]= aux;
 	}
-	printf("MSQAPI: antes del for que lee\n");	
+	printf("MSQAPI: antes del for que KILL\n");	
+/* 
 	for (i = 0 ; i < clientsAmm ; ++i){
 		kill (pid[i], SIGALRM);
-	}
+	}*/
+	printf("MSQAPI: Despues del for que KILL\n");	
+	
 	close(info);
 	unlink("./Luchano");
 	
@@ -78,52 +83,66 @@ int loadIPC(){
 	signal(SIGALRM, sigHandler);
 	sigemptyset (&mask);
 	sigaddset (&mask, SIGALRM);
-
+	
+	sleep(3);
+	read(_stdin_, &(queue_id), sizeof(int));
+	queue_idW = msgget((key_t)100, 0);
+	
+	printf("LOADIPC: queue_idW =  %d\n", queue_idW);
 	
 	read(_stdin_, &(queue_id), sizeof(int));
-	queue_idW = queue_id;
-	printf("LOADIPC: %d\n", queue_id);
+	queue_idR = msgget((key_t)200, 0);
 	
-	read(_stdin_, &(queue_id), sizeof(int));
-	queue_idR = queue_id;
-	printf("LOADIPC: %d\n", queue_id);
+	printf("LOADIPC: queue_idR = %d\n", queue_idR);
 	
-	writeIPC(getppid(), &pid, sizeof(pid_t));
-		
+	writeIPC(getpid(), &pid, sizeof(pid_t));
+	printf("LOADIPC:salio del write \n");
+/*		
     while (!flag){
     	sigsuspend (&oldmask);
 	}
     sigprocmask (SIG_UNBLOCK, &mask, NULL);
-	
+*/
 	return 0;
 }
 
 int readIPC(pid_t pid, void *buffer, int bufferSize){
 	int mlen;
 	msQ entry;
-	entry.msg = buffer;
+	
+	printf("READ IPC antes de LEER \n");
 	if((mlen = msgrcv(queue_idR ,&entry, bufferSize, pid, MSG_NOERROR)) == -1){
 		perror("msgrcv fallo");
 		return errno;
+		printf("READ IPC DESPUES de escribir \n");
+		
 	}
+	printf("READ IPC DESPUES de escribir \n");
+	
+	memcpy(buffer,entry.mtext, bufferSize);
+
+	
+	printf("READ IPC DESPUES de hacer el copymem \n");
 	if(mlen == -1){
 		buffer = NULL;
 		return -2;
 	}
+	
 return 0;
 }
 
 int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	int mlen;
 	msQ entry;
-	entry.msg = malloc(sizeof(char)* bufferSize);
-	entry.mtype = (long)pid;
-	memcpy(entry.msg, buffer, bufferSize);
-	if((mlen = msgsnd(queue_idW,&entry, bufferSize, 0)) == -1){
-		perror("msgsnd fallo");
+	
+	entry.mtype = (long)pid;	
+	memcpy(entry.mtext, buffer, bufferSize);
+
+	if((mlen = msgsnd(queue_idW, &entry, bufferSize, IPC_NOWAIT)) == -1){
+		perror("msgsnd fallo");		
 		return errno;
 	}
-	
+
 return 0;
 }
 

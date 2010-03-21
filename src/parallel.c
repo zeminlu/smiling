@@ -48,6 +48,7 @@ int filesListener(){
 	synchronize();
 	printf("PARALEL: despue de Synchronize\n");
 	writeIPC(pid, &countriesTableEntriesAmm, sizeof(int));
+
 	
 	for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 		serializeCountryStruct(&buffer, &bufferSize, countriesTable[j]);
