@@ -8,11 +8,11 @@
 #include "../inc/ipcAPI.h"
 
 #define QKEY 			(key_t)0105
-#define QPERM			0660
+#define QPERM			0666
 
 typedef struct q_entry{
 	long mtype;
-	char * msg;
+	char mtext[200];
 	}msQ;
 
 int init_queue(int newKey);
