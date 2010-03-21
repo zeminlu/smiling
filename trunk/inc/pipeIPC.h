@@ -1,5 +1,5 @@
-#ifndef IPCAPI_H_
-#define IPCAPI_H_
+#ifndef PIPEIPC_H_
+#define PIPEIPC_H_
 
 #include <stdio.h>
 #include <stdlib.h>
