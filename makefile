@@ -141,7 +141,6 @@ shmIPC.o: shmIPC.c shmIPC.h
 sckIPC.o: sckIPC.c sckIPC.h
 levels.o: levels.c levels.h
 linearHashADT.o: linearHashADT.c linearHashADT.h
-msqIPC.o: msqIPC.c msqIPC.h
 
 cleanObjects:
 	@echo "Clearing Objects..."

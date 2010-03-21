@@ -1,11 +1,11 @@
 
-#ifndef MSQIPC
+#ifndef MSQIPC_H_
+#define MSQIPC_H_
+
 
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include "../inc/ipcAPI.h"
-
-#define MSQIPC
 
 #define QKEY 			(key_t)0105
 #define QPERM			0660
