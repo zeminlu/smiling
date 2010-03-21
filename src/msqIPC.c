@@ -44,7 +44,7 @@ int setupIPC(int channels){
 
 
 int addClient(){
-	return 0;
+	return dup2(info, 0);
 }
 
 int synchronize(){
@@ -96,6 +96,7 @@ int loadIPC(){
 	printf("LOADIPC: queue_idR = %d\n", queue_idR);
 	
 	writeIPC(getpid(), &pid, sizeof(pid_t));
+	
 	printf("LOADIPC:salio del write \n");
 /*		
     while (!flag){
