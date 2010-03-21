@@ -307,16 +307,20 @@ circuitTable ** buildCircuitsTable( int qtyFileCom )
 			{
 				perror("Error en la alocacion del arreglo de compuertas\n");
 				free( (table[i][j].eachLevel) );
+				for( i = 0 ; i < qtyFileCom ; ++i )
+					free(table[i]);
+				free(table);
 				return NULL;
 			}
 			for( k = 0 ; k < qtyGatesCom ; ++k )
 			{
 				readIPC(getppid(), &((((table[i][j]).eachLevel)->gates)[k]), sizeof(gate) );
 			}
-			fprintf(stderr, "buildCircuitsTable -- Name Gate: %s -- %d\n", ((table[0][0].eachLevel)->gates[0]).name, j );
+			/*fprintf(stderr, "buildCircuitsTable -- Name Gate: %s -- %d\n", ((table[0][0].eachLevel)->gates[0]).name, j );*/
 		}
-		printCircuitTable(table[i]);
+		/*printCircuitTable(table[i]);*/
 	}
+	printCircuitTable(table[0]);
 	
 	fprintf(stderr, "-------------------------------\n");
 	for( i = 0 ; i < qtyFileCom ; ++i )
