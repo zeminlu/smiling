@@ -52,7 +52,7 @@ int main (void){
 		return status;
 	}
 	
-	finalizeIPC();	
+	finalizeIPC();
 	
 	/*
 	Guardar a archivo la solucion

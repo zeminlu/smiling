@@ -23,7 +23,7 @@ INCLUDES = -I $(INC_DIR)
 LIBRARIES = -lxml2
 #Sets the C compiler set up
 COMPILE.c = $(CC) $(INCLUDES) $(CFLAGS) 
-#
+
 #Sets the linker for the project
 LD = gcc
 #
@@ -32,25 +32,41 @@ LDFLAGS = $(LIBRARIES) -g -o
 TARGET1 = main.bin
 OBJECTS1 = main.o
 TARGET2 = parallel.bin
-OBJECTS2 = parallel.o tpl.o serializable.o linearHashADT.o pipeIPC.o
+OBJECTS2 = parallel.o tpl.o serializable.o linearHashADT.o ipcAPI.o
 TARGET3 = pipe.bin
-OBJECTS3 = pipe.o tpl.o serializable.o linearHashADT.o pipeIPC.o
+OBJECTS3 = pipe.o tpl.o serializable.o linearHashADT.o ipcAPI.o
 TARGET4 = fifaGen.bin
 OBJECTS4 = fifaGen.o conditions.o
 TARGET5 = fifa.bin
-OBJECTS5 = fifa.o tpl.o serializable.o linearHashADT.o pipeIPC.o
+OBJECTS5 = fifa.o tpl.o serializable.o linearHashADT.o ipcAPI.o
 TARGET6 = grouph.bin
-OBJECTS6 = grouph.o tpl.o conditions.o serializable.o linearHashADT.o pipeIPC.o
+OBJECTS6 = grouph.o tpl.o conditions.o serializable.o linearHashADT.o ipcAPI.o
 TARGET7 = gates.bin
-OBJECTS7 = gates.o tpl.o serializable.o pipeIPC.o linearHashADT.o
+OBJECTS7 = gates.o tpl.o serializable.o ipcAPI.o linearHashADT.o 
 TARGET8 = levels.bin
-OBJECTS8 = levels.o pipeIPC.o linearHashADT.o
+OBJECTS8 = levels.o ipcAPI.o linearHashADT.o
+
+PIPE_OBJ = pipeIPC.o
+MSQ_OBJ = msqIPC.o
+SHM_OBJ = shmIPC.o
+SCK_OBJ = sckIPC.o
+
 ###############################################################################
 .SILENT:
 .PHONY: clean
 
-all: clean $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5) $(TARGET6) $(TARGET7) $(TARGET8)
+all: clean pipe allTargets
 
+allTargets: $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5) $(TARGET6) $(TARGET7) $(TARGET8)
+
+
+allTargets = $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5) $(TARGET6) $(TARGET7) $(TARGET8)
+
+pipeIPC.bin: clean pipe $(allTargets)
+msqIPC.bin: clean msq $(allTargets)
+shmIPC.bin: clean shm $(allTargets)
+sckIPC.bin: clean sck $(allTargets)
+	
 $(TARGET1): $(OBJECTS1)
 	@echo "Linking" $@"..."
 	$(LD) $(LDFLAGS) $(OUTPUT_DIR)$@ $^ 
@@ -91,6 +107,18 @@ $(TARGET8): $(OBJECTS8)
 	$(LD) $(LDFLAGS) $(OUTPUT_DIR)$@ $^ 
 	@echo "Done."
 
+pipe: $(PIPE_OBJ)
+	    @cp pipeIPC.o ipcAPI.o
+
+sck: $(SCK_OBJ)
+	    @cp sckIPC.o ipcAPI.o
+
+msq: $(MSQ_OBJ)
+	    @cp msqIPC.o ipcAPI.o
+
+shm: $(SHM_OBJ)
+	    @cp shmIPC.o ipcAPI.o
+
 %.o: %.c
 	@echo "Compiling" $< "into" $@...
 	$(COMPILE.c) $@ $<
@@ -107,7 +135,10 @@ gates.o: gates.c gates.h
 tpl.o: tpl.c tpl.h
 definitions.o: definitions.c definitions.h
 serializable.o: serializable.c serializable.h
-pipeIPC.o: pipeIPC.c ipcAPI.h
+pipeIPC.o: pipeIPC.c pipeIPC.h
+msqIPC.o: msqIPC.c msqIPC.h
+shmIPC.o: shmIPC.c shmIPC.h
+sckIPC.o: sckIPC.c sckIPC.h
 levels.o: levels.c levels.h
 linearHashADT.o: linearHashADT.c linearHashADT.h
 msqIPC.o: msqIPC.c msqIPC.h
