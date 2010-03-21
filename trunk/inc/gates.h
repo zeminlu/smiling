@@ -16,10 +16,11 @@
 #include "../inc/serializable.h"
 #include "../inc/pipe.h"
 #include "../inc/ipcAPI.h"
+#include "../inc/cutils.h"
 
 int gateInitializer( void );
 
-int buildCircuitsTable( circuitTable *** circuits, int qtyFileCom );
+circuitTable ** buildCircuitsTable( int qtyFileCom );
 
 void freeCircuits( circuitTable **table, int qtyFile );
 
@@ -33,5 +34,10 @@ void incLevels( int **levels, int qtyFiles );
 int checkAvailableFiles( int * levels, int qtyFiles, int *maxLevel );
 
 int getCurrentPipeFiles( int * levels, int qtyFiles, int *maxLevel );
+
+int saveProccessFile( circuitTable *table, int pos );
+
+void itoa(int n, char s[]);
+
 
 #endif

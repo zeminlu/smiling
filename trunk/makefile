@@ -32,19 +32,19 @@ LDFLAGS = $(LIBRARIES) -g -o
 TARGET1 = main.bin
 OBJECTS1 = main.o
 TARGET2 = parallel.bin
-OBJECTS2 = parallel.o tpl.o serializable.o linearHashADT.o ipcAPI.o definitions.o
+OBJECTS2 = parallel.o tpl.o serializable.o linearHashADT.o ipcAPI.o definitions.o cutils.o
 TARGET3 = pipe.bin
-OBJECTS3 = pipe.o tpl.o serializable.o linearHashADT.o ipcAPI.o definitions.o
+OBJECTS3 = pipe.o tpl.o serializable.o linearHashADT.o ipcAPI.o definitions.o cutils.o
 TARGET4 = fifaGen.bin
 OBJECTS4 = fifaGen.o conditions.o definitions.o
 TARGET5 = fifa.bin
-OBJECTS5 = fifa.o tpl.o serializable.o linearHashADT.o ipcAPI.o definitions.o
+OBJECTS5 = fifa.o tpl.o serializable.o linearHashADT.o ipcAPI.o definitions.o cutils.o
 TARGET6 = grouph.bin
-OBJECTS6 = grouph.o tpl.o conditions.o serializable.o linearHashADT.o ipcAPI.o definitions.o
+OBJECTS6 = grouph.o tpl.o conditions.o serializable.o linearHashADT.o ipcAPI.o definitions.o cutils.o
 TARGET7 = gates.bin
-OBJECTS7 = gates.o tpl.o serializable.o ipcAPI.o linearHashADT.o definitions.o
+OBJECTS7 = gates.o tpl.o serializable.o ipcAPI.o linearHashADT.o definitions.o cutils.o
 TARGET8 = levels.bin
-OBJECTS8 = levels.o ipcAPI.o linearHashADT.o definitions.o
+OBJECTS8 = levels.o ipcAPI.o linearHashADT.o definitions.o cutils.o
 
 PIPE_OBJ = pipeIPC.o
 MSQ_OBJ = msqIPC.o
@@ -138,6 +138,7 @@ shmIPC.o: shmIPC.c shmIPC.h
 sckIPC.o: sckIPC.c sckIPC.h
 levels.o: levels.c levels.h
 linearHashADT.o: linearHashADT.c linearHashADT.h
+cutils.o: cutils.c cutils.h
 
 cleanObjects:
 	@echo "Clearing Objects..."

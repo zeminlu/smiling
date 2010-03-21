@@ -23,12 +23,14 @@ int main ( void )
 int proccessLevel( void )
 {
 	int aux, i, first, qtyGatesPrev, qtyGatesCur;
-	gate *prevLevel = NULL, *curLevel;
+	gate *prevLevel = NULL, *curLevelTable;
 	curCircuit cur;
 	
 	readIPC( getppid(), &cur, sizeof(curCircuit));
+	fprintf(stderr, "--- Despues de la lectura de curCircuit, My pid: %d Parent pid: %d File: %d Level: %d\n", getpid(), getppid(), cur.curFile, cur.curLevel);
 	aux = readIPC( getppid(), &qtyGatesCur, sizeof(int));
-	if( (curLevel = malloc( sizeof(gate) * qtyGatesCur)) == NULL )
+	
+	if( (curLevelTable = malloc( sizeof(gate) * qtyGatesCur)) == NULL )
 	{
 		perror("Error en la alocacion de memoria de prevLevel\n");
 		return errno;
@@ -36,7 +38,7 @@ int proccessLevel( void )
 	
 	for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
-		readIPC( getppid(), &(curLevel[i]), sizeof(gate) );
+		readIPC( getppid(), &(curLevelTable[i]), sizeof(gate) );
 	}
 	
 	readIPC( getppid(), &first, sizeof(int));
@@ -46,7 +48,7 @@ int proccessLevel( void )
 		if( (prevLevel = malloc( sizeof(gate) * qtyGatesPrev)) == NULL )
 		{
 			perror("Error en la alocacion de memoria de prevLevel\n");
-			free(curLevel);
+			free(curLevelTable);
 			return errno;
 		}
 		for( i = 0 ; i < qtyGatesPrev ; ++i )
@@ -55,30 +57,32 @@ int proccessLevel( void )
 		}
 	}
 	
-	evaluateLevel( prevLevel, &curLevel, qtyGatesPrev, qtyGatesCur, first );
-	for( i = 0 ; i < qtyGatesCur ; ++i )
+	evaluateLevel( prevLevel, &curLevelTable, qtyGatesPrev, qtyGatesCur, first );
+	/*for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
 		fprintf(stderr, "CurLevel: %d CurFile: %d Gate Name:%s Output: %d Input1: %d Input2: %d\n", 
 								cur.curLevel,
 								cur.curFile,
-								curLevel[i].name, 
-								curLevel[i].output,
-								curLevel[i].input[0],
-								curLevel[i].input[1]);
-	}
+								curLevelTable[i].name, 
+								curLevelTable[i].output,
+								curLevelTable[i].input[0],
+								curLevelTable[i].input[1]);
+	}*/
 	
+	fprintf(stderr, "Antes de la posible falla, getppid: %d\n", getppid() );
 	writeIPC( getppid(), &cur, sizeof(curCircuit));
+	fprintf(stderr, "Despues de la posible falla, getppid: %d\n", getppid() );
 	for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
-		writeIPC( getppid(), &(curLevel[i]), sizeof(gate) );
+		fprintf(stderr, "Estoy enviando las compuertas del archivo: %d y nivel: %d\n", cur.curFile, cur.curLevel);
+		writeIPC( getppid(), &(curLevelTable[i]), sizeof(gate) );
 	}
 	if( first != 0 )
-		free(prevLevel);
+		free(prevLevel);	
+	free(curLevelTable);
 	
-	free(curLevel);
-	
-	/*finalizeIPC(getppid());*/
-	
+	finalizeIPC();
+	fprintf(stderr, "Estoy retornando de la funcion de levels, despues del finalizeIPC\n");
 	return 0;
 }
 

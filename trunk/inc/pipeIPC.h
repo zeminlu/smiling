@@ -16,15 +16,12 @@
 #include "../inc/types.h"
 #include "../inc/linearHashADT.h"
 #include "../inc/ipcAPI.h"
+#include "../inc/cutils.h"
 
 int compareIPCIDs(void *elem1, void *elem2);
 
 void * copyIPCID(void *elem);
 
 void freeIPCID(void *elem);
-
-void itoa(int n, char s[]);
-
-void reverse(char s[]);
 
 #endif

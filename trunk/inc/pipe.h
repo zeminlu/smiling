@@ -32,14 +32,21 @@ typedef struct{
 }circuitTable;
 
 int initializeGates();
+
 void freeCircuits( circuitTable **table, int qtyFile );
+
 int getFilesAmm (DIR *dp);
 
 circuitTable * parseXMLGate( char * docName );
+
 circuitTable * parseCircuit( xmlDocPtr doc, xmlNodePtr cur );
+
 void parseGatesTags( char *father, xmlNodePtr cur, circuitTable * circuit, int curLevel );
+
 int getType( int typeInt);
+
 int countLevels( circuitTable * circuit);
+
 int checkGateIsLoaded( circuitTable *circuit, char *name, int curLevel);
 
 void printCircuitTable( circuitTable * circuit);

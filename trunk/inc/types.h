@@ -62,12 +62,6 @@ typedef struct{
 	}conditions;
 
 typedef struct{
-	int qtyFiles;
-	int curFile;
-	int curLevel;
-	} curGateProcess;
-
-typedef struct{
 	int curFile;
 	int curLevel;
 	} curCircuit;
