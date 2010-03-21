@@ -1,0 +1,24 @@
+<circuit>
+	<gates>
+		<A type="0" input1="1" input2="0">
+			<C type="1"/>
+		</A>
+		<B type="1" input1="1" input2="1">
+			<C type="1">
+				<E type="2" input1="0">
+					<I type="0"/>
+				</E>
+			</C>
+		</B>
+		<D type="3" input1="0" input2="0">
+			<G type="4">
+				<H type="2" input1="0">
+					<I type="0" />
+				</H>
+			</G>
+		</D>
+		<F type="0" input1="1" input2="0">
+			<G type="4"/>
+		</F>
+	</gates>
+</circuit>

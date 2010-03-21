@@ -1,0 +1,5 @@
+<circuit>
+	<gates>
+		<A type="0" input1="0" input2="1"/>
+	</gates>
+</circuit>
