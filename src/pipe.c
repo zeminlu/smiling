@@ -19,9 +19,7 @@ int main(void){
 	int i, j, k, qtyFiles = 0, pos = 0, pid;
 	FILE *dataFile = NULL;
 	circuitTable **table = NULL;
-	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;
-	curGateProcess curCircuit;
-	
+	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;	
 	
 	if ((dp = opendir(dir)) == NULL){
 		perror("No se puede abrir el directorio\n");
@@ -34,16 +32,16 @@ int main(void){
 	sleep(2);
 	rewinddir(dp);
 	
-	qtyFiles = getFilesAmm(dp);
+	qtyFiles = getFilesAmm(dp) - 3;
 	
-	if( (table = (circuitTable**)malloc( sizeof(circuitTable*) * (qtyFiles - 3))) == NULL )
+	if( (table = (circuitTable**)malloc( sizeof(circuitTable*) * (qtyFiles))) == NULL )
 	{
 		closedir(dp);
 		perror("Error en la alocacion de memoria de table\n");
 		return errno;	
 	}
 	
-	for( i = 0 ; i < qtyFiles - 3 ; ++i )
+	for( i = 0 ; i < qtyFiles ; ++i )
 	{
 		if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable))) == NULL )
 		{
@@ -100,7 +98,8 @@ int main(void){
 	
 	setupIPC(1);
 
-	switch((pid = fork())){
+	switch((pid = fork()))
+	{
 		case -1:
 			perror("Error de fork");
 			return errno;
@@ -115,24 +114,27 @@ int main(void){
 	
 	synchronize();
 	
-	curCircuit.qtyFiles = pos;
-	curCircuit.curFile = 0;
-	curCircuit.curLevel = 0;
-	
-	writeIPC(pid, &curCircuit, sizeof(curGateProcess) );				
+	printf("cantidad de archivos: %d\n", pos);
+	writeIPC(pid, &pos, sizeof(int) );
+					
 	for( i = 0 ; i < pos ; ++i )
 	{	
 		writeIPC(pid, &(table[i][0].totalLevels), sizeof(int));
+		fprintf(stderr, "Estoy mandando la cantidad de niveles: %d\n", (table[i][0].totalLevels));
 		for( j = 0 ; j < table[i][0].totalLevels ; ++j )
 		{
 			writeIPC(pid, &((table[i][j].eachLevel)->qtyGates), sizeof(int) );
+			fprintf(stderr, "Estoy mandando la cantidad de compuertas: %d\n", ((table[i][j].eachLevel)->qtyGates) );
 			for( k = 0 ; k < (table[i][j].eachLevel)->qtyGates ; ++k )
 			{
 				writeIPC(pid, &((table[i][j].eachLevel)->gates[k]), sizeof(gate) );
 			}
 		}
 	}
+	
+	finalizeIPC();
 	wait(&pid);
+	
 	freeCircuits(table, pos);
 	free(dirFile);
 	free(procCopyDir);
