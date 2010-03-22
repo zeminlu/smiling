@@ -50,7 +50,7 @@ int main(void){
 
 int gateInitializer( void )
 {
-	int i, qtyFileCom, status, *maxLevel, *levels, flag = TRUE, aux;
+	int i, qtyFileCom, status, *maxLevel, *levels/*, flag = TRUE, aux*/;
 	pid_t *childPids;
 	circuitTable **table = NULL;
 	
