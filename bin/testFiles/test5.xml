@@ -1,0 +1,7 @@
+<circuit>
+	<gates>
+		<I type="0" input1="0" input2="1">
+			<J type="4" input1="0" />
+		</I>
+	</gates>
+</circuit>

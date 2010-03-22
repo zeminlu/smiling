@@ -22,13 +22,13 @@ int main ( void )
 
 int proccessLevel( void )
 {
-	int aux, i, first, qtyGatesPrev, qtyGatesCur;
+	int i, first, qtyGatesPrev, qtyGatesCur;
 	gate *prevLevel = NULL, *curLevelTable;
 	curCircuit cur;
 	
 	readIPC( getppid(), &cur, sizeof(curCircuit));
-	fprintf(stderr, "--- Despues de la lectura de curCircuit, My pid: %d Parent pid: %d File: %d Level: %d\n", getpid(), getppid(), cur.curFile, cur.curLevel);
-	aux = readIPC( getppid(), &qtyGatesCur, sizeof(int));
+	fprintf(stderr, "Levels --- curCircuit, My pid: %d Parent pid: %d File: %d Level: %d\n", getpid(), getppid(), cur.curFile, cur.curLevel);
+	readIPC( getppid(), &qtyGatesCur, sizeof(int));
 	
 	if( (curLevelTable = malloc( sizeof(gate) * qtyGatesCur)) == NULL )
 	{
