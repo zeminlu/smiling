@@ -18,7 +18,7 @@ int main(void){
 	struct dirent *d = NULL;
 	int i, j, k, qtyFiles = 0, pos = 0, pid;
 	FILE *dataFile = NULL;
-	circuitTable **table = NULL;
+	circuitTable **table = NULL, *auxTable;
 	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;	
 	
 	if ((dp = opendir(dir)) == NULL){
@@ -43,7 +43,7 @@ int main(void){
 	
 	for( i = 0 ; i < qtyFiles ; ++i )
 	{
-		if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable))) == NULL )
+		if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable) * _MAX_GATES_LEVELS_)) == NULL )
 		{
 			closedir(dp);
 			perror("Error en la alocacion de memoria de table[i]\n");
@@ -79,7 +79,13 @@ int main(void){
 					perror("No se pudo abrir el archivo de las compuertas\n");
 					return errno;
 				}
-				table[pos++] = parseXMLGate( dirFile);
+				
+				auxTable = parseXMLGate( dirFile);
+				if( auxTable[0].totalLevels > _MAX_GATES_LEVELS_ )
+				{
+					table[pos] = realloc( table[pos], sizeof(circuitTable*) * auxTable[0].totalLevels);
+				}
+				table[pos++] = auxTable;
 			}
 			
 			if( ( procCopyDir = (char*)realloc(procCopyDir, sizeof(char) + strlen(procDir) + strlen(d->d_name) + 1 )) == NULL )
@@ -266,6 +272,11 @@ circuitTable * parseCircuit( xmlDocPtr doc, xmlNodePtr cur )
 		cur = cur->next;
 	}
 	/*printCircuitTable(circuit);*/
+	for( i = 0 ; i < circuit[0].totalLevels ; ++i )
+	{
+		(circuit[i].eachLevel)->gates = realloc((circuit[i].eachLevel)->gates, sizeof(gate) * (circuit[i].eachLevel)->qtyGates);
+	}
+	circuit = realloc( circuit, sizeof(circuitTable*) * circuit[0].totalLevels);
 	return circuit;
 }
 

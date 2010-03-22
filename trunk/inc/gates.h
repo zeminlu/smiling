@@ -37,6 +37,8 @@ int getCurrentPipeFiles( int * levels, int qtyFiles, int *maxLevel );
 
 int saveProccessFile( circuitTable *table, int pos );
 
+int allFilesWasProccessed( int * levels, int qtyFiles, int *maxLevel );
+
 void itoa(int n, char s[]);
 
 
