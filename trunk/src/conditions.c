@@ -53,7 +53,7 @@ void * sameContinent(void * condi){
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
 	cond->sets[*(cond->index)++] = ans;
-	threadsRet[cond->retPos] = 1;
+	//threadsRet[cond->retPos] = 1;
 	 
 	return cond;
 }
@@ -299,6 +299,7 @@ void * noCondition(void * condi){
 	countryAux = realloc(countryAux, sizeof(int));
 
 	(cond->sets[*(cond->index)])->countriesAmm = 1;
-			(cond->sets[*(cond->index)++])->country = countryAux;
+	(cond->sets[*(cond->index)++])->country = countryAux;
+
 	return cond;
 }   
