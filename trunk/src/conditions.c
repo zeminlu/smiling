@@ -19,6 +19,8 @@ void * sameContinent(void * condi){
 	country * head;
 	set * ans;
 	
+	printf("Entre a sameContinent\n");
+	
 	head = cond->head;
 	countries = cond->countries;
 	
@@ -36,7 +38,8 @@ void * sameContinent(void * condi){
 		threadsRet[cond->retPos] = errno;
 		return NULL;
 	}
-	for(i = 0, j= 0;i < (cond->maxCountries) ; ++i){
+	
+	for(i = 0, j = 0 ; i < (cond->maxCountries) ; ++i){
 		if((head->continent != countries[i]->continent) && ((cond->countries[i])->used == FALSE)){
 			countryInt[j] = i;
 			++j;
@@ -46,11 +49,12 @@ void * sameContinent(void * condi){
 		threadsRet[cond->retPos] = -1;
 		return NULL;
 	}
-
+	
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
 	cond->sets[*(cond->index)++] = ans;
 	threadsRet[cond->retPos] = 1;
+	 
 	return cond;
 }
 
@@ -138,11 +142,19 @@ void * champGroup(void * condi){
 		threadsRet[cond->retPos] = errno;
 		return NULL;
 	}
-	for(i = 0, j= 0; i < (cond->maxCountries); ++i){
-		if((countries[i]->champ > 0) && ((cond->countries[i])->used == FALSE)){
+	for(i = 0, j= 0; i < (cond->maxCountries) ; ++i){
+		if((countries[i]->champ == 1) && ((cond->countries[i])->used == FALSE)){
 			countryInt[j] = i;
 			++j;
 		}
+	}
+	if (j == 0){
+		for (i = 0, j = 0 ; i < (cond->maxCountries); ++i){
+			if((cond->countries[i])->used == FALSE){
+				countryInt[j] = i;
+				++j;
+			}
+		}	
 	}
 	if(j == 0){
 		threadsRet[cond->retPos] = -1;
@@ -277,7 +289,6 @@ void * noCondition(void * condi){
 	srand(time(NULL));
 		
 	if(status != TRUE){	
-		threadsRet[cond->retPos] = -1;	
 		return NULL;
 	}else if(amm > 1){
 		countryAns = countryAux[rand() % (amm)];
@@ -289,6 +300,5 @@ void * noCondition(void * condi){
 
 	(cond->sets[*(cond->index)])->countriesAmm = 1;
 			(cond->sets[*(cond->index)++])->country = countryAux;
-	threadsRet[cond->retPos] = 1;
 	return cond;
 }   

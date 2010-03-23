@@ -25,9 +25,6 @@ int main (void){
 	if ((status = startChildProcesses(countriesTable, countriesTableEntriesAmm, &fixture, &pids)) != 0){
 		fprintf(stderr, "Error en startChildprocesses\n");
 		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
-			free(fixture[j]);
-		}
-		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free(countriesTable[j]);
 		}
 		varFree(3, countriesTable, pids, fixture);
@@ -37,17 +34,14 @@ int main (void){
 		
 	if ((status = childsListener(pids, countriesTable, countriesTableEntriesAmm, fixture)) != 0){
 		fprintf(stderr, "Error en childslistener\n");
-		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
+		/*for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free(countriesTable[j]);
 		}
 		for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
-			for(i = 0 ; i < 4 ; ++i){
-				free(fixture[j][i]);
-			}
 			free(fixture[j]);
 		}
 		varFree(3, fixture, countriesTable, pids);
-		
+		*/
 		return status;
 	}
 	
@@ -167,7 +161,7 @@ int startChildProcesses(country **countriesTable, int countriesTableEntriesAmm, 
 
 int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntriesAmm, country ***fixture){
 	void *buffer;
-	int bufferSize, status, i, j, x, reqCountry, flag = FALSE, headsAmm, *finished;
+	int bufferSize, status, i, j, x, k, reqCountry, flag = FALSE, headsAmm, *finished;
 	country **subFixture;
 	
 	headsAmm = countriesTableEntriesAmm / 4;
@@ -190,7 +184,7 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 	}
 	
 	
-	while(selectIPC(5) > 0 && flag == FALSE){
+	while(flag == FALSE && selectIPC(5) > 0 ){
 		for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
 			if (getIPCStatus(pids[j]) && finished[j] == FALSE){
 				readIPC(pids[j], &bufferSize, sizeof(int));
@@ -204,15 +198,28 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 				if (reqCountry < 0){
 					for (x = 0 ; x < 4 ; ++x){
 						readIPC(pids[j], &bufferSize, sizeof(int));
-						buffer = malloc(sizeof(char) * bufferSize);
+						if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL || (fixture[j][x] = malloc(sizeof(country))) == NULL){
+							perror("Error de memoria en childsListener allocando buffer y fixture[][]");
+							for (i = 0 ; i < j - 1 ; ++i){
+								for (k = 0 ; k < 4 ; ++k){
+									free(fixture[i][k]);
+								}
+							}
+							for (i = 0 ; i < x ; ++i){
+								free(fixture[j][i]);
+							}
+							for (i = 0 ; i < 4 ; ++i){
+								free(subFixture[i]);
+							}
+							varFree(3, buffer, finished, subFixture);
+							return errno;
+						}
 						readIPC(pids[j], buffer, bufferSize);
 						unserializeCountryStruct(buffer, bufferSize, subFixture[x]);
 						free(buffer);
-						fixture[j][x] = malloc(sizeof(country));
 						memcpy(fixture[j][x], subFixture[x], sizeof(country));
 					}
 					finished[j] = TRUE;
-					/*closeIPC(pids[j]);*/
 					if (--headsAmm == 0){
 						flag = TRUE;
 						break;
