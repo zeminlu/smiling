@@ -18,8 +18,6 @@ int main (void){
 		fprintf(stderr, "Error en loadHeadandCountriesTable\n");
 		return countriesTableEntriesAmm;
 	}
-
-	fprintf(stderr, "A checkConditions\n");
 	
 	if ((condAmm = checkConditions(data, &conditions)) < 0){
 		fprintf(stderr, "Error en checkConditions\n");
@@ -30,8 +28,6 @@ int main (void){
 		return condAmm;
 	}
 	
-	fprintf(stderr, "A buildCondArgs\n");
-	
 	if ((status = buildCondArgs(&condArgs, countriesTable, countriesTableEntriesAmm, data, condAmm, &index)) != 0){
 		fprintf(stderr, "Error en buildcondargs\n");
 		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
@@ -41,8 +37,6 @@ int main (void){
 		return status;
 	} 
 	
-	fprintf(stderr, "A prepareGroup\n");
-	
 	if ((status = prepareGroup(&group, data)) != 0){
 		fprintf(stderr, "Error en prepareGroup\n");
 		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
@@ -51,23 +45,19 @@ int main (void){
 		varFree(4, countriesTable, conditions, condArgs->sets, condArgs);
 		return status;
 	}
-	
-	fprintf(stderr, "A buildSubfixture\n");
-	
+		
 	if ((status = buildSubfixture(&group, condAmm, condArgs, data, countriesTable, conditions)) != 0){
 		fprintf(stderr, "Error en buildSubfixture\n");
-		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
+		/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
 		}
 		for (i = 0 ; i < condAmm ; ++i){
 			free(condArgs->sets[i]);
 		}
-		varFree(4, countriesTable, conditions, condArgs->sets, condArgs);
+		varFree(4, countriesTable, conditions, condArgs->sets, condArgs);*/
 		return status;
 	}
-	
-	fprintf(stderr, "A sendSubfixture\n");
-	
+		
 	status = sendSubfixture(group);
 	
 	/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
@@ -196,7 +186,7 @@ int prepareGroup(subFixture **group, country *data){
 int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country *data, country **countriesTable, void *(**conditions)(void *condArgs)){
 	int i, j = 0, reqCountry, bufferSize, threadsFlag;
 	pthread_t *threads = NULL;
-	void *buffer;
+	void *buffer, *ret;
 	set *intersection = NULL;
 	
 	fprintf(stderr, "Entro a buildsubfixture\n");
@@ -220,17 +210,14 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			fprintf(stderr, "salio de nocondition con reqCountry = %d\n", reqCountry);
 		}
 		else if (i == 1){
-			fprintf(stderr, "Por ejecutar conditions con i = 1\n");
 			condArgs->retPos = 0;
-			conditions[0](condArgs);
-			fprintf(stderr, "Posibles = %d\n", condArgs->sets[0]->countriesAmm);
-			if (condArgs->sets[0]->countriesAmm == 0){
+			ret = conditions[0](condArgs);
+			if (ret == NULL || threadsRet[0] < 0 || condArgs->sets[0]->countriesAmm == 0){
 				return -1;
 			}
 			reqCountry = condArgs->sets[0]->country[rand() % condArgs->sets[0]->countriesAmm];
 		}
 		else{
-			
 			for (j = 0 ; j < i ; ++j){
 				condArgs->retPos = j;	
 				pthread_create(&threads[j], NULL, conditions[j], (void *)(condArgs));
@@ -260,10 +247,9 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			varFree(3, intersection->country, intersection);
 		}
 
-		for (j = 0 ; j < i ; ++j){
+		/*for (j = 0 ; j < i ; ++j){
 			free(condArgs->sets[j]->country);
-		}
-		fprintf(stderr, "Por mandar reqCountry = %d\n", reqCountry);
+		}*/
 		serializeInteger(&buffer, &bufferSize, reqCountry);
 		writeIPC(getppid(), &bufferSize, sizeof(int));
 		writeIPC(getppid(), buffer, bufferSize);
@@ -288,7 +274,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		++((*group)->countriesAmm);
 	}
 	
-	free(threads);
+	/*free(threads);*/
 	
 	return 0;
 }
@@ -356,10 +342,12 @@ int sendSubfixture(subFixture *group){
 	free(buffer);
 	
 	for (i = 0 ; i < 4 ; ++i){
+		printf("Por mandar pais %d...\n", i);
 		serializeCountryStruct(&buffer, &bufferSize, group->countries[i]);
 		writeIPC(getppid(), &bufferSize, sizeof(int));
 		writeIPC(getppid(), buffer, bufferSize);
 		free(buffer);
+		printf("...Mando pais %d\n", i);
 	}
 	
 	return 0;

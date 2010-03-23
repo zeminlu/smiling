@@ -18,9 +18,7 @@ void * sameContinent(void * condi){
 	country **countries;
 	country * head;
 	set * ans;
-	
-	printf("Entre a sameContinent\n");
-	
+		
 	head = cond->head;
 	countries = cond->countries;
 	
@@ -51,9 +49,9 @@ void * sameContinent(void * condi){
 	
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
-	cond->sets[*(cond->index)++] = ans;
+	cond->sets[(*(cond->index))++] = ans;
 	threadsRet[cond->retPos] = 1;
-	printf("Llegue\n"); 
+	
 	return cond;
 }
 

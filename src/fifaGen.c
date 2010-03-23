@@ -34,6 +34,12 @@ int main (void){
 	}	
 	
 	for (i = 0 ; i < amm ; ++i){
+		if ((countries = calloc(1, sizeof(country))) == NULL){
+				perror("Error de memoria");
+				fclose(countriesFile);
+				return errno;
+		}
+		
 		printf("Ingrese el nombre del pais\n");
 		while (scanf("%s", countries->name) != 1){
 			printf("Ingrese SOLO el nombre del pais\n");
@@ -120,8 +126,9 @@ int main (void){
 			perror("Error de escritura");
 			free(countries);
 			fclose(countriesFile);
-			return errno;
+			return errno;	
 		}
+		free(countries);
 	}
 	printf("Archivo generado correctamente en carpeta testFiles\n");
 	
