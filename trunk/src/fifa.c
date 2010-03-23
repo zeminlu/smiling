@@ -34,6 +34,12 @@ int main (void){
 		
 	if ((status = childsListener(pids, countriesTable, countriesTableEntriesAmm, fixture)) != 0){
 		fprintf(stderr, "Error en childslistener\n");
+		if (status == -1){
+			printf("No se encontro una solucion al problema planteado, ver salida de error\n");
+		}
+		else{
+			printf("GroupH retorno con error\n");
+		}
 		/*for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free(countriesTable[j]);
 		}
@@ -161,7 +167,7 @@ int startChildProcesses(country **countriesTable, int countriesTableEntriesAmm, 
 
 int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntriesAmm, country ***fixture){
 	void *buffer;
-	int bufferSize, status, i, j, x, k, reqCountry, flag = FALSE, headsAmm, *finished;
+	int bufferSize, status, i, j, x, k, reqCountry, flag = FALSE, headsAmm, *finished, errorStat;
 	country **subFixture;
 	
 	headsAmm = countriesTableEntriesAmm / 4;
@@ -197,7 +203,9 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 				
 				if (reqCountry < 0){
 					for (x = 0 ; x < 4 ; ++x){
+						printf("Por leer el pais %d del head %d\n", x, j);
 						readIPC(pids[j], &bufferSize, sizeof(int));
+						
 						if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL || (fixture[j][x] = malloc(sizeof(country))) == NULL){
 							perror("Error de memoria en childsListener allocando buffer y fixture[][]");
 							for (i = 0 ; i < j - 1 ; ++i){
@@ -218,7 +226,9 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 						unserializeCountryStruct(buffer, bufferSize, subFixture[x]);
 						free(buffer);
 						memcpy(fixture[j][x], subFixture[x], sizeof(country));
+						printf("Leyo el pais %d del head %d\n", x, j);
 					}
+					printf("Leyo subfixture de %d\n", j);
 					finished[j] = TRUE;
 					if (--headsAmm == 0){
 						flag = TRUE;
@@ -226,7 +236,6 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 					}
 				}
 				else{
-					printf("Recibio reqCountry = %d\n", reqCountry);
 					if (countriesTable[reqCountry]->used){
 						serializeInteger(&buffer, &bufferSize, FALSE);
 						printf("Repetido\n");
@@ -251,17 +260,21 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 	free(subFixture);
 	*/
 	
+	errorStat = FALSE;
+	
 	for (i = 0 ; i < countriesTableEntriesAmm / 4 ; ++i){
 		wait(&status);
-		if (status != 0){
-			perror("Error en un groupH");
-			return status;
+		if (status < 0){
+			errorStat = TRUE;
+			fprintf(stderr, "Error en un groupH: %d\n", status);
 		}
 	}
 	
+	if (errorStat){
+		return status;
+	}
+	
 	if (headsAmm != 0){
-		fprintf(stderr, "No solution found");
-		printf("No se encontro una solucion al problema planteado\n");
 		return -1;
 	}
 	
