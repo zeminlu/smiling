@@ -38,7 +38,6 @@ void * sameContinent(void * condi){
 		threadsRet[cond->retPos] = errno;
 		return NULL;
 	}
-	
 	for(i = 0, j = 0 ; i < (cond->maxCountries) ; ++i){
 		if((head->continent != countries[i]->continent) && ((cond->countries[i])->used == FALSE)){
 			countryInt[j] = i;
@@ -53,8 +52,8 @@ void * sameContinent(void * condi){
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
 	cond->sets[*(cond->index)++] = ans;
-	//threadsRet[cond->retPos] = 1;
-	 
+	threadsRet[cond->retPos] = 1;
+	printf("Llegue\n"); 
 	return cond;
 }
 
