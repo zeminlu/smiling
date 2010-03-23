@@ -16,7 +16,7 @@ vpath %.c $(SRC_DIR)
 #Sets the C compiler used to create object files from source code.
 CC = gcc
 #Sets compiler options.
-CFLAGS = -O -Wall -Wuninitialized -pedantic -errors -ansi -fno-builtin -g -c -o
+CFLAGS = -O -Wall -Wuninitialized -pedantic -errors -fno-builtin -g -c -o
 #Sets the location of the header files.
 INCLUDES = -I $(INC_DIR)
 #Set the libraries variables

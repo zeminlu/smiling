@@ -51,6 +51,8 @@ int filesListener(){
 
 	
 	for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
+		printf("Pais: %s - Continente: %d - Campeon: %d - Peso: %d - Same: %d - Death: %d - ChampG: %d - Weak: %d - Cabeza de Serie: %d\n", 
+		countriesTable[j]->name, countriesTable[j]->continent, countriesTable[j]->champ, countriesTable[j]->weight, countriesTable[j]->sameContinent, countriesTable[j]->deathGroup, countriesTable[j]->champGroup, countriesTable[j]->weakGroup, countriesTable[j]->isHead);
 		serializeCountryStruct(&buffer, &bufferSize, countriesTable[j]);
 		writeIPC(pid, &bufferSize, sizeof(int));
 		writeIPC(pid, buffer, bufferSize);

@@ -1,5 +1,6 @@
 #include "../inc/conditions.h"
 
+int *threadsRet = NULL;
 
 /*Nombre: sameContinent
 *
@@ -26,11 +27,13 @@ void * sameContinent(void * condi){
 	
 	if(ans == NULL){
 		perror("Memoria insuficiente, para crear el conjunto del mismo continente");
+		threadsRet[cond->retPos] = errno;
 		return NULL;
 	}
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
+		threadsRet[cond->retPos] = errno;
 		return NULL;
 	}
 	for(i = 0, j= 0;i < (cond->maxCountries) ; ++i){
@@ -40,12 +43,14 @@ void * sameContinent(void * condi){
 		}
 	}
 	if(j == 0){
+		threadsRet[cond->retPos] = -1;
 		return NULL;
 	}
 
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
 	cond->sets[*(cond->index)++] = ans;
+	threadsRet[cond->retPos] = 1;
 	return cond;
 }
 
@@ -74,11 +79,13 @@ void * deathGroup(void * condi){
 	
 	if(ans == NULL){
 		perror("Memoria insuficiente, para crear el conjunto de la muerte");
+		threadsRet[cond->retPos] = errno;
 		return NULL;
 	}
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
+		threadsRet[cond->retPos] = errno;
 		return NULL;
 	}
 	for(i = 0, j= 0; i < (cond->maxCountries); ++i){
@@ -88,11 +95,13 @@ void * deathGroup(void * condi){
 		}
 	}
 	if(j == 0){
+		threadsRet[cond->retPos] = -1;
 		return NULL;
 	}
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
 	cond->sets[*(cond->index)++] = ans;
+	threadsRet[cond->retPos] = 1;
 	return cond;
 }
 
@@ -120,11 +129,13 @@ void * champGroup(void * condi){
 	
 	if(ans == NULL){
 		perror("Memoria insuficiente, para crear el conjunto de paises de campeones");
+		threadsRet[cond->retPos] = errno;
 		return NULL;
 	}
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
+		threadsRet[cond->retPos] = errno;
 		return NULL;
 	}
 	for(i = 0, j= 0; i < (cond->maxCountries); ++i){
@@ -134,11 +145,13 @@ void * champGroup(void * condi){
 		}
 	}
 	if(j == 0){
+		threadsRet[cond->retPos] = -1;
 		return NULL;
 	}
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
 	cond->sets[*(cond->index)++] = ans;
+	threadsRet[cond->retPos] = 1;
 	return cond;
 }
 
@@ -168,11 +181,13 @@ void * weakGroup(void * condi){
 	if(ans == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto de paises del weak Grpup");
+		threadsRet[cond->retPos] = errno;
 		return NULL;
 	}
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
+		threadsRet[cond->retPos] = errno;
 		return NULL;
 	}
 	for(i = 0, j= 0; (i < (cond->maxCountries)); ++i){
@@ -182,11 +197,13 @@ void * weakGroup(void * condi){
 		}
 	}
 	if(j == 0){
+		threadsRet[cond->retPos] = -1;
 		return NULL;
 	}
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
 	cond->sets[*(cond->index)++] = ans;
+	threadsRet[cond->retPos] = 1;
 	return cond;
 }
 /*Nombre: countryFree
@@ -259,7 +276,8 @@ void * noCondition(void * condi){
 	
 	srand(time(NULL));
 		
-	if(status != TRUE){		
+	if(status != TRUE){	
+		threadsRet[cond->retPos] = -1;	
 		return NULL;
 	}else if(amm > 1){
 		countryAns = countryAux[rand() % (amm)];
@@ -271,6 +289,6 @@ void * noCondition(void * condi){
 
 	(cond->sets[*(cond->index)])->countriesAmm = 1;
 			(cond->sets[*(cond->index)++])->country = countryAux;
-	
+	threadsRet[cond->retPos] = 1;
 	return cond;
 }   

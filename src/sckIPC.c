@@ -197,6 +197,7 @@ int getIPCStatus(pid_t pid){
 	itoa(pid, pidString);
 	actsockfd = hashSearch(hashTable, pidString, &hkey);
 	ret = FD_ISSET(actsockfd[0], slave);
+	free(actsockfd);
 	
 	return ret;
 }

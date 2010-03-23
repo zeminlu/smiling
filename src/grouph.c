@@ -1,5 +1,7 @@
 #include "../inc/grouph.h"
 
+extern int *threadsRet;
+
 int main (void){
 	
 	country *data = NULL, **countriesTable = NULL;
@@ -11,10 +13,12 @@ int main (void){
 	loadIPC();
 	
 	if ((countriesTableEntriesAmm = loadHeadAndCountriesTable(&countriesTable, &data)) < 0){
+		fprintf(stderr, "Error en loadHeadandCountriesTable\n");
 		return countriesTableEntriesAmm;
 	}
 
 	if ((condAmm = checkConditions(data, &conditions)) < 0){
+		fprintf(stderr, "Error en checkConditions\n");
 		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
 		}
@@ -23,6 +27,7 @@ int main (void){
 	}
 	
 	if ((status = buildCondArgs(&condArgs, countriesTable, countriesTableEntriesAmm, data, condAmm, &index)) != 0){
+		fprintf(stderr, "Error en buildcondargs\n");
 		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
 		}
@@ -31,6 +36,7 @@ int main (void){
 	} 
 	
 	if ((status = prepareGroup(&group, data)) != 0){
+		fprintf(stderr, "Error en prepareGroup\n");
 		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
 		}
@@ -38,6 +44,7 @@ int main (void){
 		return status;
 	}
 	if ((status = buildSubfixture(&group, condAmm, condArgs, data, countriesTable, conditions)) != 0){
+		fprintf(stderr, "Error en buildSubfixture\n");
 		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
 		}
@@ -50,17 +57,17 @@ int main (void){
 	
 	status = sendSubfixture(group);
 	
-	for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
+/*	for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		free(countriesTable[i]);
 	}
 	for (i = 0 ; i < condAmm ; ++i){
 		free(condArgs->sets[i]);
 	}
-	/*for (i = 0 ; i < 4; ++i){
+	for (i = 0 ; i < 4; ++i){
 		free (group->countries[i]);
-	}*/
+	}
 	varFree(6, data, conditions, condArgs->sets, condArgs, group->countries, group);
-	
+	*/
 	return status;
 }
 
@@ -174,7 +181,7 @@ int prepareGroup(subFixture **group, country *data){
 }
 
 int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country *data, country **countriesTable, void *(**conditions)(void *condArgs)){
-	int i, j = 0, reqCountry, bufferSize;
+	int i, j = 0, reqCountry, bufferSize, threadsFlag;
 	pthread_t *threads = NULL;
 	void *buffer;
 	set *intersection = NULL;
@@ -196,17 +203,32 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			reqCountry = condArgs->sets[0]->country[rand() % condArgs->sets[0]->countriesAmm];
 		}
 		else{
-			for (j = 0 ; j < i ; ++j){	
+			threadsRet = calloc(1, sizeof(int) * i);
+			
+			for (j = 0 ; j < i ; ++j){
+				condArgs->retPos = j;	
 				pthread_create(&threads[j], NULL, conditions[j], (void *)(condArgs));
 			}
-			for (j = 0 ; j < i ; ++j){
-				pthread_join(threads[j], NULL);
+			threadsFlag = FALSE;
+			while (!threadsFlag){
+				threadsFlag = TRUE;
+				for (j = 0 ; j < i ; ++j){
+					if (threadsRet[j] == 0){
+						threadsFlag = FALSE;
+					}
+					else if (threadsRet[j] < 0){
+						free(threads);
+						return threadsRet[j]; 
+					}
+				}
 			}
 			
+			printf("Pre Intersect - Head = %s\n", data->name);
 			intersect(condAmm, condArgs, &intersection);
+			printf("Post Intersect - Head = %s\n", data->name);
 						
 			reqCountry = intersection->country[rand() % intersection->countriesAmm];
-			varFree(2, intersection->country, intersection);
+			varFree(3, intersection->country, intersection, threadsRet);
 		}
 
 		for (j = 0 ; j < i ; ++j){
@@ -285,11 +307,11 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 	}
 	*intersection = aux[j - 1];
 	
-	for(i = 0 ; i < j - 2 ; ++i){
+	/*for(i = 0 ; i < j - 2 ; ++i){
 		varFree(2, aux[i]->country, aux[i]);
 	}
 	free(aux);
-	
+	*/
 	return 0;
 }
 
