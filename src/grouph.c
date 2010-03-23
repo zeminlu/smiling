@@ -12,10 +12,15 @@ int main (void){
 	
 	loadIPC();
 	
+	printf("Entro a groupH\n");
+	
 	if ((countriesTableEntriesAmm = loadHeadAndCountriesTable(&countriesTable, &data)) < 0){
 		fprintf(stderr, "Error en loadHeadandCountriesTable\n");
 		return countriesTableEntriesAmm;
 	}
+
+	printf("Nombre head = %s, weak = %d, champ = %d, death = %d, cont = %d\n", data->name, data->weakGroup, data->champGroup, data->deathGroup, data->sameContinent);
+	
 
 	if ((condAmm = checkConditions(data, &conditions)) < 0){
 		fprintf(stderr, "Error en checkConditions\n");
@@ -25,6 +30,7 @@ int main (void){
 		free(countriesTable);
 		return condAmm;
 	}
+	printf("Condamm = %d\n", condAmm);
 	
 	if ((status = buildCondArgs(&condArgs, countriesTable, countriesTableEntriesAmm, data, condAmm, &index)) != 0){
 		fprintf(stderr, "Error en buildcondargs\n");
@@ -57,7 +63,7 @@ int main (void){
 	
 	status = sendSubfixture(group);
 	
-/*	for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
+	/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		free(countriesTable[i]);
 	}
 	for (i = 0 ; i < condAmm ; ++i){
@@ -66,7 +72,7 @@ int main (void){
 	for (i = 0 ; i < 4; ++i){
 		free (group->countries[i]);
 	}
-	varFree(6, data, conditions, condArgs->sets, condArgs, group->countries, group);
+	varFree(5, conditions, condArgs->sets, condArgs, group->countries, group);
 	*/
 	return status;
 }
@@ -119,7 +125,7 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 
 int checkConditions(country *data, void *(***conditions)(void *condArgs)){
 	int i = 0;
-	if (data->sameContinent){
+	if (!data->sameContinent){
 		if (((*conditions) = realloc((*conditions), sizeof(void *) * (++i))) == NULL){
 			perror("Error de memoria");
 			return errno;
@@ -186,6 +192,8 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 	void *buffer;
 	set *intersection = NULL;
 	
+	printf("Entro a buildsubfixture\n");
+	
 	if ((threads = malloc(sizeof(pthread_t) * condAmm)) == NULL){
 		perror("Error de memoria");
 		return errno;
@@ -194,16 +202,27 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 	i = condAmm;
 	
 	while ((*group)->countriesAmm < 4){
+		threadsRet = calloc(1, sizeof(int) * i);
 		if (i == 0){
+			printf("Entro a nocondition\n");
 			noCondition(condArgs);
+			if (condArgs->sets[0]->countriesAmm == 0){
+				return -1;
+			}
 			reqCountry = condArgs->sets[0]->country[0];
+			printf("salio de nocondition con reqCountry = %d\n", reqCountry);
 		}
 		else if (i == 1){
+			printf("Por ejecutar conditions con i = 1\n");
+			condArgs->retPos = 0;
 			conditions[0](condArgs);
+			printf("Posibles = %d\n", condArgs->sets[0]->countriesAmm);
+			if (condArgs->sets[0]->countriesAmm == 0){
+				return -1;
+			}
 			reqCountry = condArgs->sets[0]->country[rand() % condArgs->sets[0]->countriesAmm];
 		}
 		else{
-			threadsRet = calloc(1, sizeof(int) * i);
 			
 			for (j = 0 ; j < i ; ++j){
 				condArgs->retPos = j;	
@@ -213,6 +232,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			while (!threadsFlag){
 				threadsFlag = TRUE;
 				for (j = 0 ; j < i ; ++j){
+					printf("threadsRet[j] = %d", threadsRet[j]);
 					if (threadsRet[j] == 0){
 						threadsFlag = FALSE;
 					}
@@ -224,21 +244,24 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			}
 			
 			printf("Pre Intersect - Head = %s\n", data->name);
-			intersect(condAmm, condArgs, &intersection);
+			if (intersect(condAmm, condArgs, &intersection) == -1){
+				return -1;
+			}
 			printf("Post Intersect - Head = %s\n", data->name);
 						
 			reqCountry = intersection->country[rand() % intersection->countriesAmm];
-			varFree(3, intersection->country, intersection, threadsRet);
+			varFree(3, intersection->country, intersection);
 		}
 
 		for (j = 0 ; j < i ; ++j){
 			free(condArgs->sets[j]->country);
 		}
-		
+		printf("Por mandar reqCountry = %d\n", reqCountry);
 		serializeInteger(&buffer, &bufferSize, reqCountry);
 		writeIPC(getppid(), &bufferSize, sizeof(int));
 		writeIPC(getppid(), buffer, bufferSize);
 		free(buffer);
+		printf("Mando reqCountry = %d\n", reqCountry);
 		readIPC(getppid(), &bufferSize, sizeof(int));
 		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL){
 			perror("Error de memoria");
@@ -252,6 +275,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			continue;
 		}
 		free(buffer);
+		free(threadsRet);
 		countriesTable[reqCountry]->used = TRUE;
 		(*group)->countries[(*group)->countriesAmm] = countriesTable[reqCountry];
 		++((*group)->countriesAmm);
