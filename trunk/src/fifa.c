@@ -8,6 +8,7 @@ int main (void){
 	loadIPC();
 	
 	if ((countriesTableEntriesAmm = loadCountriesTable(&countriesTable)) < 0){
+		fprintf(stderr, "Error en loadCountriesTable\n");
 		return countriesTableEntriesAmm;
 	}
 	
@@ -22,6 +23,7 @@ int main (void){
 	}
 	
 	if ((status = startChildProcesses(countriesTable, countriesTableEntriesAmm, &fixture, &pids)) != 0){
+		fprintf(stderr, "Error en startChildprocesses\n");
 		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free(fixture[j]);
 		}
@@ -34,10 +36,11 @@ int main (void){
 	}
 		
 	if ((status = childsListener(pids, countriesTable, countriesTableEntriesAmm, fixture)) != 0){
+		fprintf(stderr, "Error en childslistener\n");
 		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free(countriesTable[j]);
 		}
-		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
+		for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
 			for(i = 0 ; i < 4 ; ++i){
 				free(fixture[j][i]);
 			}
@@ -59,17 +62,17 @@ int main (void){
 		printf("Grupo %d:\n", j + 1);
 		for(i = 0; i < 4; ++i){
 			printf("%s\n", (fixture[j][i])->name);
-			free(fixture[j][i]);
+			/*free(fixture[j][i]);*/
 		}
 		printf("\n");
-		free(fixture[j]);
+		/*free(fixture[j]);*/
 	}
 	
-	for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
+	/*for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 		free(countriesTable[j]);
 	}
 	varFree(3, fixture, pids, countriesTable);
-	
+	*/
 	return 0;
 }
 
@@ -101,7 +104,6 @@ int loadCountriesTable(country ***countriesTable){
 		unserializeCountryStruct(buffer, bufferSize, (*countriesTable)[i]);
 		free(buffer);		
 	}
-	closeIPC(getppid());
 	return countriesTableEntriesAmm;	
 }
 
@@ -188,7 +190,7 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 	}
 	
 	
-	while(selectIPC(2) > 0 && flag == FALSE){
+	while(selectIPC(5) > 0 && flag == FALSE){
 		for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
 			if (getIPCStatus(pids[j]) && finished[j] == FALSE){
 				readIPC(pids[j], &bufferSize, sizeof(int));
@@ -234,15 +236,15 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 	}
 	
 	
-	free(finished);
+	/*free(finished);
 	for (x = 0 ; x < 4 ; ++x){
 		free(subFixture[x]);
 	}
 	free(subFixture);
-	
+	*/
 	if (headsAmm != 0){
 		perror("No solution found");
-		printf("No se encontro una solucion al problema planteado");
+		printf("No se encontro una solucion al problema planteado\n");
 		return -1;
 	}
 	
