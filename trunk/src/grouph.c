@@ -132,7 +132,7 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 
 int checkConditions(country *data, void *(***conditions)(void *condArgs)){
 	int i = 0;
-	if (!data->sameContinent){
+	if (data->sameContinent){
 		if (((*conditions) = realloc((*conditions), sizeof(void *) * (++i))) == NULL){
 			perror("Error de memoria");
 			return errno;
