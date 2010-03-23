@@ -123,19 +123,19 @@ int startChildProcesses(country **countriesTable, int countriesTableEntriesAmm, 
 				}
 				return errno;
 			}
-			
-				switch(((*pids)[headsAmm++] = fork())){
-					case -1:
-						perror("Error de fork");
-						return errno;
-						break;
-					case 0:
-						addClient();
-						execv("./grouph.bin", NULL);
-						break;
-					default:					
-						break;
-				}
+
+			switch(((*pids)[headsAmm++] = fork())){
+				case -1:
+				perror("Error de fork");
+				return errno;
+				break;
+				case 0:
+				addClient();
+				execv("./grouph.bin", NULL);
+				break;
+				default:					
+				break;
+			}
 			++j;
 		}
 	}
@@ -184,9 +184,9 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 	}
 	
 	
-	while(flag == FALSE && selectIPC(5) > 0 ){
+	while(flag == FALSE && selectIPC(2) > 0 ){
 		for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
-			if (getIPCStatus(pids[j]) && finished[j] == FALSE){
+			if (finished[j] == FALSE && getIPCStatus(pids[j])){
 				readIPC(pids[j], &bufferSize, sizeof(int));
 				buffer = malloc(sizeof(char) * bufferSize);
 				readIPC(pids[j], buffer, bufferSize);
@@ -226,6 +226,7 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 					}
 				}
 				else{
+					printf("Recibio reqCountry = %d\n", reqCountry);
 					if (countriesTable[reqCountry]->used){
 						serializeInteger(&buffer, &bufferSize, FALSE);
 						printf("Repetido\n");
@@ -249,11 +250,6 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 	}
 	free(subFixture);
 	*/
-	if (headsAmm != 0){
-		perror("No solution found");
-		printf("No se encontro una solucion al problema planteado\n");
-		return -1;
-	}
 	
 	for (i = 0 ; i < countriesTableEntriesAmm / 4 ; ++i){
 		wait(&status);
@@ -261,6 +257,12 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 			perror("Error en un groupH");
 			return status;
 		}
+	}
+	
+	if (headsAmm != 0){
+		fprintf(stderr, "No solution found");
+		printf("No se encontro una solucion al problema planteado\n");
+		return -1;
 	}
 	
 	return 0;
