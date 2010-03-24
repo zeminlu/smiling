@@ -1,6 +1,8 @@
 #include "../inc/conditions.h"
 
-int *threadsRet = NULL;
+pthread_mutex_t mutexIndex;
+int *threadsRet;
+int threadsIndex = 0;
 
 /*Nombre: sameContinent
 *
@@ -14,10 +16,16 @@ int *threadsRet = NULL;
 void * sameContinent(void * condi){
 	int * countryInt;
 	int i, j;
+	int myIndex = 0;
 	condPack * cond = condi;
 	country **countries;
 	country * head;
 	set * ans;
+
+	pthread_mutex_lock (&mutexIndex);
+	myIndex = threadsIndex;
+	++threadsIndex;
+	pthread_mutex_unlock (&mutexIndex);
 		
 	head = cond->head;
 	countries = cond->countries;
@@ -27,13 +35,13 @@ void * sameContinent(void * condi){
 	
 	if(ans == NULL){
 		perror("Memoria insuficiente, para crear el conjunto del mismo continente");
-		threadsRet[0] = errno;
+		threadsRet[myIndex] = errno;
 		return NULL;
 	}
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
-		threadsRet[0] = errno;
+		threadsRet[myIndex] = errno;
 		return NULL;
 	}
 	for(i = 0, j = 0 ; i < (cond->maxCountries) ; ++i){
@@ -43,14 +51,14 @@ void * sameContinent(void * condi){
 		}
 	}
 	if(j == 0){
-		threadsRet[0] = -1;
+		threadsRet[myIndex] = -1;
 		return NULL;
 	}
 	
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
 	cond->sets[0] = ans;
-	threadsRet[0] = 1;
+	threadsRet[myIndex] = 1;
 	
 	return cond;
 }
@@ -66,6 +74,7 @@ void * sameContinent(void * condi){
 void * deathGroup(void * condi){
 	int * countryInt;
 	int i, j;
+	int myIndex = 0;
 	condPack * cond = condi;
 	set * ans;
 	country **countries;
@@ -74,19 +83,23 @@ void * deathGroup(void * condi){
 	head = cond->head;
 	countries = cond->countries;
 	
+	pthread_mutex_lock (&mutexIndex);
+	myIndex = threadsIndex;
+	++threadsIndex;
+	pthread_mutex_unlock (&mutexIndex);
 	
 	ans = malloc(sizeof(set));
 	countryInt = malloc(sizeof(int)*(cond->maxCountries));
 	
 	if(ans == NULL){
 		perror("Memoria insuficiente, para crear el conjunto de la muerte");
-		threadsRet[1] = errno;
+		threadsRet[myIndex] = errno;
 		return NULL;
 	}
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
-		threadsRet[1] = errno;
+		threadsRet[myIndex] = errno;
 		return NULL;
 	}
 	for(i = 0, j= 0; i < (cond->maxCountries); ++i){
@@ -96,13 +109,13 @@ void * deathGroup(void * condi){
 		}
 	}
 	if(j == 0){
-		threadsRet[1] = -1;
+		threadsRet[myIndex] = -1;
 		return NULL;
 	}
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
 	cond->sets[1] = ans;
-	threadsRet[1] = 1;
+	threadsRet[myIndex] = 1;
 	return cond;
 }
 
@@ -117,6 +130,7 @@ void * deathGroup(void * condi){
 void * champGroup(void * condi){
 	int * countryInt;
 	int i, j;
+	int myIndex = 0;
 	set * ans;
 	condPack * cond = condi;
 	country **countries;
@@ -125,18 +139,23 @@ void * champGroup(void * condi){
 	head = cond->head;
 	countries = cond->countries;
 	
+	pthread_mutex_lock (&mutexIndex);
+	myIndex = threadsIndex;
+	++threadsIndex;
+	pthread_mutex_unlock (&mutexIndex);
+	
 	ans = malloc(sizeof(set));
 	countryInt = malloc(sizeof(int)*(cond->maxCountries));
 	
 	if(ans == NULL){
 		perror("Memoria insuficiente, para crear el conjunto de paises de campeones");
-		threadsRet[2] = errno;
+		threadsRet[myIndex] = errno;
 		return NULL;
 	}
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
-		threadsRet[2] = errno;
+		threadsRet[myIndex] = errno;
 		return NULL;
 	}
 	for(i = 0, j= 0; i < (cond->maxCountries) ; ++i){
@@ -154,13 +173,13 @@ void * champGroup(void * condi){
 		}	
 	}
 	if(j == 0){
-		threadsRet[2] = -1;
+		threadsRet[myIndex] = -1;
 		return NULL;
 	}
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
 	cond->sets[2] = ans;
-	threadsRet[2] = 1;
+	threadsRet[myIndex] = 1;
 	return cond;
 }
 
@@ -176,6 +195,7 @@ void * champGroup(void * condi){
 void * weakGroup(void * condi){
 	int * countryInt;
 	int i, j;
+	int myIndex = 0;
 	condPack * cond = condi;
 	set * ans;	
 	country **countries;
@@ -184,19 +204,24 @@ void * weakGroup(void * condi){
 	head = cond->head;
 	countries = cond->countries;
 	
+	pthread_mutex_lock (&mutexIndex);
+	myIndex = threadsIndex;
+	++threadsIndex;
+	pthread_mutex_unlock (&mutexIndex);
+	
 	ans = malloc(sizeof(set));
 	countryInt = malloc(sizeof(int)*(cond->maxCountries));
 	
 	if(ans == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto de paises del weak Grpup");
-		threadsRet[3] = errno;
+		threadsRet[myIndex] = errno;
 		return NULL;
 	}
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
-		threadsRet[3] = errno;
+		threadsRet[myIndex] = errno;
 		return NULL;
 	}
 	for(i = 0, j= 0; (i < (cond->maxCountries)); ++i){
@@ -206,13 +231,13 @@ void * weakGroup(void * condi){
 		}
 	}
 	if(j == 0){
-		threadsRet[3] = -1;
+		threadsRet[myIndex] = -1;
 		return NULL;
 	}
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
 	cond->sets[3] = ans;
-	threadsRet[3] = 1;
+	threadsRet[myIndex] = 1;
 	return cond;
 }
 /*Nombre: countryFree

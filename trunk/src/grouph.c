@@ -1,6 +1,8 @@
 #include "../inc/grouph.h"
 
+extern pthread_mutex_t mutexIndex;
 extern int *threadsRet;
+extern int threadsIndex;
 
 int main (void){
 	
@@ -11,9 +13,7 @@ int main (void){
 	int i = 0, index = 0, countriesTableEntriesAmm, status, condAmm;
 	
 	loadIPC();
-	
-	fprintf(stderr, "Entro a groupH\n");
-	
+		
 	if ((countriesTableEntriesAmm = loadHeadAndCountriesTable(&countriesTable, &data)) < 0){
 		fprintf(stderr, "Error en loadHeadandCountriesTable\n");
 		return countriesTableEntriesAmm;
@@ -187,36 +187,35 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 	pthread_t *threads = NULL;
 	void *buffer, *ret;
 	set *intersection = NULL;
-	
-	fprintf(stderr, "Entro a buildsubfixture\n");
+		
+	pthread_mutex_init(&mutexIndex, NULL);
 	
 	if ((threads = malloc(sizeof(pthread_t) * condAmm)) == NULL){
 		perror("Error de memoria");
 		return errno;
 	}
-	fprintf(stderr, "Entro a buildsubfixture\n");
-	
+		
 	srand(time(NULL));	
 	i = condAmm;
-	fprintf(stderr, "Entro a buildsubfixture, i = %d\n", condAmm);
 	
 	while ((*group)->countriesAmm < 4){
 		for (k = 0 ; k < 4 ; ++k){
 			condArgs->sets[k] = NULL;
 		}
+		threadsIndex = 0;
 		threadsRet = calloc(1, sizeof(int) * 4);
 		if (i == 0){
-			fprintf(stderr, "Entro a nocondition\n");
+
 			noCondition(condArgs);
-			fprintf(stderr, "Salio de nocondition\n");
+
 			if (condArgs->sets[0]->countriesAmm == 0){
 				return -1;
 			}
 			reqCountry = condArgs->sets[0]->country[0];
-			fprintf(stderr, "salio de nocondition con reqCountry = %d\n", reqCountry);
+
 		}
 		else if (i == 1){
-			fprintf(stderr, "Entro a conditions con i = 1\n");
+
 			ret = conditions[0](condArgs);
 			if (ret == NULL || threadsRet[0] < 0 || condArgs->sets[0]->countriesAmm == 0){
 				return -1;
@@ -227,7 +226,6 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			for (j = 0 ; j < i ; ++j){
 				pthread_create(&threads[j], NULL, conditions[j], (void *)(condArgs));
 			}
-			sleep(5);
 			threadsFlag = FALSE;
 			while (!threadsFlag){
 				threadsFlag = TRUE;
@@ -253,7 +251,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			reqCountry = intersection->country[rand() % intersection->countriesAmm];
 			varFree(3, intersection->country, intersection);
 		}
-		fprintf(stderr, "Entro a buildsubfixture\n");
+
 
 		/*for (j = 0 ; j < i ; ++j){
 			free(condArgs->sets[j]->country);
@@ -281,7 +279,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		(*group)->countries[(*group)->countriesAmm] = countriesTable[reqCountry];
 		++((*group)->countriesAmm);
 	}
-	
+	pthread_mutex_destroy(&mutexIndex);
 	/*free(threads);*/
 	
 	return 0;
@@ -289,8 +287,9 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 
 int intersect(int condAmm, condPack *condArgs, set **intersection){
 	set **aux = NULL;
-	int i, j = 0, k = 0, x = 0, y = 0;
+	int i, j = 0, k = 0, x = 0, y = 0, step = 0;
 	
+	printf("Intersect de %s...paso %d\n", condArgs->head, ++step);
 	if ((aux = malloc(sizeof(void *) * condAmm)) == NULL ||
 		(aux[0] = malloc(sizeof(set))) == NULL ||			
 		(aux[0]->country = malloc(sizeof(int *) * ((condArgs->sets)[0])->countriesAmm)) == NULL){
@@ -298,10 +297,13 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 			varFree(2, aux[0], aux);
 			return errno;
 		}
+	printf("Intersect de %s...paso %d\n", condArgs->head, ++step);
+	
 	for (j = 0 ; j < ((condArgs->sets)[0])->countriesAmm ; ++j){
 		((aux[0])->country)[j] = (((condArgs->sets)[0])->country)[j]; 
 	}
 	(aux[0])->countriesAmm = j;
+	printf("Intersect de %s...paso %d\n", condArgs->head, ++step);
 
 	for (j = 1 ; j < condAmm ; ++j){	
 		if ((aux[j] = malloc(sizeof(set))) == NULL || ((aux[j])->country = malloc(sizeof(int) * (aux[j - 1])->countriesAmm)) == NULL){
@@ -330,7 +332,10 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 		}
 		aux[j]->countriesAmm = y;
 	}
+	printf("Intersect de %s...paso %d\n", condArgs->head, ++step);
+
 	*intersection = aux[j - 1];
+	printf("Intersect de %s...paso %d\n", condArgs->head, ++step);
 	
 	/*for(i = 0 ; i < j - 2 ; ++i){
 		varFree(2, aux[i]->country, aux[i]);

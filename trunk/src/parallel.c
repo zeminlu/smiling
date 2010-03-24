@@ -1,7 +1,6 @@
 #include "../inc/parallel.h"
 
 int main(){
-	getchar();
 	return filesListener();
 }
 
