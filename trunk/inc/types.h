@@ -32,8 +32,6 @@ typedef struct{
 typedef struct{
 	country **countries;
 	country *head;
-	int *index;
-	int retPos;
 	set **sets;
 	int maxCountries;
 	}condPack;

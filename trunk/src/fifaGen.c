@@ -132,7 +132,6 @@ int main (void){
 	}
 	printf("Archivo generado correctamente en carpeta testFiles\n");
 	
-	free(countries);
 	fclose(countriesFile);
 	
 	return 0;

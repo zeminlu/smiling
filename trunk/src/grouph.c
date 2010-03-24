@@ -157,7 +157,7 @@ int checkConditions(country *data, void *(***conditions)(void *condArgs)){
 }
 
 int buildCondArgs(condPack **condArgs, country **countriesTable, int countriesTableEntriesAmm, country *data, int condAmm, int *index){
-	if (((*condArgs) = malloc(sizeof(condPack))) == NULL || ((*condArgs)->sets = malloc(sizeof(void *) * condAmm)) == NULL){
+	if (((*condArgs) = malloc(sizeof(condPack))) == NULL || ((*condArgs)->sets = malloc(sizeof(void *) * 4)) == NULL){
 		perror("Error de memoria");
 		free(*condArgs);
 		return errno;
@@ -165,7 +165,6 @@ int buildCondArgs(condPack **condArgs, country **countriesTable, int countriesTa
 	
 	(*condArgs)->countries = countriesTable;
 	(*condArgs)->head = data;
-	(*condArgs)->index = index;
 	(*condArgs)->maxCountries = countriesTableEntriesAmm;
 	
 	return 0;
@@ -184,7 +183,7 @@ int prepareGroup(subFixture **group, country *data){
 }
 
 int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country *data, country **countriesTable, void *(**conditions)(void *condArgs)){
-	int i, j = 0, reqCountry, bufferSize, threadsFlag;
+	int i, j = 0, k, reqCountry, bufferSize, threadsFlag;
 	pthread_t *threads = NULL;
 	void *buffer, *ret;
 	set *intersection = NULL;
@@ -195,14 +194,21 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		perror("Error de memoria");
 		return errno;
 	}
-		
+	fprintf(stderr, "Entro a buildsubfixture\n");
+	
+	srand(time(NULL));	
 	i = condAmm;
+	fprintf(stderr, "Entro a buildsubfixture, i = %d\n", condAmm);
 	
 	while ((*group)->countriesAmm < 4){
-		threadsRet = calloc(1, sizeof(int) * i);
+		for (k = 0 ; k < 4 ; ++k){
+			condArgs->sets[k] = NULL;
+		}
+		threadsRet = calloc(1, sizeof(int) * 4);
 		if (i == 0){
 			fprintf(stderr, "Entro a nocondition\n");
 			noCondition(condArgs);
+			fprintf(stderr, "Salio de nocondition\n");
 			if (condArgs->sets[0]->countriesAmm == 0){
 				return -1;
 			}
@@ -210,7 +216,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			fprintf(stderr, "salio de nocondition con reqCountry = %d\n", reqCountry);
 		}
 		else if (i == 1){
-			condArgs->retPos = 0;
+			fprintf(stderr, "Entro a conditions con i = 1\n");
 			ret = conditions[0](condArgs);
 			if (ret == NULL || threadsRet[0] < 0 || condArgs->sets[0]->countriesAmm == 0){
 				return -1;
@@ -219,14 +225,13 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		}
 		else{
 			for (j = 0 ; j < i ; ++j){
-				condArgs->retPos = j;	
 				pthread_create(&threads[j], NULL, conditions[j], (void *)(condArgs));
 			}
+			sleep(5);
 			threadsFlag = FALSE;
 			while (!threadsFlag){
 				threadsFlag = TRUE;
 				for (j = 0 ; j < i ; ++j){
-					fprintf(stderr, "threadsRet[j] = %d", threadsRet[j]);
 					if (threadsRet[j] == 0){
 						threadsFlag = FALSE;
 					}
@@ -237,6 +242,8 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 				}
 			}
 			
+			sortPointers(condArgs->sets);
+			
 			fprintf(stderr, "Pre Intersect - Head = %s\n", data->name);
 			if (intersect(condAmm, condArgs, &intersection) == -1){
 				return -1;
@@ -246,6 +253,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			reqCountry = intersection->country[rand() % intersection->countriesAmm];
 			varFree(3, intersection->country, intersection);
 		}
+		fprintf(stderr, "Entro a buildsubfixture\n");
 
 		/*for (j = 0 ; j < i ; ++j){
 			free(condArgs->sets[j]->country);
@@ -351,4 +359,20 @@ int sendSubfixture(subFixture *group){
 	}
 	
 	return 0;
+}
+
+void sortPointers(set **sets){
+	int i,j;
+	
+	for(j = 0; j < 3; j++){
+		if(sets[j] == NULL){
+			for(i = j + 1; i < 4; i++){
+				if(sets[i] != NULL){
+					sets[j] = sets[i];
+					sets[i] = NULL;
+				}
+			}
+		}
+	}
+	return;
 }

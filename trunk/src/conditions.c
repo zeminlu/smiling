@@ -27,13 +27,13 @@ void * sameContinent(void * condi){
 	
 	if(ans == NULL){
 		perror("Memoria insuficiente, para crear el conjunto del mismo continente");
-		threadsRet[cond->retPos] = errno;
+		threadsRet[0] = errno;
 		return NULL;
 	}
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
-		threadsRet[cond->retPos] = errno;
+		threadsRet[0] = errno;
 		return NULL;
 	}
 	for(i = 0, j = 0 ; i < (cond->maxCountries) ; ++i){
@@ -43,14 +43,14 @@ void * sameContinent(void * condi){
 		}
 	}
 	if(j == 0){
-		threadsRet[cond->retPos] = -1;
+		threadsRet[0] = -1;
 		return NULL;
 	}
 	
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
-	cond->sets[(*(cond->index))++] = ans;
-	threadsRet[cond->retPos] = 1;
+	cond->sets[0] = ans;
+	threadsRet[0] = 1;
 	
 	return cond;
 }
@@ -80,13 +80,13 @@ void * deathGroup(void * condi){
 	
 	if(ans == NULL){
 		perror("Memoria insuficiente, para crear el conjunto de la muerte");
-		threadsRet[cond->retPos] = errno;
+		threadsRet[1] = errno;
 		return NULL;
 	}
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
-		threadsRet[cond->retPos] = errno;
+		threadsRet[1] = errno;
 		return NULL;
 	}
 	for(i = 0, j= 0; i < (cond->maxCountries); ++i){
@@ -96,13 +96,13 @@ void * deathGroup(void * condi){
 		}
 	}
 	if(j == 0){
-		threadsRet[cond->retPos] = -1;
+		threadsRet[1] = -1;
 		return NULL;
 	}
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
-	cond->sets[*(cond->index)++] = ans;
-	threadsRet[cond->retPos] = 1;
+	cond->sets[1] = ans;
+	threadsRet[1] = 1;
 	return cond;
 }
 
@@ -130,13 +130,13 @@ void * champGroup(void * condi){
 	
 	if(ans == NULL){
 		perror("Memoria insuficiente, para crear el conjunto de paises de campeones");
-		threadsRet[cond->retPos] = errno;
+		threadsRet[2] = errno;
 		return NULL;
 	}
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
-		threadsRet[cond->retPos] = errno;
+		threadsRet[2] = errno;
 		return NULL;
 	}
 	for(i = 0, j= 0; i < (cond->maxCountries) ; ++i){
@@ -154,13 +154,13 @@ void * champGroup(void * condi){
 		}	
 	}
 	if(j == 0){
-		threadsRet[cond->retPos] = -1;
+		threadsRet[2] = -1;
 		return NULL;
 	}
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
-	cond->sets[*(cond->index)++] = ans;
-	threadsRet[cond->retPos] = 1;
+	cond->sets[2] = ans;
+	threadsRet[2] = 1;
 	return cond;
 }
 
@@ -190,13 +190,13 @@ void * weakGroup(void * condi){
 	if(ans == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto de paises del weak Grpup");
-		threadsRet[cond->retPos] = errno;
+		threadsRet[3] = errno;
 		return NULL;
 	}
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
-		threadsRet[cond->retPos] = errno;
+		threadsRet[3] = errno;
 		return NULL;
 	}
 	for(i = 0, j= 0; (i < (cond->maxCountries)); ++i){
@@ -206,13 +206,13 @@ void * weakGroup(void * condi){
 		}
 	}
 	if(j == 0){
-		threadsRet[cond->retPos] = -1;
+		threadsRet[3] = -1;
 		return NULL;
 	}
 	ans->countriesAmm = j;
 	ans->country = realloc(countryInt, sizeof(int)*(j));
-	cond->sets[*(cond->index)++] = ans;
-	threadsRet[cond->retPos] = 1;
+	cond->sets[3] = ans;
+	threadsRet[3] = 1;
 	return cond;
 }
 /*Nombre: countryFree
@@ -224,24 +224,36 @@ void * weakGroup(void * condi){
 */
 int countryFree( condPack * cond){
 	int * countryInt;
-	int i , j;	
+	int i , j, k = 0;	
 	country **countries;
 	set * ans;
 		
+	fprintf(stderr, "Parte %d\n", k++);
+		
 	countries = cond->countries;
+	
+	fprintf(stderr, "Parte %d\n", k++);
+	
 	ans = malloc(sizeof(set));
-	countryInt = malloc(sizeof(int)*cond->maxCountries);
+	
+	fprintf(stderr, "Parte %d\n", k++);
+	
+	countryInt = malloc(sizeof(int) * cond->maxCountries);
+	fprintf(stderr, "Parte %d\n", k++);
 	
 	if(ans == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto de paises del weak Grpup");
 		return errno;
 	}	
+	fprintf(stderr, "Parte %d\n", k++);
+	
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto de paises libres");
 		return errno;
 	}
+	fprintf(stderr, "Parte %d\n", k++);
 	
 	for(i = 0, j= 0; i < cond->maxCountries ; ++i){
 		if(((cond->countries)[i])->used == FALSE){
@@ -249,15 +261,28 @@ int countryFree( condPack * cond){
 			++j;
 		}
 	}
+	fprintf(stderr, "Parte %d\n", k++);
+	
+	fprintf(stderr, "j =  %d\n", j);
+	
 	
 	if(j == 0){
 		free(countryInt);
 		free(ans);
 		return FALSE;
 	}else{
+		fprintf(stderr, "Parte %d\n", k++);
+		
 		ans->countriesAmm = j;
-		ans->country = realloc(countryInt, sizeof(int)*(j));
-		cond->sets[*(cond->index)] = ans;
+		fprintf(stderr, "Parte %d\n", k++);
+		
+		countryInt = realloc(countryInt, sizeof(int) * j);
+		ans->country = countryInt;
+		fprintf(stderr, "Parte %d\n", k++);
+		
+		cond->sets[0] = ans;
+		fprintf(stderr, "Parte %d\n", k++);
+		
 		return TRUE;
 	}
 
@@ -274,17 +299,15 @@ void * noCondition(void * condi){
 	
 	int countryAns = 0;
 	int * countryAux;
-	int	amm, status;
+	int	amm, status, i = 0;
 	condPack * cond = condi;
 	
-	
+	fprintf(stderr, "Parte %d\n", i++);
 	status = countryFree(cond);
-	
-	countryAux = (cond->sets[*(cond->index)])->country;
-	amm = (cond->sets[*(cond->index)])->countriesAmm;
-	
+	fprintf(stderr, "Parte %d\n", i++);
+	countryAux = (cond->sets[0])->country;
+	amm = (cond->sets[0])->countriesAmm;
 	srand(time(NULL));
-		
 	if(status != TRUE){	
 		return NULL;
 	}else if(amm > 1){
@@ -294,9 +317,7 @@ void * noCondition(void * condi){
 		countryAns = countryAux[0];
 	}
 	countryAux = realloc(countryAux, sizeof(int));
-
-	(cond->sets[*(cond->index)])->countriesAmm = 1;
-	(cond->sets[*(cond->index)++])->country = countryAux;
-
+	(cond->sets[0])->countriesAmm = 1;
+	(cond->sets[0])->country = countryAux;
 	return cond;
 }   
