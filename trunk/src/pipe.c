@@ -46,6 +46,7 @@ int main(void){
 		if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable) * _MAX_GATES_LEVELS_)) == NULL )
 		{
 			closedir(dp);
+			free(table);
 			perror("Error en la alocacion de memoria de table[i]\n");
 			return errno;	
 		}
@@ -68,6 +69,9 @@ int main(void){
 				if( ( dirFile = (char*)malloc(sizeof(char) + strlen(dir) + strlen(d->d_name) + 1 )) == NULL )
 				{
 					closedir(dp);
+					for( i = 0 ; i < qtyFiles ; ++i )
+						free(table[i]);
+					free(table);
 					perror("Error en la alocacion de memoria\n");
 					return errno;
 				}
@@ -76,6 +80,10 @@ int main(void){
 				if( (dataFile = fopen(dirFile, "r")) ==  NULL )
 				{
 					closedir(dp);
+					free(dirFile);
+					for( i = 0 ; i < qtyFiles ; ++i )
+						free(table[i]);
+					free(table);
 					perror("No se pudo abrir el archivo de las compuertas\n");
 					return errno;
 				}
@@ -86,18 +94,27 @@ int main(void){
 					table[pos] = realloc( table[pos], sizeof(circuitTable*) * auxTable[0].totalLevels);
 				}
 				table[pos++] = auxTable;
+				/*freeCircuits(&auxTable,1);*/
 			}
 			
 			if( ( procCopyDir = (char*)realloc(procCopyDir, sizeof(char) + strlen(procDir) + strlen(d->d_name) + 1 )) == NULL )
 			{
 				closedir(dp);
+				free(dirFile);
+				for( i = 0 ; i < qtyFiles ; ++i )
+					free(table[i]);
+				free(table);
 				perror("Error en la alocacion de memoria\n");
 				return errno;
 			}
 			strcpy(procCopyDir,procDir);
 			strcat(procCopyDir,d->d_name);
 			fclose( dataFile );
-			link(dirFile,procCopyDir);
+			if( link(dirFile,procCopyDir) == -1)
+			{
+				perror("Error en el link de pipe\n");
+				return errno;
+			}
 			unlink(dirFile);
 		}
 	}
@@ -120,16 +137,19 @@ int main(void){
 	
 	synchronize();
 	
-	printf("cantidad de archivos: %d\n", pos);
+	printf("GATES pid: %d cantidad de archivos: %d\n", pid, pos);
 	writeIPC(pid, &pos, sizeof(int) );
 	for( i = 0 ; i < pos ; ++i )
 	{	
+		fprintf(stderr, "Pipe -- WRITE -- MyPID: %d childPid: %d \n", getpid(), pid);
 		writeIPC(pid, &(table[i][0].totalLevels), sizeof(int));
 		for( j = 0 ; j < table[i][0].totalLevels ; ++j )
 		{
+			fprintf(stderr, "Pipe -- WRITE -- MyPID: %d childPid: %d \n", getpid(), pid);
 			writeIPC(pid, &((table[i][j].eachLevel)->qtyGates), sizeof(int) );
 			for( k = 0 ; k < (table[i][j].eachLevel)->qtyGates ; ++k )
 			{
+				fprintf(stderr, "Pipe -- WRITE -- MyPID: %d childPid: %d \n", getpid(), pid);
 				writeIPC(pid, &((table[i][j].eachLevel)->gates[k]), sizeof(gate) );
 			}
 		}
@@ -150,14 +170,17 @@ int main(void){
 
 void freeCircuits( circuitTable **table, int qtyFile )
 {
-	int i;
+	int i,j;
 	
 	for( i = 0 ; i < qtyFile ; ++i )
 	{
-		free( ((table[i])->eachLevel)->gates );
-		free( table[i]->eachLevel );
-		free( table[i] );
+		for( j = 0 ; j < table[i][0].totalLevels ; ++j )
+		{
+			free( ((table[i][j]).eachLevel)->gates );
+		}
+		free(table[i]);
 	}
+	free(table);
 }
 
 /*
@@ -276,7 +299,7 @@ circuitTable * parseCircuit( xmlDocPtr doc, xmlNodePtr cur )
 	{
 		(circuit[i].eachLevel)->gates = realloc((circuit[i].eachLevel)->gates, sizeof(gate) * (circuit[i].eachLevel)->qtyGates);
 	}
-	circuit = realloc( circuit, sizeof(circuitTable*) * circuit[0].totalLevels);
+	/*circuit = realloc( circuit, sizeof(circuitTable) * circuit[0].totalLevels);*/
 	return circuit;
 }
 
@@ -289,7 +312,7 @@ void parseGatesTags( char *father, xmlNodePtr cur, circuitTable * circuit, int c
 {
 	
 	int pos = 0, posExist = 0;
-	xmlChar * type, *input1, *input2;
+	xmlChar * type=NULL, *input1=NULL, *input2=NULL;
 	
 	if( cur == NULL )
 	{
@@ -345,6 +368,8 @@ void parseGatesTags( char *father, xmlNodePtr cur, circuitTable * circuit, int c
 					type = (xmlChar*)xmlGetProp(cur,(xmlChar*)"type");
 					(circuit[curLevel].eachLevel)->gates[pos].type = getType(atoi((char*)type));
 					xmlFree(type);
+					xmlFree(input1);
+					xmlFree(input2);
 					(circuit[curLevel].eachLevel)->qtyGates++;
 					
 				}

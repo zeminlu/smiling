@@ -192,11 +192,9 @@ int selectIPC(int seconds){
 	
 	*slave = *master;
 	
-	printf("Entro al selectIPC\n");
 	timeout.tv_sec = seconds;
 	timeout.tv_usec = 0;
 	ret = select(FD_SETSIZE, slave, NULL, NULL, &timeout);
-	printf("Salio de select con ret = %d\n", ret);
 	return ret;
 }
 

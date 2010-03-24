@@ -26,8 +26,10 @@ int proccessLevel( void )
 	gate *prevLevel = NULL, *curLevelTable;
 	curCircuit cur;
 	
+	fprintf(stderr, "proccessLevel -- READING -- MyPID: %d ParentPID\n", getpid(), getppid());
 	readIPC( getppid(), &cur, sizeof(curCircuit));
 	fprintf(stderr, "Levels --- curCircuit, My pid: %d Parent pid: %d File: %d Level: %d\n", getpid(), getppid(), cur.curFile, cur.curLevel);
+	fprintf(stderr, "proccessLevel -- READING -- MyPID: %d ParentPID\n", getpid(), getppid());
 	readIPC( getppid(), &qtyGatesCur, sizeof(int));
 	
 	if( (curLevelTable = malloc( sizeof(gate) * qtyGatesCur)) == NULL )
@@ -38,9 +40,11 @@ int proccessLevel( void )
 	
 	for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
+		fprintf(stderr, "proccessLevel -- READING -- MyPID: %d ParentPID\n", getpid(), getppid());
 		readIPC( getppid(), &(curLevelTable[i]), sizeof(gate) );
 	}
 	
+	fprintf(stderr, "proccessLevel -- READING -- MyPID: %d ParentPID\n", getpid(), getppid());
 	readIPC( getppid(), &first, sizeof(int));
 	if( first != 0)
 	{
@@ -53,6 +57,7 @@ int proccessLevel( void )
 		}
 		for( i = 0 ; i < qtyGatesPrev ; ++i )
 		{
+			fprintf(stderr, "proccessLevel -- READING -- MyPID: %d ParentPID\n", getpid(), getppid());
 			readIPC( getppid(), &(prevLevel[i]), sizeof(gate) );
 		}
 	}
@@ -69,9 +74,11 @@ int proccessLevel( void )
 								curLevelTable[i].input[1]);
 	}*/
 	
+	fprintf(stderr, "proccessLevel -- WRITING -- MyPID: %d ParentPID\n", getpid(), getppid());
 	writeIPC( getppid(), &cur, sizeof(curCircuit));
 	for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
+		fprintf(stderr, "proccessLevel -- WRITING -- MyPID: %d ParentPID\n", getpid(), getppid());
 		writeIPC( getppid(), &(curLevelTable[i]), sizeof(gate) );
 	}
 	if( first != 0 )
