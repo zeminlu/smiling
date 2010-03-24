@@ -9,6 +9,8 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <pthread.h>
+#include <time.h>
+
 #include "../inc/definitions.h"
 #include "../inc/conditions.h"
 #include "../inc/types.h"
@@ -29,5 +31,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 int intersect(int condAmm, condPack *condArgs, set **intersection);
 
 int sendSubfixture(subFixture *group);
+
+void sortPointers(set **sets);
 
 #endif
