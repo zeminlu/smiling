@@ -1,9 +1,10 @@
 
 #include "../inc/msqIPC.h"
 
-int queue_id = 0;
+int queue_id= 0;
 int clientsAmm = 0, flag = FALSE;
 int info;
+hashTableADT hashTable = NULL;
 
 void sigHandler (int signum){
 	flag = TRUE;
@@ -22,10 +23,8 @@ int init_queue(int newKey){
 }
 
 int setupIPC(int channels){
-	int i,j;
-	int data, key;
+	int i,j, data, aux, key;
 	char pid[20], fileName[20], *nameStart = "./";
-	
 	key = getpid();
 	
 	itoa (getpid(), pid);
@@ -33,16 +32,16 @@ int setupIPC(int channels){
 	strcat(fileName, pid);
 	
 	queue_id = init_queue(key);
-	data = open(filename, O_WRONLY | O_CREAT, 0644);
+	data = open(fileName, O_WRONLY | O_CREAT, 0644);
 	printf("SETUPIPC: queue_id = %d \n", queue_id);
 	
 	for (i = 0, j = 1 ; i < channels ; ++i, j+=2){
-		write(data, &j, sizeof(int));
+		aux = write(data, &j, sizeof(int));
 	}
 	
 	clientsAmm = channels;
 	close(data);
-	info = open(filename, O_RDONLY);
+	info = open(fileName, O_RDONLY);
 	
 	return 0;
 }
@@ -55,6 +54,7 @@ int synchronize(){
 	int i,j, *pid, ids[2], mlen;
 	char pidString[20], fileName[20], *nameStart = "./";
 	msQ  * entry;
+	
 	entry = malloc(sizeof(msQ));
 	if ((hashTable = hashCreateTable(clientsAmm, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "Error al crear la tabla de hash\n");
@@ -67,13 +67,14 @@ int synchronize(){
 		
 		if((mlen = msgrcv(queue_id ,entry, sizeof(pid_t), j, MSG_NOERROR)) == -1){
 			perror("msgrcv fallo");
+			free(entry);
 			return errno;
 			printf("READ IPC DESPUES de leer \n");
 
 		}		
 		ids[1]= j;
 		ids[0]= j+1;
-		pid[i]= entry->mtext;
+		pid[i]= (int)entry->mtext;
 		itoa(pid[i], pidString);
 		hashInsert(&hashTable, ids, pidString, 0);
 	}
@@ -90,31 +91,32 @@ int synchronize(){
 	strcat(fileName, pidString);
 	
 	unlink(fileName);
-	
+	free(entry);
 	return 0;
 }
 int loadIPC(){
 	sigset_t mask, oldmask;
-	int ownID[2], mlen;
-
+	pid_t pid;
+	int ownID[2], mlen, aux;
 	char pidString[10];
 	msQ entry;
-	
-	entry.mtype = 	
-	memcpy(entry.mtext, getpid(), sizeof(int));
-	
+
 	signal(SIGALRM, sigHandler);
 	sigemptyset (&mask);
 	sigaddset (&mask, SIGALRM);
 	
 	queue_id = msgget((key_t)getppid(), 0);
 
-	read(_stdin_, &(ownID[0]), sizeof(int));
-	ownID[1] = 1+ownID[0];
+	aux = read(_stdin_, &(ownID[1]), sizeof(int));
+	ownID[0] = 1 + ownID[1];
 	
 	hashTable = hashCreateTable(1, freeIPCID, compareIPCIDs, copyIPCID);
 	itoa(getppid(), pidString);
 	hashInsert(&hashTable, ownID, pidString, 0);
+	
+	entry.mtype = ownID[1];
+	pid = getpid();	
+	memcpy(entry.mtext, &pid, sizeof(pid_t));
 	
 	if((mlen = msgsnd(queue_id, &entry, sizeof(pid_t), IPC_NOWAIT)) == -1){
 	perror("msgsnd fallo");		
@@ -127,13 +129,13 @@ int loadIPC(){
 		
 	close(_stdin_);
 	
-
-	
 	return 0;
 }
 
+
 int readIPC(pid_t pid, void *buffer, int bufferSize){
 	int mlen, *ipcID;
+	unsigned int hkey;
 	msQ entry;
 	char pidString[10];
 	
@@ -164,6 +166,7 @@ return 0;
 int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	int mlen, * ipcID;
 	msQ entry;
+	unsigned hkey;
 	char pidString[10];
 	
 	itoa(pid, pidString);
@@ -188,16 +191,6 @@ int closeIPC(int pid){
 
 int finalizeIPC(){
  	msgctl(queue_id, IPC_RMID, NULL);
-	for (i = 0 ; i < clientsAmm ; ++i){
-		varFree(3, ipcIDs[i][0], ipcIDs[i][1], ipcIDs[i]);
-	}
-	free(ipcIDs);
-	if (master != NULL){
-		free(master);
-	}
-	if (slave != NULL){
-		free(slave);
-	}
 	if (hashTable != NULL){
 		hashFreeTable(hashTable);
 	}
@@ -208,7 +201,7 @@ int selectIPC(int seconds){
 	struct msqid_ds msq_stat;
 	
 	sleep(seconds);
-	msgctl(queue_idR, IPC_STAT, &msq_stat);
+	msgctl(queue_id, IPC_STAT, &msq_stat);
 	return msq_stat.msg_qnum;
 }
 

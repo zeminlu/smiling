@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <signal.h>
+
 #include "../inc/definitions.h"
 #include "../inc/types.h"
 #include "../inc/linearHashADT.h"
