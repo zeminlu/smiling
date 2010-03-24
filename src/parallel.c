@@ -44,11 +44,8 @@ int filesListener(){
 				break;
 		}
 	}
-	printf("PARALEL: antes de Synchronize\n");
 	synchronize();
-	printf("PARALEL: despue de Synchronize\n");
 	writeIPC(pid, &countriesTableEntriesAmm, sizeof(int));
-
 	
 	for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 		printf("Pais: %s - Continente: %d - Campeon: %d - Peso: %d - Same: %d - Death: %d - ChampG: %d - Weak: %d - Cabeza de Serie: %d\n", 
@@ -56,8 +53,9 @@ int filesListener(){
 		serializeCountryStruct(&buffer, &bufferSize, countriesTable[j]);
 		writeIPC(pid, &bufferSize, sizeof(int));
 		writeIPC(pid, buffer, bufferSize);
-		free(buffer);	
+		varFree(2, buffer, countriesTable[j]);
 	}
+	free(countriesTable);
 	
 	wait(&fifa);
 	closeIPC(pid);
@@ -118,7 +116,9 @@ int processFile(DIR *dp, country ***countriesTable){
 			strcpy(procFileDir, procDir);
 			strcat(procFileDir, d->d_name);
 			fclose(countryFile);
-			link(fileDir, procFileDir);
+			if (link(fileDir, procFileDir) < 0){
+				return -1;
+			}
 			unlink(fileDir);
 		}
 	}
