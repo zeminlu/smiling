@@ -36,7 +36,7 @@ int setupIPC(int channels){
 		ipcIDs[i][0] = malloc(sizeof(int) * 2);
 		ipcIDs[i][1] = malloc(sizeof(int) * 2);
 		pipe(ipcIDs[i][0]);
-		write(data, &ipcIDs[i][0][0], sizeof(int));
+		if (write(data, &ipcIDs[i][0][0], sizeof(int)));
 		pipe(ipcIDs[i][1]);
 		write(data, &ipcIDs[i][1][1], sizeof(int));
 		FD_SET(ipcIDs[i][1][0], master);
