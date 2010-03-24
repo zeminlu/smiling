@@ -36,7 +36,7 @@ int setupIPC(int channels){
 		ipcIDs[i][0] = malloc(sizeof(int) * 2);
 		ipcIDs[i][1] = malloc(sizeof(int) * 2);
 		if (pipe(ipcIDs[i][0]) != 0){
-			perror("IPCAPI: Error en primitiva write");
+			perror("IPCAPI: Error en pipe");
 			return -1;
 		}
 		if (write(data, &ipcIDs[i][0][0], sizeof(int)) != sizeof(int)){
@@ -44,7 +44,7 @@ int setupIPC(int channels){
 			return -1;
 		}
 		if (pipe(ipcIDs[i][1]) != 0){
-			perror("IPCAPI: Error en primitiva write");
+			perror("IPCAPI: Error en pipe");
 			return -1;	
 		}
 		if (write(data, &ipcIDs[i][1][1], sizeof(int)) != sizeof(int)){
