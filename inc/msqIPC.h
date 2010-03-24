@@ -5,7 +5,11 @@
 
 #include <sys/ipc.h>
 #include <sys/msg.h>
+
 #include "../inc/ipcAPI.h"
+#include "../inc/cutils.h"
+#include "../inc/linearHashADT.h"
+
 
 #define QKEY 			(key_t)0105
 #define QPERM			0666
@@ -16,5 +20,10 @@ typedef struct q_entry{
 	}msQ;
 
 int init_queue(int newKey);
+int compareIPCIDs(void *elem1, void *elem2);
+
+void * copyIPCID(void *elem);
+
+void freeIPCID(void *elem);
 
 #endif
