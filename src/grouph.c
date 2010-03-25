@@ -260,7 +260,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		writeIPC(getppid(), &bufferSize, sizeof(int));
 		writeIPC(getppid(), buffer, bufferSize);
 		free(buffer);
-		fprintf(stderr, "Mando reqCountry = %d\n", reqCountry);
+		fprintf(stderr, "%d mando reqCountry = %d\n", data->name, reqCountry);
 		readIPC(getppid(), &bufferSize, sizeof(int));
 		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL){
 			perror("Error de memoria");
@@ -288,8 +288,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 int intersect(int condAmm, condPack *condArgs, set **intersection){
 	set **aux = NULL;
 	int i, j = 0, k = 0, x = 0, y = 0, step = 0;
-	
-	printf("Intersect de %s...paso %d\n", condArgs->head, ++step);
+	printf("condAmm = %d, condArgs->head->name = %s\n", condAmm, condArgs->head->name);
 	if ((aux = malloc(sizeof(void *) * condAmm)) == NULL ||
 		(aux[0] = malloc(sizeof(set))) == NULL ||			
 		(aux[0]->country = malloc(sizeof(int *) * ((condArgs->sets)[0])->countriesAmm)) == NULL){
@@ -297,15 +296,13 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 			varFree(2, aux[0], aux);
 			return errno;
 		}
-	printf("Intersect de %s...paso %d\n", condArgs->head, ++step);
 	
 	for (j = 0 ; j < ((condArgs->sets)[0])->countriesAmm ; ++j){
 		((aux[0])->country)[j] = (((condArgs->sets)[0])->country)[j]; 
 	}
 	(aux[0])->countriesAmm = j;
-	printf("Intersect de %s...paso %d\n", condArgs->head, ++step);
 
-	for (j = 1 ; j < condAmm ; ++j){	
+	for (j = 1 ; j < condAmm ; ++j){			
 		if ((aux[j] = malloc(sizeof(set))) == NULL || ((aux[j])->country = malloc(sizeof(int) * (aux[j - 1])->countriesAmm)) == NULL){
 				perror("Error de memoria");
 				for(i = 0 ; i < j - 1 ; ++i){
@@ -314,6 +311,7 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 				varFree(2, aux[j], aux);
 				return errno;
 		}
+		printf("Intersect de %s, antes while, con aux[j -1]->amm = %d y condArgs->sets[j]->amm = %d...j = %d\n", condArgs->head->name, aux[j - 1]->countriesAmm, ((condArgs->sets)[j])->countriesAmm, j);
 		
 		x = k = y = 0;
 		while (x < aux[j - 1]->countriesAmm && k < ((condArgs->sets)[j])->countriesAmm) {  
@@ -323,7 +321,7 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 				k++;
 				y++;  
 			}  
-			else if (((aux[j])->country)[x] < (((condArgs->sets)[j + 1])->country)[k]) {  
+			else if (((aux[j - 1])->country)[x] < (((condArgs->sets)[j])->country)[k]) {  
 				x++;  
 			}  
 			else {  
@@ -331,17 +329,18 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 			}  
 		}
 		aux[j]->countriesAmm = y;
+		printf("Intersect de %s, fin vuelta del for...j =  %d\n", condArgs->head->name, j);
 	}
-	printf("Intersect de %s...paso %d\n", condArgs->head, ++step);
 
-	*intersection = aux[j - 1];
-	printf("Intersect de %s...paso %d\n", condArgs->head, ++step);
-	
+	*intersection = aux[j - 1];	
 	/*for(i = 0 ; i < j - 2 ; ++i){
 		varFree(2, aux[i]->country, aux[i]);
 	}
 	free(aux);
 	*/
+	
+	printf("Intersect de %s, termino\n", condArgs->head->name);
+	
 	return 0;
 }
 
