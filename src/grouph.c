@@ -260,7 +260,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		writeIPC(getppid(), &bufferSize, sizeof(int));
 		writeIPC(getppid(), buffer, bufferSize);
 		free(buffer);
-		fprintf(stderr, "%d mando reqCountry = %d\n", data->name, reqCountry);
+		fprintf(stderr, "%s mando reqCountry = %d\n", data->name, reqCountry);
 		readIPC(getppid(), &bufferSize, sizeof(int));
 		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL){
 			perror("Error de memoria");
@@ -287,7 +287,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 
 int intersect(int condAmm, condPack *condArgs, set **intersection){
 	set **aux = NULL;
-	int i, j = 0, k = 0, x = 0, y = 0, step = 0;
+	int i, j = 0, k = 0, x = 0, y = 0;
 	printf("condAmm = %d, condArgs->head->name = %s\n", condAmm, condArgs->head->name);
 	if ((aux = malloc(sizeof(void *) * condAmm)) == NULL ||
 		(aux[0] = malloc(sizeof(set))) == NULL ||			

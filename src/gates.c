@@ -197,36 +197,36 @@ int startCircuitsPipeline( circuitTable **table, pid_t **childPids, int qtyFiles
 	fprintf(stderr, "Acabo de sincronizar\n");
 	for (i = 0 ; i < qtyFiles ; ++i)
 	{
-		if( levels[i] < maxLevel[i] && levels[i] >= 0 )
+		if( levels[i] < maxLevel[i] && levels[i] >= 0 && (*childPids)[i] )
 		{
 			cur.curFile = i;
 			cur.curLevel = levels[i];
 			fprintf(stderr, "cur.curFile: %d cur.curLevel: %d\n", cur.curFile, cur.curLevel);
 			
-			fprintf(stderr, "startCircuitsPipeline -- MyPID: %d childPID\n", getpid(), (*childPids)[i]);
+			fprintf(stderr, "Sending Cur -- MyPID: %d childPID: %d\n", getpid(), (*childPids)[i]);
 			writeIPC( (*childPids)[i], &cur, sizeof(curCircuit) );
-			fprintf(stderr, "startCircuitsPipeline -- MyPID: %d childPID\n", getpid(), (*childPids)[i]);
+			fprintf(stderr, "Sending the amount of currently gates -- MyPID: %d childPID: %d\n", getpid(), (*childPids)[i]);
 			writeIPC( (*childPids)[i], (void *)&(((table[i][levels[i]]).eachLevel)->qtyGates) , sizeof(int) );
 			
 			for( j = 0 ; j < ((table[i][ levels[i] ]).eachLevel)->qtyGates ; ++j )
 			{
-				fprintf(stderr, "startCircuitsPipeline -- MyPID: %d childPID\n", getpid(), (*childPids)[i]);
+				fprintf(stderr, "Sending each gate of currently -- MyPID: %d childPID: %d\n", getpid(), (*childPids)[i]);
 				writeIPC( (*childPids)[i], &(((table[i][levels[i]]).eachLevel)->gates[j]), sizeof(gate) );
 			}
 			
 			if( levels[i] == 0 )
 			{
-				fprintf(stderr, "startCircuitsPipeline -- MyPID: %d childPID\n", getpid(), (*childPids)[i]);
+				fprintf(stderr, "Sending if it is the first level -- MyPID: %d childPID: %d\n", getpid(), (*childPids)[i]);
 				writeIPC( (*childPids)[i], (void*)(&first), sizeof(int) );
 			}else
 			{
-				fprintf(stderr, "startCircuitsPipeline -- MyPID: %d childPID\n", getpid(), (*childPids)[i]);
+				fprintf(stderr, "Sending if it is not the first level -- MyPID: %d childPID: %d\n", getpid(), (*childPids)[i]);
 				writeIPC( (*childPids)[i], (void*)&(notFirst), sizeof(int) );
-				fprintf(stderr, "startCircuitsPipeline -- MyPID: %d childPID\n", getpid(), (*childPids)[i]);
+				fprintf(stderr, "Sending the amount of previously gates -- MyPID: %d childPID: %d\n", getpid(), (*childPids)[i]);
 				writeIPC( (*childPids)[i], (void*)&(((table[i][ (levels[i]-1) ]).eachLevel)->qtyGates) , sizeof(int) );
 				for( j = 0 ; j < ((table[i][ (levels[i]-1) ]).eachLevel)->qtyGates ; ++j )
 				{
-					fprintf(stderr, "startCircuitsPipeline -- MyPID: %d childPID\n", getpid(), (*childPids)[i]);
+					fprintf(stderr, "Sending previously each gates -- MyPID: %d childPID: %d\n", getpid(), (*childPids)[i]);
 					writeIPC( (*childPids)[i], &(((table[i][ (levels[i]-1) ]).eachLevel)->gates[j]), sizeof(gate) );
 				}
 			}
@@ -253,7 +253,7 @@ int listenToMyChildren( circuitTable **table, int *childPids, int qtyFiles, int 
 	{
 		for( i = 0 ; i < qtyFiles ; ++i )
 		{
-			if( childPids[i] != -1 && (auxGet = getIPCStatus(childPids[i])) /*&& !(finished[i])*/)
+			if( childPids[i] != -1 && (auxGet = getIPCStatus(childPids[i])) )
 			{
 				fprintf(stderr, "listenToMyChildren -- READING -- MyPID: %d childPID:%d\n", getpid(), (childPids)[i]);
 				readIPC( childPids[i], &cur, sizeof(curCircuit));
