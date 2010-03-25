@@ -40,15 +40,16 @@ int setupIPC(int channels){
 			return -1;
 		}
 		if (write(data, &ipcIDs[i][0][0], sizeof(int)) != sizeof(int)){
-			perror("IPCAPI: Error en primitiva write");
+			perror("IPCAPI: Setup1 - Error en primitiva write");
 			return -1;
 		}
 		if (pipe(ipcIDs[i][1]) != 0){
 			perror("IPCAPI: Error en pipe");
 			return -1;	
 		}
+		fprintf(stderr, "setupIPC - ipcIDs[i][1][1]: %d\n", ipcIDs[i][1][1]);
 		if (write(data, &ipcIDs[i][1][1], sizeof(int)) != sizeof(int)){
-			perror("IPCAPI: Error en primitiva write");
+			perror("IPCAPI: Setup2 - Error en primitiva write");
 			return -1;
 		}
 		FD_SET(ipcIDs[i][1][0], master);
@@ -79,7 +80,7 @@ int synchronize(){
 		ids[0] = ipcIDs[i][1][0];
 		ids[1] = ipcIDs[i][0][1];
 		if (read(ipcIDs[i][1][0], &(pid[i]), sizeof(pid_t)) != sizeof(pid_t)){
-			perror("IPCAPI: Error en primitiva read");
+			perror("IPCAPI: synchronize - Error en primitiva read");
 			return -1;
 		}
 		itoa(pid[i], pidString);
@@ -113,15 +114,16 @@ int loadIPC(){
 	sigemptyset (&mask);
 	sigaddset (&mask, SIGALRM);
 	if (read(_stdin_, &(ownID[0]), sizeof(int)) != sizeof(int)){
-		perror("IPCAPI: Error en primitiva write");
+		perror("IPCAPI: loadIPC 1 - Error en primitiva write");
 		return -1;
 	}
 	if (read(_stdin_, &(ownID[1]), sizeof(int)) != sizeof(int)){
-		perror("IPCAPI: Error en primitiva write");
+		perror("IPCAPI: loadIPC 2- Error en primitiva read");
 		return -1;
 	}
+	fprintf(stderr, "ownID: %d\n", ownID[1]);
 	if (write(ownID[1], &pid, sizeof(pid_t)) != sizeof(pid_t)){
-		perror("IPCAPI: Error en primitiva write");
+		perror("IPCAPI: loadIPC - Error en primitiva write");
 		return -1;	
 	}
 	
@@ -149,7 +151,7 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	ipcID = hashSearch(hashTable, pidString, &hkey);
 	
 	if (read(ipcID[0], buffer, bufferSize) != bufferSize){
-		perror("IPCAPI: Error en primitiva read");
+		perror("IPCAPI: readIPC - Error en primitiva read");
 		return -1;	
 	}
 	free(ipcID);
@@ -164,9 +166,9 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	
 	itoa(pid, pidString);
 	ipcID = hashSearch(hashTable, pidString, &hkey);
-	
+
 	if (write(ipcID[1], buffer, bufferSize) != bufferSize){
-		perror("IPCAPI: Error en primitiva write");
+		perror("IPCAPI: writeIPC - Error en primitiva write");
 		return -1;
 	}
 	free(ipcID);

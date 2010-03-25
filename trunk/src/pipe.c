@@ -178,7 +178,6 @@ void freeCircuits( circuitTable **table, int qtyFile )
 		{
 			free( ((table[i][j]).eachLevel)->gates );
 		}
-		free(table[i]);
 	}
 	free(table);
 }
@@ -445,6 +444,7 @@ void printCircuitTable( circuitTable * circuit)
 	int i,j;
 	
 	fprintf(stderr, "Cantidad de niveles: %d\n", circuit[0].totalLevels);
+	fprintf(stderr, "--------------------------------------------------\n");
 	for( i = 0; i < circuit[0].totalLevels ; ++i)
 	{
 		fprintf(stderr, "Cantidad de compuertas: %d\n", (circuit[i].eachLevel)->qtyGates);
@@ -461,4 +461,5 @@ void printCircuitTable( circuitTable * circuit)
 						(circuit[i].eachLevel)->gates[j].output);
 		}
 	}
+	fprintf(stderr, "--------------------------------------------------\n");
 }
