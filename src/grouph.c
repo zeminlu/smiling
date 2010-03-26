@@ -62,7 +62,7 @@ int main (void){
 		for (i = 0 ; i < condAmm ; ++i){
 			free(condArgs->sets[i]);
 		}
-		varFree(7, data, countriesTable, group->countries, group, conditions, condArgs->sets, condArgs);
+		varFree(6, countriesTable, group->countries, group, conditions, condArgs->sets, condArgs);
 		sendErrorToParent();
 		return status;
 	}
@@ -79,7 +79,7 @@ int main (void){
 	for (i = 0 ; i < 4; ++i){
 		free (group->countries[i]);
 	}
-	varFree(7, data, countriesTable, conditions, condArgs->sets, condArgs, group->countries, group);
+	varFree(6, countriesTable, conditions, condArgs->sets, condArgs, group->countries, group);
 	
 	return status;
 }
@@ -242,7 +242,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			if (ret == NULL || threadsRet[0] < 0 || condArgs->sets[0]->countriesAmm == 0){
 				return -1;
 			}
-			reqCountry = condArgs->sets[0]->country[rand() % condArgs->sets[0]->countriesAmm];
+			reqCountry = condArgs->sets[0]->country[((rand() % condArgs->sets[0]->countriesAmm) + getpid()) % condArgs->sets[0]->countriesAmm];
 			fprintf(stderr, "Req country con 1 condicion seleccionado = %d - Head = %s\n", reqCountry, data->name);
 		}
 		else{
@@ -271,7 +271,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			}
 			fprintf(stderr, "Post Intersect - Head = %s\n", data->name);
 						
-			reqCountry = intersection->country[rand() % intersection->countriesAmm];
+			reqCountry = intersection->country[((rand() % intersection->countriesAmm) + getpid()) % intersection->countriesAmm];
 			
 			varFree(2, intersection->country, intersection);
 		}
