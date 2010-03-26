@@ -201,7 +201,7 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 				
 				printf("IPC : %d, reqCountry desserializado = %d \n", j, reqCountry);
 				
-				if (reqCountry < 0){
+				if (reqCountry == -1){
 					for (x = 0 ; x < 4 ; ++x){
 						printf("Por leer el pais %d del head %d\n", x, j);
 						readIPC(pids[j], &bufferSize, sizeof(int));
@@ -234,6 +234,11 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 						flag = TRUE;
 						break;
 					}
+				}
+				else if (reqCountry < -1){
+					finished[j] = TRUE;
+					flag = TRUE;
+					break;
 				}
 				else{
 					if (countriesTable[reqCountry]->used){
