@@ -14,19 +14,19 @@ int main (void){
 	
 	if ((pids = malloc(sizeof(pid_t) * countriesTableEntriesAmm)) == NULL || (fixture = malloc(sizeof(void *) * countriesTableEntriesAmm / 4)) == NULL){
 		perror("Error de memoria");
-		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
+		/*for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free(countriesTable[j]);
-		}
-		varFree(2, countriesTable, pids);
+		}*/
+		varFree(2, pids, countriesTable);
 		
 		return errno;
 	}
 	
 	if ((status = startChildProcesses(countriesTable, countriesTableEntriesAmm, &fixture, &pids)) != 0){
 		fprintf(stderr, "Error en startChildprocesses\n");
-		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
+		/*for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free(countriesTable[j]);
-		}
+		}*/
 		varFree(3, countriesTable, pids, fixture);
 		
 		return status;
@@ -42,12 +42,12 @@ int main (void){
 		}
 		/*for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free(countriesTable[j]);
-		}
+		}*/
 		for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
 			free(fixture[j]);
 		}
-		varFree(3, fixture, countriesTable, pids);
-		*/
+		varFree(3, countriesTable, fixture, pids);
+		
 		return status;
 	}
 	
@@ -70,9 +70,9 @@ int main (void){
 	
 	/*for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 		free(countriesTable[j]);
-	}
-	varFree(3, fixture, pids, countriesTable);
-	*/
+	}*/
+	varFree(3, countriesTable, fixture, pids);
+	
 	return 0;
 }
 
@@ -190,7 +190,7 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 	}
 	
 	
-	while(flag == FALSE && selectIPC(2) > 0 ){
+	while(flag == FALSE && selectIPC(1) > 0 ){
 		for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
 			if (finished[j] == FALSE && getIPCStatus(pids[j])){
 				readIPC(pids[j], &bufferSize, sizeof(int));
@@ -252,13 +252,11 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 		}
 	}
 	
-	
-	/*free(finished);
+	free(finished);
 	for (x = 0 ; x < 4 ; ++x){
 		free(subFixture[x]);
 	}
 	free(subFixture);
-	*/
 	
 	errorStat = FALSE;
 	

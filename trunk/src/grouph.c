@@ -21,28 +21,32 @@ int main (void){
 	
 	if ((condAmm = checkConditions(data, &conditions)) < 0){
 		fprintf(stderr, "Error en checkConditions\n");
-		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
+		/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
-		}
-		free(countriesTable);
+		}*/
+		varFree(2, data, countriesTable);
+		
 		return condAmm;
 	}
 	
 	if ((status = buildCondArgs(&condArgs, countriesTable, countriesTableEntriesAmm, data, condAmm, &index)) != 0){
 		fprintf(stderr, "Error en buildcondargs\n");
-		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
+		/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
 		}
-		varFree(2, countriesTable, conditions);
+		*/
+		varFree(3, data, countriesTable, conditions);
+
 		return status;
 	} 
 	
 	if ((status = prepareGroup(&group, data)) != 0){
 		fprintf(stderr, "Error en prepareGroup\n");
-		for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
+		/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
 		}
-		varFree(4, countriesTable, conditions, condArgs->sets, condArgs);
+		*/
+		varFree(5, data, countriesTable, conditions, condArgs->sets, condArgs);
 		return status;
 	}
 		
@@ -50,11 +54,12 @@ int main (void){
 		fprintf(stderr, "Error en buildSubfixture\n");
 		/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
-		}
+		}*/
+		
 		for (i = 0 ; i < condAmm ; ++i){
 			free(condArgs->sets[i]);
 		}
-		varFree(4, countriesTable, conditions, condArgs->sets, condArgs);*/
+		varFree(7, data, countriesTable, group->countries, group, conditions, condArgs->sets, condArgs);
 		return status;
 	}
 		
@@ -62,14 +67,16 @@ int main (void){
 	
 	/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		free(countriesTable[i]);
-	}*/
+	}
+	*/
+	
 	for (i = 0 ; i < condAmm ; ++i){
 		free(condArgs->sets[i]);
 	}
 	for (i = 0 ; i < 4; ++i){
 		free (group->countries[i]);
 	}
-	varFree(5, conditions, condArgs->sets, condArgs, group->countries, group);
+	varFree(7, data, countriesTable, conditions, condArgs->sets, condArgs, group->countries, group);
 	
 	return status;
 }
@@ -254,9 +261,11 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			varFree(2, intersection->country, intersection);
 		}
 
-		/*for (j = 0 ; j < i ; ++j){
+		for (j = 1 ; j < i ; ++j){
 			free(condArgs->sets[j]->country);
-		}*/
+		}
+		free(condArgs->sets[0]->country);
+		
 		serializeInteger(&buffer, &bufferSize, reqCountry);
 		
 		writeIPC(getppid(), &bufferSize, sizeof(int));
@@ -287,7 +296,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		++((*group)->countriesAmm);
 	}
 	pthread_mutex_destroy(&mutexIndex);
-	/*free(threads);*/
+	free(threads);
 	
 	fprintf(stderr, "TERMINO GROUPH DE %s\n", data->name);
 	
@@ -342,11 +351,10 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 	}
 
 	*intersection = aux[j - 1];	
-	/*for(i = 0 ; i < j - 2 ; ++i){
+	for(i = 0 ; i < j - 2 ; ++i){
 		varFree(2, aux[i]->country, aux[i]);
 	}
 	free(aux);
-	*/
 	
 	printf("Intersect de %s, termino\n", condArgs->head->name);
 	
