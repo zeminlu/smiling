@@ -62,7 +62,7 @@ int main (void){
 	
 	/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		free(countriesTable[i]);
-	}
+	}*/
 	for (i = 0 ; i < condAmm ; ++i){
 		free(condArgs->sets[i]);
 	}
@@ -70,7 +70,7 @@ int main (void){
 		free (group->countries[i]);
 	}
 	varFree(5, conditions, condArgs->sets, condArgs, group->countries, group);
-	*/
+	
 	return status;
 }
 
@@ -205,22 +205,23 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		threadsIndex = 0;
 		threadsRet = calloc(1, sizeof(int) * 4);
 		if (i == 0){
-
+			fprintf(stderr, "Por seleccionar ReqCountry sin condiciones - Head = %s\n", data->name);
 			noCondition(condArgs);
 
 			if (condArgs->sets[0]->countriesAmm == 0){
 				return -1;
 			}
 			reqCountry = condArgs->sets[0]->country[0];
-
+			fprintf(stderr, "ReqCountry seleccionado sin condiciones = %d - Head = %s\n", reqCountry, data->name);
 		}
 		else if (i == 1){
-
+			fprintf(stderr, "Por seleccionar ReqCountry con 1 condicion - Head = %s\n", data->name);
 			ret = conditions[0](condArgs);
 			if (ret == NULL || threadsRet[0] < 0 || condArgs->sets[0]->countriesAmm == 0){
 				return -1;
 			}
 			reqCountry = condArgs->sets[0]->country[rand() % condArgs->sets[0]->countriesAmm];
+			fprintf(stderr, "Req country con 1 condicion seleccionado = %d - Head = %s\n", reqCountry, data->name);
 		}
 		else{
 			for (j = 0 ; j < i ; ++j){
@@ -249,16 +250,19 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			fprintf(stderr, "Post Intersect - Head = %s\n", data->name);
 						
 			reqCountry = intersection->country[rand() % intersection->countriesAmm];
-			varFree(3, intersection->country, intersection);
+			
+			varFree(2, intersection->country, intersection);
 		}
-
 
 		/*for (j = 0 ; j < i ; ++j){
 			free(condArgs->sets[j]->country);
 		}*/
 		serializeInteger(&buffer, &bufferSize, reqCountry);
+		
 		writeIPC(getppid(), &bufferSize, sizeof(int));
+		
 		writeIPC(getppid(), buffer, bufferSize);
+		
 		free(buffer);
 		fprintf(stderr, "%s mando reqCountry = %d\n", data->name, reqCountry);
 		readIPC(getppid(), &bufferSize, sizeof(int));
@@ -267,12 +271,15 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			free(threads);
 			return errno;
 		}
+		fprintf(stderr, "Esperando respuesta en grouph = %s\n", data->name);
 		readIPC(getppid(), buffer, bufferSize);
 		if (unserializeInteger(buffer, bufferSize) == FALSE){
+			fprintf(stderr, "Respuesta en grouph = %s fue FALSE\n", data->name);
 			countriesTable[reqCountry]->used = TRUE;
 			free(buffer);
 			continue;
 		}
+		fprintf(stderr, "Respuesta en grouph = %s fue TRUE\n", data->name);
 		free(buffer);
 		free(threadsRet);
 		countriesTable[reqCountry]->used = TRUE;
@@ -281,6 +288,8 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 	}
 	pthread_mutex_destroy(&mutexIndex);
 	/*free(threads);*/
+	
+	fprintf(stderr, "TERMINO GROUPH DE %s\n", data->name);
 	
 	return 0;
 }
