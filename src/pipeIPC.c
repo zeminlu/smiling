@@ -100,6 +100,8 @@ int synchronize(){
 	
 	unlink(fileName);
 	
+	free(pid);
+	
 	return 0;
 }
 
@@ -173,18 +175,6 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	}
 	free(ipcID);
 	
-	return 0;
-}
-
-int closeIPC(int pid){
-	/*int *ipcID;
-	char pidString[10];
-	
-	itoa(pid, pidString);
-	ipcID = (int *) hashDelete(&hashTable, pidString);
-	close(ipcID[0]);
-	close(ipcID[1]);
-	*/
 	return 0;
 }
 

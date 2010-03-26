@@ -249,36 +249,27 @@ void * weakGroup(void * condi){
 */
 int countryFree( condPack * cond){
 	int * countryInt;
-	int i , j, k = 0;	
+	int i , j;
 	country **countries;
 	set * ans;
 		
-	fprintf(stderr, "Parte %d\n", k++);
-		
 	countries = cond->countries;
-	
-	fprintf(stderr, "Parte %d\n", k++);
 	
 	ans = malloc(sizeof(set));
 	
-	fprintf(stderr, "Parte %d\n", k++);
-	
 	countryInt = malloc(sizeof(int) * cond->maxCountries);
-	fprintf(stderr, "Parte %d\n", k++);
 	
 	if(ans == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto de paises del weak Grpup");
 		return errno;
 	}	
-	fprintf(stderr, "Parte %d\n", k++);
-	
+
 	if(countryInt == NULL){
 		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto de paises libres");
 		return errno;
 	}
-	fprintf(stderr, "Parte %d\n", k++);
 	
 	for(i = 0, j= 0; i < cond->maxCountries ; ++i){
 		if(((cond->countries)[i])->used == FALSE){
@@ -286,27 +277,19 @@ int countryFree( condPack * cond){
 			++j;
 		}
 	}
-	fprintf(stderr, "Parte %d\n", k++);
-	
-	fprintf(stderr, "j =  %d\n", j);
-	
 	
 	if(j == 0){
 		free(countryInt);
 		free(ans);
 		return FALSE;
 	}else{
-		fprintf(stderr, "Parte %d\n", k++);
 		
 		ans->countriesAmm = j;
-		fprintf(stderr, "Parte %d\n", k++);
 		
 		countryInt = realloc(countryInt, sizeof(int) * j);
 		ans->country = countryInt;
-		fprintf(stderr, "Parte %d\n", k++);
 		
 		cond->sets[0] = ans;
-		fprintf(stderr, "Parte %d\n", k++);
 		
 		return TRUE;
 	}
@@ -324,12 +307,10 @@ void * noCondition(void * condi){
 	
 	int countryAns = 0;
 	int * countryAux;
-	int	amm, status, i = 0;
+	int	amm, status;
 	condPack * cond = condi;
 	
-	fprintf(stderr, "Parte %d\n", i++);
 	status = countryFree(cond);
-	fprintf(stderr, "Parte %d\n", i++);
 	countryAux = (cond->sets[0])->country;
 	amm = (cond->sets[0])->countriesAmm;
 	srand(time(NULL));

@@ -57,8 +57,8 @@ int filesListener(){
 	free(countriesTable);
 	
 	wait(&fifa);
-	closeIPC(pid);
 	finalizeIPC();
+	closedir(dp);
 
 	return 0;
 }
