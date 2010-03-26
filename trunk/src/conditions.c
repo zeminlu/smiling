@@ -317,7 +317,7 @@ void * noCondition(void * condi){
 	if(status != TRUE){	
 		return NULL;
 	}else if(amm > 1){
-		countryAns = countryAux[rand() % (amm)];
+		countryAns = countryAux[((rand() % amm) + getpid()) % amm];
 		countryAux[0] = countryAns;
 	}else{
 		countryAns = countryAux[0];

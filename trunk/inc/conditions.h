@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "../inc/types.h"
 #include "../inc/definitions.h"
 
