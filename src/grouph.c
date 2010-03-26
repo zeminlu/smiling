@@ -16,6 +16,7 @@ int main (void){
 		
 	if ((countriesTableEntriesAmm = loadHeadAndCountriesTable(&countriesTable, &data)) < 0){
 		fprintf(stderr, "Error en loadHeadandCountriesTable\n");
+		sendErrorToParent();
 		return countriesTableEntriesAmm;
 	}
 	
@@ -25,6 +26,7 @@ int main (void){
 			free(countriesTable[i]);
 		}*/
 		varFree(2, data, countriesTable);
+		sendErrorToParent();
 		
 		return condAmm;
 	}
@@ -36,6 +38,7 @@ int main (void){
 		}
 		*/
 		varFree(3, data, countriesTable, conditions);
+		sendErrorToParent();
 
 		return status;
 	} 
@@ -47,6 +50,7 @@ int main (void){
 		}
 		*/
 		varFree(5, data, countriesTable, conditions, condArgs->sets, condArgs);
+		sendErrorToParent();
 		return status;
 	}
 		
@@ -55,11 +59,11 @@ int main (void){
 		/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
 		}*/
-		
 		for (i = 0 ; i < condAmm ; ++i){
 			free(condArgs->sets[i]);
 		}
 		varFree(7, data, countriesTable, group->countries, group, conditions, condArgs->sets, condArgs);
+		sendErrorToParent();
 		return status;
 	}
 		
@@ -67,8 +71,7 @@ int main (void){
 	
 	/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		free(countriesTable[i]);
-	}
-	*/
+	}*/
 	
 	for (i = 0 ; i < condAmm ; ++i){
 		free(condArgs->sets[i]);
@@ -79,6 +82,18 @@ int main (void){
 	varFree(7, data, countriesTable, conditions, condArgs->sets, condArgs, group->countries, group);
 	
 	return status;
+}
+
+void sendErrorToParent(){
+	void *buffer;
+	int bufferSize;
+	
+	serializeInteger(&buffer, &bufferSize, -2);
+	writeIPC(getppid(), &bufferSize, sizeof(int));
+	writeIPC(getppid(), &buffer, bufferSize);
+	free(buffer);
+	
+	return;
 }
 
 int loadHeadAndCountriesTable(country ***countriesTable, country **head){

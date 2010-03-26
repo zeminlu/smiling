@@ -18,6 +18,8 @@
 #include "../inc/serializable.h"
 #include "../inc/ipcAPI.h"
 
+void sendErrorToParent();
+
 int loadHeadAndCountriesTable(country ***countriesTable, country **head);
 
 int checkConditions(country *data, void *(***conditions)(void *condArgs));
