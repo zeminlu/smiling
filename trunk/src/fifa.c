@@ -117,7 +117,6 @@ int startChildProcesses(country **countriesTable, int countriesTableEntriesAmm, 
 		++j;
 	}
 	setupIPC(countriesTableEntriesAmm / 4);
-	printf("startChildProcesses: antes del for de forks\n");
 	for (j = 0, i = 0 ; i < countriesTableEntriesAmm && j < countriesTableEntriesAmm / 4 ; ++i){
 		if ((countriesTable[i])->isHead){
 			if(((*fixture)[j] = malloc(sizeof(void *) * 4)) == NULL){
@@ -127,7 +126,6 @@ int startChildProcesses(country **countriesTable, int countriesTableEntriesAmm, 
 				}
 				return errno;
 			}
-			printf("startChildProcesses: antes del fork %d\n", j);
 			switch(((*pids)[headsAmm++] = fork())){
 				case -1:
 				perror("Error de fork");
@@ -227,7 +225,6 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 						unserializeCountryStruct(buffer, bufferSize, subFixture[x]);
 						free(buffer);
 						memcpy(fixture[j][x], subFixture[x], sizeof(country));
-						printf("Leyo el pais %d del head %d\n", x, j);
 					}
 					printf("Leyo subfixture de %d\n", j);
 					finished[j] = TRUE;

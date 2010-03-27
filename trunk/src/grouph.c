@@ -227,23 +227,19 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		threadsIndex = 0;
 		threadsRet = calloc(1, sizeof(int) * 4);
 		if (i == 0){
-			fprintf(stderr, "Por seleccionar ReqCountry sin condiciones - Head = %s\n", data->name);
 			noCondition(condArgs);
 
 			if (condArgs->sets[0]->countriesAmm == 0){
 				return -1;
 			}
 			reqCountry = condArgs->sets[0]->country[0];
-			fprintf(stderr, "ReqCountry seleccionado sin condiciones = %d - Head = %s\n", reqCountry, data->name);
 		}
 		else if (i == 1){
-			fprintf(stderr, "Por seleccionar ReqCountry con 1 condicion - Head = %s\n", data->name);
 			ret = conditions[0](condArgs);
 			if (ret == NULL || threadsRet[0] < 0 || condArgs->sets[0]->countriesAmm == 0){
 				return -1;
 			}
 			reqCountry = condArgs->sets[0]->country[((rand() % condArgs->sets[0]->countriesAmm) + getpid()) % condArgs->sets[0]->countriesAmm];
-			fprintf(stderr, "Req country con 1 condicion seleccionado = %d - Head = %s\n", reqCountry, data->name);
 		}
 		else{
 			for (j = 0 ; j < i ; ++j){
@@ -265,11 +261,9 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			
 			sortPointers(condArgs->sets);
 			
-			fprintf(stderr, "Pre Intersect - Head = %s\n", data->name);
 			if (intersect(condAmm, condArgs, &intersection) == -1){
 				return -1;
 			}
-			fprintf(stderr, "Post Intersect - Head = %s\n", data->name);
 						
 			reqCountry = intersection->country[((rand() % intersection->countriesAmm) + getpid()) % intersection->countriesAmm];
 			
@@ -288,7 +282,6 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		writeIPC(getppid(), buffer, bufferSize);
 		
 		free(buffer);
-		fprintf(stderr, "%s mando reqCountry = %d\n", data->name, reqCountry);
 		readIPC(getppid(), &bufferSize, sizeof(int));
 		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL){
 			perror("Error de memoria");
@@ -321,7 +314,6 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 int intersect(int condAmm, condPack *condArgs, set **intersection){
 	set **aux = NULL;
 	int i, j = 0, k = 0, x = 0, y = 0;
-	printf("condAmm = %d, condArgs->head->name = %s\n", condAmm, condArgs->head->name);
 	if ((aux = malloc(sizeof(void *) * condAmm)) == NULL ||
 		(aux[0] = malloc(sizeof(set))) == NULL ||			
 		(aux[0]->country = malloc(sizeof(int *) * ((condArgs->sets)[0])->countriesAmm)) == NULL){
@@ -344,7 +336,6 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 				varFree(2, aux[j], aux);
 				return errno;
 		}
-		printf("Intersect de %s, antes while, con aux[j -1]->amm = %d y condArgs->sets[j]->amm = %d...j = %d\n", condArgs->head->name, aux[j - 1]->countriesAmm, ((condArgs->sets)[j])->countriesAmm, j);
 		
 		x = k = y = 0;
 		while (x < aux[j - 1]->countriesAmm && k < ((condArgs->sets)[j])->countriesAmm) {  
@@ -362,7 +353,6 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 			}  
 		}
 		aux[j]->countriesAmm = y;
-		printf("Intersect de %s, fin vuelta del for...j =  %d\n", condArgs->head->name, j);
 	}
 
 	*intersection = aux[j - 1];	
@@ -370,8 +360,6 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 		varFree(2, aux[i]->country, aux[i]);
 	}
 	free(aux);
-	
-	printf("Intersect de %s, termino\n", condArgs->head->name);
 	
 	return 0;
 }
