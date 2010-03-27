@@ -325,6 +325,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		if (unserializeInteger(buffer, bufferSize) == FALSE){
 			fprintf(stderr, "Respuesta en grouph = %s fue FALSE\n", data->name);
 			countriesTable[reqCountry]->used = TRUE;
+			
 			free(buffer);
 			continue;
 		}

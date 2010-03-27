@@ -6,7 +6,7 @@ int main(){
 
 int filesListener(){
 	DIR *dp;
-	int j, fifa, bufferSize, pid = 0, countriesTableEntriesAmm;
+	int i, j, fifa, bufferSize, pid = 0, countriesTableEntriesAmm;
 	void *buffer = NULL;
 	country **countriesTable = NULL;
 	
@@ -43,15 +43,29 @@ int filesListener(){
 				break;
 		}
 	}
-	synchronize();
-	writeIPC(pid, &countriesTableEntriesAmm, sizeof(int));
+	if (synchronize() != 0){
+		closedir(dp);
+		return -1;
+	}
+	
+	if (writeIPC(pid, &countriesTableEntriesAmm, sizeof(int)) != 0){
+		closedir(dp);
+		return -1;
+	}
 	
 	for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 		printf("Pais: %s - Continente: %d - Campeon: %d - Peso: %d - Same: %d - Death: %d - ChampG: %d - Weak: %d - Cabeza de Serie: %d\n", 
 		countriesTable[j]->name, countriesTable[j]->continent, countriesTable[j]->champ, countriesTable[j]->weight, countriesTable[j]->sameContinent, countriesTable[j]->deathGroup, countriesTable[j]->champGroup, countriesTable[j]->weakGroup, countriesTable[j]->isHead);
 		serializeCountryStruct(&buffer, &bufferSize, countriesTable[j]);
-		writeIPC(pid, &bufferSize, sizeof(int));
-		writeIPC(pid, buffer, bufferSize);
+		if (writeIPC(pid, &bufferSize, sizeof(int)) != 0 || writeIPC(pid, buffer, bufferSize) != 0){
+			for (i = 0 ; i < j ; ++i){
+				free(countriesTable[i]);
+			}
+			free(buffer);
+			finalizeIPC();
+			closedir(dp);
+			return -1;	
+		}
 		varFree(2, buffer, countriesTable[j]);
 	}
 	free(countriesTable);
