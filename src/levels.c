@@ -29,10 +29,17 @@ int proccessLevel( void )
 	curCircuit cur;
 	
 	fprintf(stderr, "proccessLevel -- READING -- MyPID: %d ParentPID:%d\n", getpid(), getppid());
-	readIPC( getppid(), &cur, sizeof(curCircuit));
+	if( readIPC( getppid(), &cur, sizeof(curCircuit)) == -1 )
+	{
+		perror("Error en la lectura de LEVELS a GATE, cur\n");
+		return errno;
+	}
 	fprintf(stderr, "Levels --- curCircuit, My pid: %d Parent pid: %d File: %d Level: %d\n", getpid(), getppid(), cur.curFile, cur.curLevel);
-	fprintf(stderr, "proccessLevel -- READING -- MyPID: %d ParentPID:%d\n", getpid(), getppid());
-	readIPC( getppid(), &qtyGatesCur, sizeof(int));
+	if( readIPC( getppid(), &qtyGatesCur, sizeof(int)) == -1 )
+	{
+		perror("Error en la lectura de GATES a LEVELS #qtyGatesCur\n");
+		return errno;
+	}
 	
 	if( (curLevelTable = malloc( sizeof(gate) * qtyGatesCur)) == NULL )
 	{
@@ -42,15 +49,26 @@ int proccessLevel( void )
 	
 	for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
-		fprintf(stderr, "proccessLevel -- READING -- MyPID: %d ParentPID:%d\n", getpid(), getppid());
-		readIPC( getppid(), &(curLevelTable[i]), sizeof(gate) );
+		if( readIPC( getppid(), &(curLevelTable[i]), sizeof(gate) ) == -1 )
+		{
+			perror("Error en la lectura de las compuertas de Levels\n");
+			return errno;
+		}
 	}
 	
-	fprintf(stderr, "proccessLevel -- READING -- MyPID: %d ParentPID:%d\n", getpid(), getppid());
-	readIPC( getppid(), &first, sizeof(int));
+	if( readIPC( getppid(), &first, sizeof(int)) == -1 )
+	{
+		perror("Error en la lectura de si es el primero o no de Levels\n");
+		return errno;
+	}
 	if( first != 0)
 	{
-		readIPC( getppid(), &qtyGatesPrev, sizeof(int));
+		if( readIPC( getppid(), &qtyGatesPrev, sizeof(int)) == -1 )
+		{
+			perror("Error en la lectura de cantidad de compuertas de previously\n");
+			return errno;
+		}
+	
 		if( (prevLevel = malloc( sizeof(gate) * qtyGatesPrev)) == NULL )
 		{
 			perror("Error en la alocacion de memoria de prevLevel\n");
@@ -59,8 +77,11 @@ int proccessLevel( void )
 		}
 		for( i = 0 ; i < qtyGatesPrev ; ++i )
 		{
-			fprintf(stderr, "proccessLevel -- READING -- MyPID: %d ParentPID:%d\n", getpid(), getppid());
-			readIPC( getppid(), &(prevLevel[i]), sizeof(gate) );
+			if( readIPC( getppid(), &(prevLevel[i]), sizeof(gate) ) == -1 )
+			{
+				perror("Error en la lecturas de las compuertas de prevLevel\n");
+				return errno;
+			}
 		}
 	}
 	
@@ -75,13 +96,18 @@ int proccessLevel( void )
 								curLevelTable[i].input[0],
 								curLevelTable[i].input[1]);
 	}*/
-	
-	fprintf(stderr, "proccessLevel -- WRITING -- MyPID: %d ParentPID:%d\n", getpid(), getppid());
-	writeIPC( getppid(), &cur, sizeof(curCircuit));
+	if( writeIPC( getppid(), &cur, sizeof(curCircuit)) == -1 )
+	{
+		perror("Error en la escritura de LEVELS hacia GATES, cur\n");
+		return errno;
+	}
 	for( i = 0 ; i < qtyGatesCur ; ++i )
 	{
-		fprintf(stderr, "proccessLevel -- WRITING -- MyPID: %d ParentPID:%d\n", getpid(), getppid());
-		writeIPC( getppid(), &(curLevelTable[i]), sizeof(gate) );
+		if( writeIPC( getppid(), &(curLevelTable[i]), sizeof(gate) ) == -1 )
+		{
+			perror("Error en la escritura de LEVELS a GATES, cada compuerta\n");
+			return errno;
+		}
 	}
 	if( first != 0 )
 		free(prevLevel);	
