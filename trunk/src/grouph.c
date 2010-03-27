@@ -89,8 +89,14 @@ void sendErrorToParent(){
 	int bufferSize;
 	
 	serializeInteger(&buffer, &bufferSize, -2);
-	writeIPC(getppid(), &bufferSize, sizeof(int));
-	writeIPC(getppid(), &buffer, bufferSize);
+	if(writeIPC(getppid(), &bufferSize, sizeof(int)) == -1){
+		fprintf(stderr,"Error de escritura");
+		return;	
+	}
+	if(writeIPC(getppid(), &buffer, bufferSize) == -1){
+		fprintf(stderr,"Error de escritura");
+		return;
+	}
 	free(buffer);
 	
 	return;
@@ -100,7 +106,10 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 	int countriesTableEntriesAmm, i, j, bufferSize;
 	void *buffer;
 	
-	readIPC(getppid(), &countriesTableEntriesAmm, sizeof(int));
+	if(readIPC(getppid(), &countriesTableEntriesAmm, sizeof(int))==-1){
+		fprintf(stderr,"Error en la lectura");
+		return -1;
+	}
 		
 	if (((*countriesTable) = malloc(sizeof(void *) * countriesTableEntriesAmm)) == NULL){
 		perror("Error de memoria");
@@ -109,7 +118,10 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 	
 	for (i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		
-		readIPC(getppid(), &bufferSize, sizeof(int));
+		if(readIPC(getppid(), &bufferSize, sizeof(int))==-1){
+			fprintf(stderr,"Error en la lectura");
+			return -1;
+		}
 		
 		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL || ((*countriesTable)[i] = malloc(sizeof(country))) == NULL){
 			perror("Error de memoria");
@@ -120,12 +132,18 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 			return errno;
 		}
 		
-		readIPC(getppid(), buffer, bufferSize);
+		if(readIPC(getppid(), buffer, bufferSize)==-1){
+			fprintf(stderr,"Error en la lectura");
+			return -1;
+		}
 		unserializeCountryStruct(buffer, bufferSize, (*countriesTable)[i]);
 		free(buffer);		
 	}
 	
-	readIPC(getppid(), &bufferSize, sizeof(int));
+	if(readIPC(getppid(), &bufferSize, sizeof(int))==-1){
+		fprintf(stderr,"Error en la lectura");
+		return -1;
+	}
 	
 	if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL || ((*head) = malloc(sizeof(country))) == NULL){
 		perror("Error de memoria");
@@ -135,7 +153,10 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 		varFree(2, (*countriesTable), buffer);
 		return errno;
 	}
-	readIPC(getppid(), buffer, bufferSize);
+	if(readIPC(getppid(), buffer, bufferSize)==-1){
+		fprintf(stderr,"Error en la lectura");
+		return -1;
+	}
 	unserializeCountryStruct(buffer, bufferSize, *head);
 	free(buffer);
 	
@@ -277,19 +298,30 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		
 		serializeInteger(&buffer, &bufferSize, reqCountry);
 		
-		writeIPC(getppid(), &bufferSize, sizeof(int));
-		
-		writeIPC(getppid(), buffer, bufferSize);
+		if(writeIPC(getppid(), &bufferSize, sizeof(int))==-1){
+			fprintf(stderr, "Error en la escritura");
+			return -1;
+		}
+		if(writeIPC(getppid(), buffer, bufferSize) ==-1){
+			fprintf(stderr, "Error en la escritura");
+			return -1;
+		}
 		
 		free(buffer);
-		readIPC(getppid(), &bufferSize, sizeof(int));
+		if(readIPC(getppid(), &bufferSize, sizeof(int)) == -1){
+			fprintf(stderr, "Erro en la lectura");
+			return -1;
+		}
 		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL){
 			perror("Error de memoria");
 			free(threads);
 			return errno;
 		}
 		fprintf(stderr, "Esperando respuesta en grouph = %s\n", data->name);
-		readIPC(getppid(), buffer, bufferSize);
+		if(readIPC(getppid(), buffer, bufferSize) == -1){
+			fprintf(stderr, "Error en la lectura");
+			return -1;
+		}
 		if (unserializeInteger(buffer, bufferSize) == FALSE){
 			fprintf(stderr, "Respuesta en grouph = %s fue FALSE\n", data->name);
 			countriesTable[reqCountry]->used = TRUE;
@@ -369,15 +401,27 @@ int sendSubfixture(subFixture *group){
 	void *buffer;
 	
 	serializeInteger(&buffer, &bufferSize, -1);
-	writeIPC(getppid(), &bufferSize, sizeof(int));
-	writeIPC(getppid(), buffer, bufferSize);
+	if(writeIPC(getppid(), &bufferSize, sizeof(int)) == -1){
+		fprintf(stderr, "Error en la escritura");
+		return -1;
+	}
+	if(writeIPC(getppid(), buffer, bufferSize) == -1){
+		fprintf(stderr, "Error en la escritura");
+		return -1;
+	}
 	free(buffer);
 	
 	for (i = 0 ; i < 4 ; ++i){
 		printf("Por mandar pais %d...\n", i);
 		serializeCountryStruct(&buffer, &bufferSize, group->countries[i]);
-		writeIPC(getppid(), &bufferSize, sizeof(int));
-		writeIPC(getppid(), buffer, bufferSize);
+		if(writeIPC(getppid(), &bufferSize, sizeof(int)) == -1){
+			fprintf(stderr,"Error en la escritura");
+			return -1;
+		}
+		if(writeIPC(getppid(), buffer, bufferSize) == -1){
+			fprintf(stderr, "Erro en la escritura");
+			return -1;
+		}
 		free(buffer);
 		printf("...Mando pais %d\n", i);
 	}
