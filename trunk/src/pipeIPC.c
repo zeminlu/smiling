@@ -125,12 +125,8 @@ int loadIPC(){
 	sigset_t mask, oldmask;
 	int ownID[2];
 	pid_t pid;
-	char pidString[10];
+	char pidString[20];
 	
-	pid = getpid();
-	signal(SIGALRM, sigHandler);
-	sigemptyset (&mask);
-	sigaddset (&mask, SIGALRM);
 	if (read(_stdin_, &(ownID[0]), sizeof(int)) != sizeof(int)){
 		perror("IPCAPI: loadIPC 1 - Error en primitiva write");
 		return -1;
@@ -144,6 +140,11 @@ int loadIPC(){
 		perror("IPCAPI: loadIPC - Error en primitiva write");
 		return -1;	
 	}
+	
+	pid = getpid();
+	signal(SIGALRM, sigHandler);
+	sigemptyset (&mask);
+	sigaddset (&mask, SIGALRM);
 	
 	sigprocmask (SIG_BLOCK, &mask, &oldmask);
     while (!flag){
