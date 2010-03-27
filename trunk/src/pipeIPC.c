@@ -98,7 +98,7 @@ int synchronize(){
 		}
 		itoa(pid[i], pidString);
 		if (hashInsert(&hashTable, ids, pidString, 0) == NULL){
-			fprintf(stderr, "Error en el insert de la tabla de hash en synchronize\n");
+			fprintf(stderr, "Error en el insert de la tabla de hash en synchronize, invocado con ids[0] = %d, ids[1] = %d y pidString = %s\n", ids[0], ids[1], pidString);
 			return -1;
 		}
 	}
