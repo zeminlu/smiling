@@ -127,19 +127,30 @@ int loadIPC(){
 	pid_t pid;
 	char pidString[20];
 	
+	fprintf(stderr, "Entro a loadIPC, pid = %d\n", getpid());
+	
 	if (read(_stdin_, &(ownID[0]), sizeof(int)) != sizeof(int)){
 		perror("IPCAPI: loadIPC 1 - Error en primitiva write");
 		return -1;
 	}
+	
+	fprintf(stderr, "Post first read, pid = %d\n", getpid());
+	
 	if (read(_stdin_, &(ownID[1]), sizeof(int)) != sizeof(int)){
 		perror("IPCAPI: loadIPC 2- Error en primitiva read");
 		return -1;
 	}
-	fprintf(stderr, "ownID: %d\n", ownID[1]);
+	
+	fprintf(stderr, "Post second read, pid = %d\n", getpid());
+	
+	fprintf(stderr, "ownID[0]: %d, ownID[1] = %d\n", ownID[0], ownID[1]);
 	if (write(ownID[1], &pid, sizeof(pid_t)) != sizeof(pid_t)){
 		perror("IPCAPI: loadIPC - Error en primitiva write");
 		return -1;	
 	}
+	
+	fprintf(stderr, "Post write, por dormir, pid = %d\n", getpid());
+	
 	
 	pid = getpid();
 	signal(SIGALRM, sigHandler);
@@ -154,15 +165,22 @@ int loadIPC(){
 	
 	close(_stdin_);
 	
+	fprintf(stderr, "Antes de crear la tabla de hash, pid = %d\n", getpid());
+	
 	if ((hashTable = hashCreateTable(10, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "Error creando tabla de hash en loadIPC\n");
 		return -1;
 	}
 	itoa(getppid(), pidString);
+	
+	fprintf(stderr, "Antes del insert en la tabla, pid = %d\n", getpid());
+	
 	if (hashInsert(&hashTable, ownID, pidString, 0) == NULL){
 		fprintf(stderr, "Error insertando en tabla de hash en loadIPC\n");
 		return -1;
 	}
+	
+	fprintf(stderr, "Salio de loadIPC, pid = %d\n", getpid());
 	
 	return 0;
 }
