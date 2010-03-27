@@ -28,7 +28,11 @@ int setupIPC(int channels){
 	
 	FD_ZERO(master);
 	
-	data = open(fileName, O_WRONLY | O_CREAT, 0644);
+	if ((data = open(fileName, O_WRONLY | O_CREAT, 0644)) < 0){
+		perror("Error abriendo archivo en setupIPC");
+		varFree(2, master, slave);
+		return -1;
+	}
 		
 	ipcIDs = malloc (sizeof(void *) * channels);
 	for (i = 0 ; i < channels ; ++i){
@@ -37,26 +41,32 @@ int setupIPC(int channels){
 		ipcIDs[i][1] = malloc(sizeof(int) * 2);
 		if (pipe(ipcIDs[i][0]) == -1){
 			perror("IPCAPI: Error en pipe");
+			varFree(2, master, slave);
 			return -1;
 		}
 		if (write(data, &ipcIDs[i][0][0], sizeof(int)) != sizeof(int)){
 			perror("IPCAPI: Setup1 - Error en primitiva write");
+			varFree(2, master, slave);
 			return -1;
 		}
 		if (pipe(ipcIDs[i][1]) == -1){
 			perror("IPCAPI: Error en pipe");
+			varFree(2, master, slave);
 			return -1;	
 		}
 		fprintf(stderr, "setupIPC - ipcIDs[i][1][1]: %d\n", ipcIDs[i][1][1]);
 		if (write(data, &ipcIDs[i][1][1], sizeof(int)) != sizeof(int)){
 			perror("IPCAPI: Setup2 - Error en primitiva write");
+			varFree(2, master, slave);
 			return -1;
 		}
 		FD_SET(ipcIDs[i][1][0], master);
 	}
 	clientsAmm = channels;
 	close(data);
-	info = open(fileName, O_RDONLY);
+	if ((info = open(fileName, O_RDONLY)) < 0){
+		return info;
+	}
 	
 	return 0;
 }
@@ -74,7 +84,10 @@ int synchronize(){
 		return -1;
 	}
 	
-	pid = malloc(sizeof(int) * clientsAmm);
+	if ((pid = malloc(sizeof(int) * clientsAmm)) == NULL){
+		perror("Error de memoria en synchronize");
+		return errno;
+	}
 	
 	for (i = 0 ; i < clientsAmm ; ++i){
 		ids[0] = ipcIDs[i][1][0];
@@ -84,7 +97,10 @@ int synchronize(){
 			return -1;
 		}
 		itoa(pid[i], pidString);
-		hashInsert(&hashTable, ids, pidString, 0);
+		if (hashInsert(&hashTable, ids, pidString, 0) == NULL){
+			fprintf(stderr, "Error en el insert de la tabla de hash en synchronize\n");
+			return -1;
+		}
 	}
 	
 	for (i = 0 ; i < clientsAmm ; ++i){
@@ -137,9 +153,15 @@ int loadIPC(){
 	
 	close(_stdin_);
 	
-	hashTable = hashCreateTable(1, freeIPCID, compareIPCIDs, copyIPCID);
+	if ((hashTable = hashCreateTable(1, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
+		fprintf(stderr, "Error creando tabla de hash en loadIPC\n");
+		return -1;
+	}
 	itoa(getppid(), pidString);
-	hashInsert(&hashTable, ownID, pidString, 0);
+	if (hashInsert(&hashTable, ownID, pidString, 0) == NULL){
+		fprintf(stderr, "Error insertando en tabla de hash en loadIPC\n");
+		return -1;
+	}
 	
 	return 0;
 }
