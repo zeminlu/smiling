@@ -131,19 +131,12 @@ int loadIPC(){
 
 	pid = getpid();
 	
-	if (read(_stdin_, &(ownID[0]), sizeof(int)) != sizeof(int)){
+	if (read(_stdin_, ownID, sizeof(int) * 2) != sizeof(int) * 2){
 		perror("IPCAPI: loadIPC 1 - Error en primitiva write");
 		return -1;
 	}
 	
 	fprintf(stderr, "Post first read, pid = %d\n", getpid());
-	
-	if (read(_stdin_, &(ownID[1]), sizeof(int)) != sizeof(int)){
-		perror("IPCAPI: loadIPC 2- Error en primitiva read");
-		return -1;
-	}
-	
-	fprintf(stderr, "Post second read, pid = %d\n", getpid());
 	
 	fprintf(stderr, "ownID[0]: %d, ownID[1] = %d\n", ownID[0], ownID[1]);
 	if (write(ownID[1], &pid, sizeof(pid_t)) != sizeof(pid_t)){
@@ -152,7 +145,6 @@ int loadIPC(){
 	}
 	
 	fprintf(stderr, "Post write, por dormir, pid = %d\n", getpid());
-	
 	
 	signal(SIGALRM, sigHandler);
 	sigemptyset (&mask);
