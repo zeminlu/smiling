@@ -79,7 +79,7 @@ int synchronize(){
 	int i, *pid, ids[2];
 	char pidString[20], fileName[20], *nameStart = "./";
 	
-	if ((hashTable = hashCreateTable(clientsAmm, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
+	if ((hashTable = hashCreateTable(clientsAmm * 4, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "Error al crear la tabla de hash\n");
 		return -1;
 	}
@@ -153,7 +153,7 @@ int loadIPC(){
 	
 	close(_stdin_);
 	
-	if ((hashTable = hashCreateTable(1, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
+	if ((hashTable = hashCreateTable(10, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "Error creando tabla de hash en loadIPC\n");
 		return -1;
 	}
