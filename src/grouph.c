@@ -106,7 +106,7 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 	int countriesTableEntriesAmm, i, j, bufferSize;
 	void *buffer;
 	
-	if(readIPC(getppid(), &countriesTableEntriesAmm, sizeof(int))==-1){
+	if(readIPC(getppid(), &countriesTableEntriesAmm, sizeof(int)) == -1){
 		fprintf(stderr,"Error en la lectura");
 		return -1;
 	}
