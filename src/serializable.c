@@ -42,6 +42,8 @@ int serializeInteger(void **buffer, int *bufferSize, int number){
 	tpl_node *tn;
 	int ret = 0;
 	
+	printf("<---------SERIALIZANDO ENTERO = .oO¡¡¡<%d>!!!Oo.--------->\n", number);
+	
 	tn = tpl_map("i#", &number, 1);
 	tpl_pack(tn, 0);
 	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
