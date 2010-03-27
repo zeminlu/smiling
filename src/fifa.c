@@ -6,12 +6,12 @@ int main (void){
 	country ***fixture = NULL, **countriesTable = NULL;
 	
 	loadIPC();
-	
+	printf("Pre loadcountriestable\n");
 	if ((countriesTableEntriesAmm = loadCountriesTable(&countriesTable)) < 0){
 		fprintf(stderr, "Error en loadCountriesTable\n");
 		return countriesTableEntriesAmm;
 	}
-	
+	printf("Pre mallocs gays\n");
 	if ((pids = malloc(sizeof(pid_t) * countriesTableEntriesAmm)) == NULL || (fixture = malloc(sizeof(void *) * countriesTableEntriesAmm / 4)) == NULL){
 		perror("Error de memoria");
 		/*for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
@@ -21,7 +21,7 @@ int main (void){
 		
 		return errno;
 	}
-	
+	printf("Pre startChildProcesses\n");
 	if ((status = startChildProcesses(countriesTable, countriesTableEntriesAmm, &fixture, &pids)) != 0){
 		fprintf(stderr, "Error en startChildprocesses\n");
 		/*for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
@@ -31,7 +31,7 @@ int main (void){
 		
 		return status;
 	}
-		
+	printf("Pre childsListener\n");	
 	if ((status = childsListener(pids, countriesTable, countriesTableEntriesAmm, fixture)) != 0){
 		fprintf(stderr, "Error en childslistener\n");
 		if (status == -1){
@@ -50,9 +50,9 @@ int main (void){
 		
 		return status;
 	}
-	
+	printf("Pre finalizeIPC\n");
 	finalizeIPC();
-	
+	printf("TODO JOYA!\n");
 	/*
 	Guardar a archivo la solucion
 	*/
@@ -110,16 +110,14 @@ int loadCountriesTable(country ***countriesTable){
 int startChildProcesses(country **countriesTable, int countriesTableEntriesAmm, country ****fixture, pid_t **pids){
 	int i, j, headsAmm = 0, bufferSize;
 	void *buffer;
-	
 	for (j = 0, i = 0 ; i < countriesTableEntriesAmm && j < countriesTableEntriesAmm / 4 ; ++i){
 		if ((countriesTable[i])->isHead){
 			countriesTable[i]->used = TRUE;
 		}
 		++j;
 	}
-	
 	setupIPC(countriesTableEntriesAmm / 4);
-	
+	printf("startChildProcesses: antes del for de forks\n");
 	for (j = 0, i = 0 ; i < countriesTableEntriesAmm && j < countriesTableEntriesAmm / 4 ; ++i){
 		if ((countriesTable[i])->isHead){
 			if(((*fixture)[j] = malloc(sizeof(void *) * 4)) == NULL){
@@ -129,7 +127,7 @@ int startChildProcesses(country **countriesTable, int countriesTableEntriesAmm, 
 				}
 				return errno;
 			}
-
+			printf("startChildProcesses: antes del fork %d\n", j);
 			switch(((*pids)[headsAmm++] = fork())){
 				case -1:
 				perror("Error de fork");
@@ -145,23 +143,26 @@ int startChildProcesses(country **countriesTable, int countriesTableEntriesAmm, 
 			++j;
 		}
 	}
-	
+	printf("startChildProcesses: antes del synchronize\n");
 	synchronize();
-	
+	printf("startChildProcesses: antes del for que manda la tabla a todos los hijos\n");
 	for (i = 0 ; i < countriesTableEntriesAmm / 4 ; ++i){
+		printf("startChildProcesses: antes del write de la cantidad de paises en la tabla, groupH = %d\n", i);
 		writeIPC((*pids)[i], &countriesTableEntriesAmm, sizeof(int));
+		printf("startChildProcesses: antes del for que manda cada pais de la tabla, groupH = %d\n", i);
 		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			serializeCountryStruct(&buffer, &bufferSize, countriesTable[j]);
 			writeIPC((*pids)[i], &bufferSize, sizeof(int));
 			writeIPC((*pids)[i], buffer, bufferSize);
 			free(buffer);
 		}
+		printf("startChildProcesses: antes de mandar el Head a groupH, groupH = %d\n", i);
 		serializeCountryStruct(&buffer, &bufferSize, countriesTable[i]);
 		writeIPC((*pids)[i], &bufferSize, sizeof(int));
 		writeIPC((*pids)[i], buffer, bufferSize);
 		free(buffer);
 	}
-	
+	printf("startChildProcesses: antes del return\n");
 	return 0;
 }
 
