@@ -128,6 +128,8 @@ int loadIPC(){
 	char pidString[20];
 	
 	fprintf(stderr, "Entro a loadIPC, pid = %d\n", getpid());
+
+	pid = getpid();
 	
 	if (read(_stdin_, &(ownID[0]), sizeof(int)) != sizeof(int)){
 		perror("IPCAPI: loadIPC 1 - Error en primitiva write");
@@ -152,7 +154,6 @@ int loadIPC(){
 	fprintf(stderr, "Post write, por dormir, pid = %d\n", getpid());
 	
 	
-	pid = getpid();
 	signal(SIGALRM, sigHandler);
 	sigemptyset (&mask);
 	sigaddset (&mask, SIGALRM);
