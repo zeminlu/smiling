@@ -51,8 +51,8 @@ int serializeInteger(void **buffer, int *bufferSize, int number){
 	*/
 	
 	*buffer = malloc(sizeof(int));
-	**buffer = number;
-	*buffersize = sizeof(int);
+	**((int **)buffer) = number;
+	*bufferSize = sizeof(int);
 	
 	return ret;
 }
@@ -69,5 +69,5 @@ int unserializeInteger(void *buffer, int bufferSize){
 	return ret;
 	*/
 	
-	return (int)(*buffer);
+	return *((int*)(buffer));
 }
