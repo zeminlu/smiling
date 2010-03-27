@@ -571,7 +571,7 @@ int startCircuitsPipeline( circuitTable **table, pid_t **childPids, int qtyFiles
 	}
 	
 	synchronize();
-	fprintf(stderr, "Acabo de sincronizar\n");
+	fprintf(stderr, "Acabo de sincronizar con el hijo\n");
 	for (i = 0 ; i < qtyFiles ; ++i)
 	{
 		if( levels[i] < maxLevel[i] && levels[i] >= 0 && (*childPids)[i] != -1 )
