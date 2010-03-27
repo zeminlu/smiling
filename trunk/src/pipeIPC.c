@@ -35,7 +35,7 @@ int setupIPC(int channels){
 		ipcIDs[i] = malloc(sizeof(void *) * 2);
 		ipcIDs[i][0] = malloc(sizeof(int) * 2);
 		ipcIDs[i][1] = malloc(sizeof(int) * 2);
-		if (pipe(ipcIDs[i][0]) != 0){
+		if (pipe(ipcIDs[i][0]) == -1){
 			perror("IPCAPI: Error en pipe");
 			return -1;
 		}
@@ -43,7 +43,7 @@ int setupIPC(int channels){
 			perror("IPCAPI: Setup1 - Error en primitiva write");
 			return -1;
 		}
-		if (pipe(ipcIDs[i][1]) != 0){
+		if (pipe(ipcIDs[i][1]) == -1){
 			perror("IPCAPI: Error en pipe");
 			return -1;	
 		}
@@ -147,10 +147,13 @@ int loadIPC(){
 int readIPC(pid_t pid, void *buffer, int bufferSize){
 	int *ipcID;
 	unsigned int hkey;
-	char pidString[10];
+	char pidString[20];
 	
 	itoa(pid, pidString);
-	ipcID = hashSearch(hashTable, pidString, &hkey);
+	if ((ipcID = hashSearch(hashTable, pidString, &hkey)) == NULL){
+		fprintf(stderr, "Error en hashSearch de readIPC, invocaco con pid = %s\n", pidString);
+		return -1;
+	}
 	
 	if (read(ipcID[0], buffer, bufferSize) != bufferSize){
 		perror("IPCAPI: readIPC - Error en primitiva read");
@@ -164,15 +167,21 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	int *ipcID;
 	unsigned int hkey;
-	char pidString[10];
+	char pidString[20];
 	
 	itoa(pid, pidString);
-	ipcID = hashSearch(hashTable, pidString, &hkey);
-
+	printf("Antes del hashSearch, con pidString = %s\n", pidString);
+	if ((ipcID = hashSearch(hashTable, pidString, &hkey)) == NULL){
+		fprintf(stderr, "Error en hashSearch de writeIPC, invocado con pid = %s\n", pidString);
+		return -1;
+	}
+	printf("Despues del hashSearch, por hace write en ipcID = %d\n", ipcID[1]);
+	
 	if (write(ipcID[1], buffer, bufferSize) != bufferSize){
 		perror("IPCAPI: writeIPC - Error en primitiva write");
 		return -1;
 	}
+	printf("Después del write\n");
 	free(ipcID);
 	
 	return 0;
