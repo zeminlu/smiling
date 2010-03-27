@@ -11,6 +11,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <wait.h>
 
 #include "../inc/definitions.h"
 #include "../inc/types.h"
