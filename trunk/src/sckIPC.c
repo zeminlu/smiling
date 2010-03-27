@@ -1,4 +1,4 @@
-#include "../inc/sckIPC.h"
+ #include "../inc/sckIPC.h"
 
 int clientsAmm = 0, flag = FALSE, sockfd, info;
 hashTableADT hashTable = NULL;
@@ -17,9 +17,9 @@ int setupIPC(int channels){
 	int data;
 	
 	itoa (getpid(), pid);
-	strcpy(fileName, nameStart);
+	/*strcpy(fileName, nameStart);*/
 	strcpy(socketFileName, socketNameStart);
-	strcat(fileName, pid);
+	/*strcat(fileName, pid);*/
 	strcat(socketFileName, pid);
 	
 	if ((master = malloc(sizeof(fd_set))) == NULL || (slave = malloc(sizeof(fd_set))) == NULL){
@@ -33,30 +33,31 @@ int setupIPC(int channels){
 	
 	FD_ZERO(master);
 	
-	data = open(fileName, O_WRONLY | O_CREAT, 0644);
+	/*data = open(fileName, O_WRONLY | O_CREAT, 0644);*/
 		
 	if ((sockfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1){
 		perror("Error en llamada a socket");
 		return errno;
 	}
 	
-	if (bind(sockfd, (struct sockaddr *)&address, SUN_LEN(&address)) == -1){
+	if (bind(sockfd, (struct sockaddr *)&address, sizeof(struct sockaddr_un)) == -1){
 		perror("Error en llamada a bind");
 		return errno;
 	}
 	
-	for (i = 0 ; i < channels ; ++i){
+	/*for (i = 0 ; i < channels ; ++i){
 		write(data, &sockfd, sizeof(int));
-	}
+	}*/
 	clientsAmm = channels;
-	close(data);
-	info = open(fileName, O_RDONLY);
+	/*close(data);
+	info = open(fileName, O_RDONLY);*/
 	
 	return 0;
 }
 
 int addClient(){
-	return dup2(info, 0);
+	/*return dup2(info, 0);*/
+	return 0;
 }
 
 int synchronize(){
@@ -122,14 +123,14 @@ int loadIPC(){
 	signal(SIGALRM, sigHandler);
 	sigemptyset (&mask);
 	sigaddset (&mask, SIGALRM);
-	read(_stdin_, &ownID, sizeof(int));
+	/*read(_stdin_, &ownID, sizeof(int));*/
 	
-	if (connect(sockfd, (struct sockaddr *) &address, SUN_LEN(&address)) == -1){
+	if (connect(sockfd, (struct sockaddr *) &address, sizeof(struct sockaddr_un)) == -1){
 		perror("Error en llamada a connect");
 		return errno;
 	}
 	
-	write(sockfd, &pid, sizeof(pid_t));
+	send(sockfd, &pid, sizeof(pid_t), 0);
 	
 	sigprocmask (SIG_BLOCK, &mask, &oldmask);
     while (!flag){
@@ -213,7 +214,7 @@ int finalizeIPC(){
 		hashFreeTable(hashTable);
 	}
 	
-	unlink(socketFileName);
+	/*unlink(socketFileName);*/
 	
 	return 0;
 }
