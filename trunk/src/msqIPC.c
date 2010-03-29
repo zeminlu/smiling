@@ -15,11 +15,7 @@ void sigHandler (int signum){
 int init_queue(int newKey){
 	int queue_id;
 		
-	queue_id = msgget((key_t)(newKey), IPC_CREAT | QPERM);
-	if(queue_id == -1){
-	  return -1;
-	} 
-	return queue_id;
+	return msgget((key_t)(newKey), IPC_CREAT | QPERM);
 }
 
 int setupIPC(int channels){
@@ -168,11 +164,11 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	int mlen, *ipcID;
 	unsigned int hkey;
 	msQ entry;
-	char pidString[10];
+	char pidString[20];
 	
 	itoa(pid, pidString);
 	if((ipcID = hashSearch(hashTable, pidString, &hkey)) == NULL){
-		fprintf(stderr, "Error al insertar en la tabla de hash\n");
+		fprintf(stderr, "Error al buscar en la tabla de hash en readIPC\n");
 		return -1;
 	}
 	
@@ -202,7 +198,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	
 	itoa(pid, pidString);
 	if((ipcID = hashSearch(hashTable, pidString, &hkey)) == NULL){
-		fprintf(stderr, "Error al buscar en la  tabla de hash\n");
+		fprintf(stderr, "Error al buscar en la  tabla de hash en writeIPC\n");
 		return -1;
 	}
 	entry.mtype = ipcID[1];	
