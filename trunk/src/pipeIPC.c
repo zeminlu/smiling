@@ -267,7 +267,7 @@ int finalizeIPC(){
 }
 
 int compareIPCIDs(void *elem1, void *elem2){
-	return (((int *)elem1)[0] == ((int *)elem1)[0] && ((int *)elem1)[1] == ((int *)elem2)[1]);
+	return (((int *)elem1)[0] == ((int *)elem2)[0] && ((int *)elem1)[1] == ((int *)elem2)[1]);
 }
 
 void * copyIPCID(void *elem){
