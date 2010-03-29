@@ -12,9 +12,7 @@ void sigHandler (int signum){
 }
 
 int setupIPC(int channels){
-	int i;
-	char pid[20], fileName[20], *nameStart = "./", *socketNameStart = "./socket-";
-	int data;
+	char pid[20], *socketNameStart = "./socket-";
 	
 	itoa (getpid(), pid);
 	/*strcpy(fileName, nameStart);*/
@@ -81,7 +79,6 @@ int synchronize(){
 			perror("Error en llamada a accept");
 			continue;
 		}
-		
 		recv(newsockfd, &(pid[i]), sizeof(pid_t), 0);
 		itoa(pid[i], pidString);
 		hashInsert(&hashTable, &newsockfd, pidString, 0);
@@ -104,8 +101,8 @@ int synchronize(){
 
 int loadIPC(){
 	sigset_t mask, oldmask;
-	int ownID;
 	pid_t pid;
+	int acc = 0;
 	char pidString[20], *socketNameStart = "./socket-";
 	
 	if ((sockfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1){
@@ -125,10 +122,14 @@ int loadIPC(){
 	sigaddset (&mask, SIGALRM);
 	/*read(_stdin_, &ownID, sizeof(int));*/
 	
-	if (connect(sockfd, (struct sockaddr *) &address, sizeof(struct sockaddr_un)) == -1){
-		perror("Error en llamada a connect");
-		return errno;
+	fprintf(stderr, "Por hacer connect con pid = %d\n", pid);
+	while (usleep(60), (acc += 60) < 1000 && connect(sockfd, (struct sockaddr *) &address, sizeof(struct sockaddr_un)) == -1){
+		if (errno != ECONNREFUSED ){
+			perror("Error en llamada a connect");
+			return errno;
+		}
 	}
+	fprintf(stderr, "Hizo connect con pid = %d\n", pid);
 	
 	send(sockfd, &pid, sizeof(pid_t), 0);
 	
