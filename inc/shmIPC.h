@@ -30,8 +30,6 @@ typedef struct{
 	int sWriteOff;
 	int cReadOff;
 	int cWriteOff;
-	int semA;
-	int semB;
 } shmHeader;
 
 typedef struct{
@@ -40,9 +38,17 @@ typedef struct{
 	int *write;
 	int *otherRead;
 	int *otherWrite;
-	int semA;
-	int semB;
-	} shmElem;
+	sem_t *semA;
+	sem_t *semB;
+} shmElem;
+
+sem_t * initmutex(char *semName);
+
+int initShMem(int newKey);
+
+sem_t * initSem(int pid, shmElem *aux);
+
+int initHeaders();
 
 int compareIPCIDs(void *elem1, void *elem2);
 

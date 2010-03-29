@@ -20,7 +20,7 @@
 #define		_FORK_ERROR_	-1
 #define		_FORK_SON_		0
 
-#define		_SHMEM_SEG_SIZE_ 8000
+#define		_SHM_SEG_SIZE_ 8000
 
 
 /* Gates */
