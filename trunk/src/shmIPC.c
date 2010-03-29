@@ -1,4 +1,4 @@
-#include "../inc/msqIPC.h"
+#include "../inc/shmIPC.h"
 
 int shmemId= 0;
 void *shmemStart;
@@ -13,19 +13,19 @@ void sigHandler (int signum){
 }
 
 
-int initmutex(char *semName)
+sem_t * initmutex(char *semName)
 {
-	int sd;
+	sem_t *sd;
 	
 	if ( !(sd = sem_open(semName, O_RDWR|O_CREAT, 0666, 1)) ){
 		perror("Error en llamada a sem_open");
-		return errno;
+		return NULL;
 	}
 	return sd;
 }
 
 int initShMem(int newKey){	
-	shmemId = shmget((key_t)(newKey), clientsAmm * (_SHMEM_SEG_SIZE_ + sizeof(shmHeader)), IPC_CREAT | 0644);
+	shmemId = shmget((key_t)(newKey), clientsAmm * (_SHM_SEG_SIZE_ + sizeof(shmHeader)), IPC_CREAT | 0644);
 	if(shmemId == -1){
 		perror("Error en llamada a shmget");
 		return errno;
@@ -33,38 +33,41 @@ int initShMem(int newKey){
 	return shmemId;
 }
 
-int initSem(int pid, shmHeader *aux){
+sem_t * initSem(int pid, shmElem *aux){
+	char semString[20], pidString[20];
+	
 	strcpy(semString, "SEMA-");
 	itoa(pid, pidString);
 	strcat(semString, pidString);
-	if ((aux->semA = initmutex(semString)) < 0){
+	if ((aux->semA = initmutex(semString)) == NULL){
 		return aux->semA;
 	}
 	strcpy(semString, "SEMB-");
 	itoa(pid, pidString);
 	strcat(semString, pidString);
-	if ((aux->semB = initmutex(semString)) < 0){
+	if ((aux->semB = initmutex(semString)) == NULL){
 		return aux->semB;
 	}
 	
 	return 0;
 }
 
-int initHeaders(pid_t *pids){
+int initHeaders(){
 	int i;
 	shmHeader aux;
-	char semString[20], pidString[20];
 	
 	for (i = 0 ; i < clientsAmm ; ++i){
-		aux.startPos = shmemStart + sizeof(shmHeader) * clientsAmm + i * _SHM_SEG_SIZE_;
+		aux.startPos = (char *)shmemStart + (sizeof(shmHeader) * clientsAmm + i * _SHM_SEG_SIZE_);
 		aux.cReadOff = aux.cWriteOff = aux.sWriteOff = aux.sReadOff = 0;
-		aux.semA = aux.semB = aux.pid = -1;
-		memcpy(shmemStart + i * sizeof(shmHeader), &aux, sizeof(shmHeader));
+		aux.pid = -1;
+		memcpy((char *)shmemStart + (i * sizeof(shmHeader)), &aux, sizeof(shmHeader));
 	}
+	
+	return 0;
 }
 
 int setupIPC(int channels){
-	int i,j, data, aux, key, status;
+	int i, data, aux, key, status;
 	char pid[20], fileName[20], *nameStart = "./";
 	
 	key = getpid();
@@ -74,7 +77,7 @@ int setupIPC(int channels){
 	strcpy(fileName, nameStart);
 	strcat(fileName, pid);
 	
-	if ((status = initdShMem(key)) < 0){
+	if ((status = initShMem(key)) < 0){
 		return status;
 	}
 	
@@ -90,7 +93,7 @@ int setupIPC(int channels){
 	}
 	
 	for (i = 0 ; i < channels ; ++i){
-		aux = write(data, &shmId, sizeof(key_t));
+		aux = write(data, &shmemId, sizeof(key_t));
 		aux = write(data, &i, sizeof(int));
 	}
 
@@ -106,7 +109,7 @@ int addClient(){
 }
 
 int synchronize(){
-	int i,j, ids[2], mlen, flag;
+	int i, flag;
 	pid_t *pid;
 	char pidString[20], fileName[20], *nameStart = "./";
 	shmHeader *auxHead;
@@ -127,7 +130,7 @@ int synchronize(){
 	while (!flag){
 		flag = TRUE;
 		for (i = 0 ; i < clientsAmm ; ++i){
-			auxHead = shmemStart + i * sizeof(shmHeader);
+			auxHead = (shmHeader *)((char *)shmemStart + (i * sizeof(shmHeader)));
 			if (auxHead->pid == -1){
 				flag = FALSE;
 			}
@@ -135,19 +138,17 @@ int synchronize(){
 	}
 	
 	for (i = 0 ; i < clientsAmm ; ++i){
-		auxHead = shmemStart + i * sizeof(shmHeader);
-		if (initSem(pid[i] = auxHead->pid, auxHead) < 0){
+		auxHead = (shmHeader *)((char *)shmemStart + (i * sizeof(shmHeader)));
+		if (initSem(pid[i] = auxHead->pid, &entry) == NULL){
 			return -1;
 		}
 		itoa(pid[i], pidString);
-		entry->index = i;
-		entry->read = &(auxHead->sReadOff);
-		entry->write = &(auxHead->sWriteOff);
-		entry->otherRead = &(auxHead->cReadOff);
-		entry->otherWrite = &(auxHead->cWriteOff);
-		entry->semA = auxHead->semA;
-		entry->semB = auxHead->semB;
-		hashInsert(&hashTable, &entry, pidString, &hkey, 0);
+		entry.index = i;
+		entry.read = &(auxHead->sReadOff);
+		entry.write = &(auxHead->sWriteOff);
+		entry.otherRead = &(auxHead->cReadOff);
+		entry.otherWrite = &(auxHead->cWriteOff);
+		hashInsert(&hashTable, &entry, pidString, 0);
 	}
 
 	for (i = 0 ; i < clientsAmm ; ++i){
@@ -160,23 +161,23 @@ int synchronize(){
 	strcpy(fileName, nameStart);
 	strcat(fileName, pidString);
 	unlink(fileName);
-	free(entry);
 	
 	return 0;
 }
 int loadIPC(){
 	sigset_t mask, oldmask;
 	pid_t pid;
-	int data[2], mlen, aux;
+	int data[2], aux;
 	char pidString[20];
 	shmElem entry;
 	shmHeader *auxHead;
+	sem_t *tmp;
 	
 	signal(SIGALRM, sigHandler);
 	sigemptyset (&mask);
 	sigaddset (&mask, SIGALRM);
 	
-	if ((aux = read(_stdin_, data, sizeof(int) * 2) != sizeof(int) * 2){
+	if ((aux = read(_stdin_, data, sizeof(int) * 2) != sizeof(int) * 2)){
 		perror("Error en llamada a read");
 		return errno;
 	}
@@ -191,20 +192,21 @@ int loadIPC(){
 		return -1;
 	}
 	
-	auxHead = shmemStart + data[1] * sizeof(shmHeader);
+	auxHead = (shmHeader *)((char *)shmemStart + (data[1] * sizeof(shmHeader)));
 
 	pid = getpid();
 
-	initSem(pid, auxHead);
+	initSem(pid, &entry);
 
 	itoa(getppid(), pidString);
 	entry.index = data[1];
 	entry.read = &(auxHead->cReadOff);
 	entry.write = &(auxHead->cWriteOff);
 	entry.otherRead = &(auxHead->sReadOff);
-	entry.otherWrite = &(auxhead->sWriteOff);
-	entry->semA = auxHead->semB;
-	entry->semB = auxHead->semA;
+	entry.otherWrite = &(auxHead->sWriteOff);
+	tmp = entry.semA;
+	entry.semA = entry.semB;
+	entry.semB = tmp;
 	if (hashInsert(&hashTable, &entry, pidString, 0) == NULL){
 		fprintf(stderr, "Error en el insert de hashTable\n");
 		return -1;
@@ -221,12 +223,11 @@ int loadIPC(){
 }
 
 int readIPC(pid_t pid, void *buffer, int bufferSize){
-	int module, *ipcID, remaining, readAlready;
+	int module, remaining, readAlready;
 	unsigned int hkey;
 	shmElem *entry;
-	shmHeader auxHead = NULL;
+	shmHeader *auxHead = NULL;
 	char pidString[10];
-	void *shm;
 	
 	if (bufferSize > _SHM_SEG_SIZE_ / 2){
 		fprintf(stderr, "Lectura de tamaño superior a _SHM_SEG_SIZE\n");
@@ -237,14 +238,10 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	
 	itoa(pid, pidString);
 	entry = hashSearch(hashTable, pidString, &hkey);
-	auxHead = shmStart + entry->index * sizeof(shmHeader);
-	
-	
+	auxHead = (shmHeader *)((char *)shmemStart + (entry->index * sizeof(shmHeader)));
 
-	shm = shmStart + auxHead->startPos + *(entry->read);
-	
 	sem_wait(entry->semA);
-	while(sem_post(entry->semA), uspleep(100)){
+	while(sem_post(entry->semA), usleep(100)){
 		sem_wait(entry->semA);
 		if (*(entry->read) < *(entry->otherWrite)){
 			if (bufferSize > (*(entry->otherWrite) - *(entry->read))){
@@ -265,18 +262,18 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	}
 	
 	if (*(entry->read) < *(entry->otherWrite)){
-		memcpy(buffer, auxHead->startPos + *(entry->read), bufferSize);
+		memcpy(buffer, (char *)auxHead->startPos + (*(entry->read)), bufferSize);
 		*(entry->read) += bufferSize;
 	}
 	else if (*(entry->read) > *(entry->otherWrite)){
 		if (bufferSize > _SHM_SEG_SIZE_ / 2 - *(entry->read)){
-			memcpy(buffer, auxHead->startPos + *(entry->read), _SHM_SEG_SIZE_ / 2 - *(entry->read));
+			memcpy(buffer, (char *)auxHead->startPos + (*(entry->read)), _SHM_SEG_SIZE_ / 2 - *(entry->read));
 			remaining -= _SHM_SEG_SIZE_ / 2 - *(entry->read);
-			memcpy(&(buffer[_SHM_SEG_SIZE_ / 2 - *(entry->read)]), auxHead->startPos, remaining);
+			memcpy((char *)buffer + (_SHM_SEG_SIZE_ / 2 - *(entry->read)), auxHead->startPos, remaining);
 			*(entry->read) = remaining;
 		}
 		else{
-			memcpy(buffer, auxHead->startPos + *(entry->read), bufferSize);
+			memcpy(buffer, (char *)auxHead->startPos + *(entry->read), bufferSize);
 			*(entry->read) += bufferSize;
 		}
 	}
@@ -287,28 +284,25 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 }
 
 int writeIPC(pid_t pid, void *buffer, int bufferSize){
-	int module, *ipcID, remaining, wroteAlready;
+	int i, module, remaining, wroteAlready;
 	unsigned int hkey;
 	shmElem *entry;
-	shmHeader auxHead = NULL;
+	shmHeader *auxHead = NULL;
 	char pidString[10];
-	void *shm;
+	
+	remaining = bufferSize;
+	wroteAlready = 0;
 	
 	if (bufferSize > _SHM_SEG_SIZE_ / 2){
 		fprintf(stderr, "Escritura de tamaño superior a _SHM_SEG_SIZE\n");
 	}
 	
-	remaining = bufferSize;
-	wroteAlready = 0;
-	
 	itoa(pid, pidString);
 	entry = hashSearch(hashTable, pidString, &hkey);
-	auxHead = shmStart + entry->index * sizeof(shmHeader);
-
-	shm = shmStart + auxHead->startPos + *(entry->write);
+	auxHead = (shmHeader *)((char *)shmemStart + entry->index * sizeof(shmHeader));
 	
 	sem_wait(entry->semB);
-	while(sem_post(entry->semB), uspleep(100)){
+	while(sem_post(entry->semB), usleep(100)){
 		sem_wait(entry->semB);
 		if (*(entry->write) < *(entry->otherRead)){
 			if (bufferSize > (*(entry->otherRead) - *(entry->write))){
@@ -332,7 +326,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 		if (*(entry->write) > _SHM_SEG_SIZE_ / 2){
 			*(entry->write) = 0;
 		}
-		buffer[i] = auxHead->startPos + *(entry->write);
+		memcpy((char *)buffer + i,  (char *)auxHead->startPos + *(entry->write), 1);
 		(*(entry->write))++;
 	}
 
@@ -345,7 +339,7 @@ int closeIPC(int pid){
 	if (hashTable != NULL){
 		hashFreeTable(hashTable);
 	}
-	if (shmctl(shmId, IPC_RMID) == -1){
+	if (shmctl(shmemId, IPC_RMID, NULL) == -1){
 		perror("Error liberando la shmem");
 	}
 	return 0;
@@ -355,19 +349,19 @@ int finalizeIPC(){
 	if (hashTable != NULL){
 		hashFreeTable(hashTable);
 	}
-	if (shmctl(shmId, IPC_RMID) == -1){
+	if (shmctl(shmemId, IPC_RMID, NULL) == -1){
 		perror("Error liberando la shmem");
 	}
 	return 0;
 }
 
 int selectIPC(int seconds){
-	shmHeader *aux;
+	shmElem *aux;
 	int acc = 0;
 
 	while (usleep(60), (acc += 60) < seconds * 1000){
 		hashSetIterator(hashTable);
-		while(aux = (shmHeader *) hashGetNext(hashTable)){
+		while((aux = (shmElem *) hashGetNext(hashTable))){
 			if (*(aux->read) == *(aux->otherWrite)){
 				return TRUE;
 			}
@@ -377,8 +371,7 @@ int selectIPC(int seconds){
 }
 
 int getIPCStatus(pid_t pid){
-	shmHeader *aux;
-	int bufferSize = sizeof(char)*200;
+	shmElem *aux;
 	unsigned int hkey;
 	char pidString[20];
 	
@@ -393,22 +386,21 @@ int getIPCStatus(pid_t pid){
 }
 
 int compareIPCIDs(void *elem1, void *elem2){
-	return (((shmHeader *)elem1)->pid == ((shmHeader *)elem2)->pid);
+	return (((shmElem *)elem1)->index == ((shmElem *)elem2)->index);
 }
 
 void * copyIPCID(void *elem){
-	shmHeader *aux;
+	shmElem *aux;
 	
-	aux = malloc(sizeof(shmHeader));
-	*aux = *((shmHeader *) elem);
+	aux = malloc(sizeof(shmElem));
+	*aux = *((shmElem *) elem);
 	
-	return a;
+	return aux;
 }
 void freeIPCID(void *elem){
-	shmHeader *aux = (shmHeader *)elem;
-	if (semctl(elem->semA, IPC_RMID) == -1 || semctl(elem->semB, IPC_RMID) == -1){
+	shmElem *aux = (shmElem *)elem;
+	if (sem_close(aux->semA) == -1 || sem_close(aux->semB) == -1){
 		perror("Error liberando semaforo");
-		return errno;
 	}
 	free(elem);
 	return;
