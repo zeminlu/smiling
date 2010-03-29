@@ -302,7 +302,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	auxHead = (shmHeader *)((char *)shmemStart + entry->index * sizeof(shmHeader));
 	
 	sem_wait(entry->semB);
-	while(sem_post(entry->semB), usleep(100)){
+	while(sem_post(entry->semB), usleep(60)){
 		sem_wait(entry->semB);
 		if (*(entry->write) < *(entry->otherRead)){
 			if (bufferSize > (*(entry->otherRead) - *(entry->write))){

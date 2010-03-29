@@ -17,8 +17,7 @@ int init_queue(int newKey){
 		
 	queue_id = msgget((key_t)(newKey), IPC_CREAT | QPERM);
 	if(queue_id == -1){
-		perror("msgget Fallo");
-		return errno;
+	  return -1;
 	} 
 	return queue_id;
 }
@@ -32,8 +31,14 @@ int setupIPC(int channels){
 	strcpy(fileName, nameStart);
 	strcat(fileName, pid);
 	
-	queue_id = init_queue(key);
-	data = open(fileName, O_WRONLY | O_CREAT, 0644);
+	if((queue_id = init_queue(key)) == -1){
+	  	perror("msgget Fallo");
+		return errno;
+	}
+	if((data = open(fileName, O_WRONLY | O_CREAT, 0644)) < 0){
+		perror("Error abriendo archivo en setupIPC");	
+		return -1;
+	}
 	
 	for (i = 0, j = 1 ; i < channels ; ++i, j+=2){
 		aux = write(data, &j, sizeof(int));
@@ -56,17 +61,25 @@ int synchronize(){
 	char pidString[20], fileName[20], *nameStart = "./";
 	msQ  * entry;
 	
-	entry = malloc(sizeof(msQ));
+	if((entry = malloc(sizeof(msQ))) == NULL){
+	    perror("Error en crear la entry para la msQ");
+	    return errno;
+	}
 	if ((hashTable = hashCreateTable(clientsAmm, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "Error al crear la tabla de hash\n");
 		return -1;
 	}
-	pid = malloc(sizeof(pid_t) * clientsAmm);
+	if((pid = malloc(sizeof(pid_t) * clientsAmm)) == NULL){
+		perror("Error en crear el vector de pids");
+		free(entry);
+		return errno;
+	}
 	
 	for (i = 0, j = 1 ; i < clientsAmm ; ++i, j +=2){		
 		if((mlen = msgrcv(queue_id ,entry, sizeof(pid_t), j, MSG_NOERROR)) == -1){
 			perror("msgrcv fallo");
 			free(entry);
+			free(pid);
 			return errno;
 		}		
 		memcpy(&pid[i], entry->mtext, sizeof(pid_t));		
@@ -92,6 +105,8 @@ int synchronize(){
 	strcat(fileName, pidString);
 	
 	unlink(fileName);
+	
+	free(pid);
 	free(entry);
 	
 	return 0;
@@ -107,23 +122,37 @@ int loadIPC(){
 	sigemptyset (&mask);
 	sigaddset (&mask, SIGALRM);
 	
-	queue_id = msgget((key_t)getppid(), 0);
+	if((queue_id = msgget((key_t)getppid(), 0)) == -1){
+		perror("msgget fallo");
+		return -1;
+	}
 
-	aux = read(_stdin_, &(ownID[1]), sizeof(int));
+	if((aux = read(_stdin_, &(ownID[1]), sizeof(int))) == -1){
+		perror("Error en el la primitiva read");
+		return errno;
+	}
+	
 	ownID[0] = 1 + ownID[1];
 	
-	hashTable = hashCreateTable(1, freeIPCID, compareIPCIDs, copyIPCID);
+	if((hashTable = hashCreateTable(1, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
+		fprintf(stderr, "Error al crear la tabla de hash\n");
+		return -1;
+	}
+	
 	itoa(getppid(), pidString);
-	hashInsert(&hashTable, ownID, pidString, 0);
+	
+	if((hashInsert(&hashTable, ownID, pidString, 0)) == NULL){
+		fprintf(stderr, "Error al insertar en la tabla de hash\n");
+		return -1;
+	}
 	
 	entry.mtype = ownID[1];
 	pid = getpid();	
 	memcpy(entry.mtext, &pid, sizeof(pid_t));
 
-	
 	if((mlen = msgsnd(queue_id, &entry, sizeof(pid_t), IPC_NOWAIT)) == -1){
-	perror("msgsnd fallo");		
-	return errno;
+		perror("msgsnd fallo");		
+		return errno;
 	}
 	
 	while (!flag){
@@ -140,8 +169,13 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	unsigned int hkey;
 	msQ entry;
 	char pidString[10];
+	
 	itoa(pid, pidString);
-	ipcID = hashSearch(hashTable, pidString, &hkey);
+	if((ipcID = hashSearch(hashTable, pidString, &hkey)) == NULL){
+		fprintf(stderr, "Error al insertar en la tabla de hash\n");
+		return -1;
+	}
+	
 	if(msLastRead == NULL){
 		if((mlen = msgrcv(queue_id ,&entry, bufferSize, ipcID[0], MSG_NOERROR)) == -1){
 			perror("msgrcv fallo");
@@ -167,9 +201,13 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	char pidString[10];
 	
 	itoa(pid, pidString);
-	ipcID = hashSearch(hashTable, pidString, &hkey);	
+	if((ipcID = hashSearch(hashTable, pidString, &hkey)) == NULL){
+		fprintf(stderr, "Error al buscar en la  tabla de hash\n");
+		return -1;
+	}
 	entry.mtype = ipcID[1];	
 	memcpy(entry.mtext, buffer, bufferSize);
+		
 
 	if((mlen = msgsnd(queue_id, &entry, bufferSize, 0)) == -1){
 		perror("msgsnd fallo");		
@@ -196,10 +234,15 @@ int finalizeIPC(){
 
 int selectIPC(int seconds){
 	struct msqid_ds msq_stat;
+	int acc = 0;
 	
-	sleep(seconds);
-	msgctl(queue_id, IPC_STAT, &msq_stat);
-	return msq_stat.msg_qnum;
+	while (usleep(60), (acc += 60) < seconds * 1000){
+		msgctl(queue_id, IPC_STAT, &msq_stat);
+		if(msq_stat.msg_qnum > 0){
+		  return msq_stat.msg_qnum;
+		}
+	}
+	return FALSE;
 }
 
 int getIPCStatus(pid_t pid){
@@ -217,9 +260,11 @@ int getIPCStatus(pid_t pid){
 	ipcID = hashSearch(hashTable, pidString, &hkey);
 	
 	if((mlen = msgrcv(queue_id ,entry, bufferSize, ipcID[0],IPC_NOWAIT)) == -1){
-			return FALSE;		
+		free(entry);
+		return FALSE;		
 	}else{
 		msLastRead = entry;
+		free(entry);
 		return TRUE;
 	}	
 }
