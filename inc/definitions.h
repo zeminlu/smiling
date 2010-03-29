@@ -9,6 +9,7 @@
 #define _DEFINITIONS_H
 
 #include <stdlib.h>
+#include <limits.h>
 #include "../inc/types.h"
 #include <stdarg.h>
 

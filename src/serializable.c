@@ -39,26 +39,33 @@ int unserializeCountryStruct(void *buffer, int bufferSize, country *country){
 }
 
 int serializeInteger(void **buffer, int *bufferSize, int number){
-	/*tpl_node *tn;*/
+	tpl_node *tn;
 	int ret = 0;
+	/*char puto[5];
 	
-	printf("<---------SERIALIZANDO ENTERO = .oO¡¡¡<%d>!!!Oo.--------->\n", number);
-	/*
+	puto[5] = '\0';
+	
+	printf("<---------SERIALIZANDO ENTERO = .oO¡¡¡<%d>!!!Oo.--------->\n", number);*/
+	
 	tn = tpl_map("i#", &number, 1);
 	tpl_pack(tn, 0);
 	ret = tpl_dump(tn, TPL_MEM, buffer, bufferSize);
 	tpl_free(tn);
-	*/
 	
+	/*
 	*buffer = malloc(sizeof(int));
-	**((int **)buffer) = number;
+	memcpy(*buffer, &number, 4);
 	*bufferSize = sizeof(int);
 	
+	printf("<-----buffer = %d----->\n", **((int **)buffer));
+
+	printf("<------------En Serialize: %x %x %x %x ------------>\n", ((char *)*buffer)[0], ((char *)*buffer)[1], ((char *)*buffer)[2], ((char *)*buffer)[3]);
+	*/
 	return ret;
 }
 
 int unserializeInteger(void *buffer, int bufferSize){
-	/*tpl_node *tn;
+	tpl_node *tn;
 	int ret;
 	
 	tn = tpl_map("i#", &ret, 1);
@@ -67,7 +74,9 @@ int unserializeInteger(void *buffer, int bufferSize){
 	tpl_free(tn);
 	
 	return ret;
-	*/
+	/*	
 	
-	return *((int*)(buffer));
+	printf("<------------En UNserialize: %x %x %x %x ------------>\n", ((char *)buffer)[0], ((char *)buffer)[1], ((char *)buffer)[2], ((char *)buffer)[3]);
+	
+	return *((int*)(buffer));*/
 }
