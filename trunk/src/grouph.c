@@ -87,17 +87,18 @@ int main (void){
 void sendErrorToParent(){
 	void *buffer;
 	int bufferSize;
+	int msg = -2, size = sizeof(int);
 	
 	serializeInteger(&buffer, &bufferSize, -2);
-	if(writeIPC(getppid(), &bufferSize, sizeof(int)) == -1){
+	if(writeIPC(getppid(), &size, sizeof(int)) == -1){
 		fprintf(stderr,"Error de escritura");
 		return;	
 	}
-	if(writeIPC(getppid(), &buffer, bufferSize) == -1){
+	if(writeIPC(getppid(), &msg, sizeof(int)) == -1){
 		fprintf(stderr,"Error de escritura");
 		return;
 	}
-	free(buffer);
+/*	free(buffer);*/
 	
 	return;
 }
