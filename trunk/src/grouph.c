@@ -301,7 +301,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			fprintf(stderr, "Error en la lectura");
 			return -1;
 		}
-		if (!response){
+		if (response == FALSE){
 			fprintf(stderr, "Respuesta en grouph = %s fue FALSE\n", data->name);
 			countriesTable[reqCountry]->used = TRUE;
 			continue;

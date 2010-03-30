@@ -267,7 +267,7 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 						break;
 					}
 				}
-				else if (reqCountry == INT_MAX){
+				else if (reqCountry == -2){
 					finished[j] = TRUE;
 					flag = TRUE;
 					break;
