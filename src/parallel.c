@@ -16,24 +16,16 @@ int filesListener(){
 	void *buffer = NULL;
 	country **countriesTable = NULL;
 	
-	 signal(SIGINT, handler);
+	signal(SIGINT, handler);
 	
+
 	if ((dp = opendir("./parallelDir")) == NULL){
 		perror("Error al abrir el directiorio parallelDir");
 		return errno;
 	}
-	
-	while (getFilesAmm(dp) < 4){
-		sleep(1);
-		rewinddir(dp);
-	}
-	
-	sleep(1);
-	
-	rewinddir(dp);
-	
 	while (signalFlag){
 		rewinddir(dp);
+
 		if ((countriesTableEntriesAmm =  processFile(dp, &countriesTable)) < 0){
 			return countriesTableEntriesAmm; 
 		}
@@ -42,6 +34,7 @@ int filesListener(){
 		}
 		++childs;
 		setupIPC(1);
+
 		switch((pid = fork())){
 			case -1:
 				perror("Error de fork");
@@ -81,7 +74,7 @@ int filesListener(){
 		countriesTable = NULL;
 		finalizeIPC();
 	}
-	
+
 	for (i = 0 ; i < childs ; ++i){
 		wait(&fifa);
 	}
@@ -95,18 +88,17 @@ int filesListener(){
 
 int processFile(DIR *dp, country ***countriesTable){
 	struct dirent *d;
-	int i = 0, j;
+	int i = 0, j = 0;
 	char *parDir = "./parallelDir/", *procDir = "./processed/", fileDir[60], procFileDir[60];
-	FILE *countryFile;
-	
+	FILE *countryFile = NULL;
 	while ((d = readdir(dp))){
 		if (d->d_ino == 0){
 			continue;
-		}	
+		}
+		
 		if (strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0 || strcmp(d->d_name, ".svn") == 0){
 			continue;
-		}
-		else{
+		}else{
 			i = 0;
 			strcpy(fileDir, parDir);
 			strcat(fileDir, d->d_name);
@@ -142,13 +134,15 @@ int processFile(DIR *dp, country ***countriesTable){
 					}
 				}				
 			}
+
 			strcpy(procFileDir, procDir);
 			strcat(procFileDir, d->d_name);
 			fclose(countryFile);
-			if (link(fileDir, procFileDir) < 0){
+
+			if (rename(fileDir, procFileDir) < 0){
 				return -1;
 			}
-			unlink(fileDir);
+			
 			return i;
 		}
 	}
