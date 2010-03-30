@@ -239,7 +239,6 @@ int loadIPC(){
 			
 	close(_stdin_);
 	
-	
 	fprintf(stderr, "Sali del load\n");	
 	
 	return 0;
@@ -254,6 +253,7 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	
 	if (bufferSize > _SHM_SEG_SIZE_ / 2){
 		fprintf(stderr, "Lectura de tamaño superior a _SHM_SEG_SIZE\n");
+		return -1;
 	}
 	
 	remaining = bufferSize;
