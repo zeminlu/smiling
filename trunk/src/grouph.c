@@ -81,24 +81,18 @@ int main (void){
 	}
 	varFree(6, countriesTable, conditions, condArgs->sets, condArgs, group->countries, group);
 	
+	closeIPC();
+	
 	return status;
 }
 
 void sendErrorToParent(){
-	void *buffer;
-	int bufferSize;
-	int msg = -2, size = sizeof(int);
+	int msg = -2;
 	
-	serializeInteger(&buffer, &bufferSize, -2);
-	if(writeIPC(getppid(), &size, sizeof(int)) == -1){
-		fprintf(stderr,"Error de escritura");
-		return;	
-	}
 	if(writeIPC(getppid(), &msg, sizeof(int)) == -1){
 		fprintf(stderr,"Error de escritura");
 		return;
 	}
-/*	free(buffer);*/
 	
 	return;
 }
@@ -227,9 +221,9 @@ int prepareGroup(subFixture **group, country *data){
 }
 
 int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country *data, country **countriesTable, void *(**conditions)(void *condArgs)){
-	int i, j = 0, k, reqCountry, bufferSize, threadsFlag;
+	int i, j = 0, k, reqCountry, threadsFlag, response;
 	pthread_t *threads = NULL;
-	void *buffer, *ret;
+	void *ret;
 	set *intersection = NULL;
 		
 	pthread_mutex_init(&mutexIndex, NULL);
@@ -297,41 +291,22 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		}
 		free(condArgs->sets[0]->country);
 		
-		serializeInteger(&buffer, &bufferSize, reqCountry);
-		
-		if(writeIPC(getppid(), &bufferSize, sizeof(int))==-1){
-			fprintf(stderr, "Error en la escritura");
-			return -1;
-		}
-		if(writeIPC(getppid(), buffer, bufferSize) ==-1){
+		if(writeIPC(getppid(), &reqCountry, sizeof(int)) ==-1){
 			fprintf(stderr, "Error en la escritura");
 			return -1;
 		}
 		
-		free(buffer);
-		if(readIPC(getppid(), &bufferSize, sizeof(int)) == -1){
-			fprintf(stderr, "Erro en la lectura");
-			return -1;
-		}
-		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL){
-			perror("Error de memoria");
-			free(threads);
-			return errno;
-		}
 		fprintf(stderr, "Esperando respuesta en grouph = %s\n", data->name);
-		if(readIPC(getppid(), buffer, bufferSize) == -1){
+		if(readIPC(getppid(), &response, sizeof(int)) == -1){
 			fprintf(stderr, "Error en la lectura");
 			return -1;
 		}
-		if (unserializeInteger(buffer, bufferSize) == FALSE){
+		if (!response){
 			fprintf(stderr, "Respuesta en grouph = %s fue FALSE\n", data->name);
 			countriesTable[reqCountry]->used = TRUE;
-			
-			free(buffer);
 			continue;
 		}
 		fprintf(stderr, "Respuesta en grouph = %s fue TRUE\n", data->name);
-		free(buffer);
 		free(threadsRet);
 		countriesTable[reqCountry]->used = TRUE;
 		(*group)->countries[(*group)->countriesAmm] = countriesTable[reqCountry];
@@ -399,19 +374,13 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 }
 
 int sendSubfixture(subFixture *group){
-	int i, bufferSize;
+	int i, bufferSize, msg = -1;
 	void *buffer;
 	
-	serializeInteger(&buffer, &bufferSize, -1);
-	if(writeIPC(getppid(), &bufferSize, sizeof(int)) == -1){
+	if(writeIPC(getppid(), &msg, sizeof(int)) == -1){
 		fprintf(stderr, "Error en la escritura");
 		return -1;
 	}
-	if(writeIPC(getppid(), buffer, bufferSize) == -1){
-		fprintf(stderr, "Error en la escritura");
-		return -1;
-	}
-	free(buffer);
 	
 	for (i = 0 ; i < 4 ; ++i){
 		printf("Por mandar pais %d...\n", i);

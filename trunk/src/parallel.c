@@ -1,14 +1,22 @@
 #include "../inc/parallel.h"
 
+int signalFlag = TRUE;
+
+void handler(int sig){
+	signalFlag = FALSE;
+}
+
 int main(){
 	return filesListener();
 }
 
 int filesListener(){
 	DIR *dp;
-	int i, j, fifa, bufferSize, pid = 0, countriesTableEntriesAmm;
+	int i, j, fifa, bufferSize, pid = 0, countriesTableEntriesAmm, childs = 0;
 	void *buffer = NULL;
 	country **countriesTable = NULL;
+	
+	 signal(SIGINT, handler);
 	
 	if ((dp = opendir("./parallelDir")) == NULL){
 		perror("Error al abrir el directiorio parallelDir");
@@ -24,11 +32,15 @@ int filesListener(){
 	
 	rewinddir(dp);
 	
-	while (getFilesAmm(dp) > 3){
+	while (signalFlag){
 		rewinddir(dp);
 		if ((countriesTableEntriesAmm =  processFile(dp, &countriesTable)) < 0){
 			return countriesTableEntriesAmm; 
 		}
+		else if (countriesTableEntriesAmm == 0){
+			continue;
+		}
+		++childs;
 		setupIPC(1);
 		switch((pid = fork())){
 			case -1:
@@ -42,36 +54,40 @@ int filesListener(){
 			default:					
 				break;
 		}
-	}
-	if (synchronize() != 0){
-		closedir(dp);
-		return -1;
-	}
-	
-	if (writeIPC(pid, &countriesTableEntriesAmm, sizeof(int)) != 0){
-		closedir(dp);
-		return -1;
-	}
-	
-	for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
-		printf("Pais: %s - Continente: %d - Campeon: %d - Peso: %d - Same: %d - Death: %d - ChampG: %d - Weak: %d - Cabeza de Serie: %d\n", 
-		countriesTable[j]->name, countriesTable[j]->continent, countriesTable[j]->champ, countriesTable[j]->weight, countriesTable[j]->sameContinent, countriesTable[j]->deathGroup, countriesTable[j]->champGroup, countriesTable[j]->weakGroup, countriesTable[j]->isHead);
-		serializeCountryStruct(&buffer, &bufferSize, countriesTable[j]);
-		if (writeIPC(pid, &bufferSize, sizeof(int)) != 0 || writeIPC(pid, buffer, bufferSize) != 0){
-			for (i = 0 ; i < j ; ++i){
-				free(countriesTable[i]);
-			}
-			free(buffer);
-			finalizeIPC();
+		if (synchronize() != 0){
 			closedir(dp);
-			return -1;	
+			return -1;
 		}
-		varFree(2, buffer, countriesTable[j]);
+
+		if (writeIPC(pid, &countriesTableEntriesAmm, sizeof(int)) != 0){
+			closedir(dp);
+			return -1;
+		}
+
+		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
+			serializeCountryStruct(&buffer, &bufferSize, countriesTable[j]);
+			if (writeIPC(pid, &bufferSize, sizeof(int)) != 0 || writeIPC(pid, buffer, bufferSize) != 0){
+				for (i = 0 ; i < j ; ++i){
+					free(countriesTable[i]);
+				}
+				free(buffer);
+				finalizeIPC();
+				closedir(dp);
+				return -1;	
+			}
+			varFree(2, buffer, countriesTable[j]);
+		}
+		free(countriesTable);
+		countriesTable = NULL;
+		finalizeIPC();
 	}
-	free(countriesTable);
 	
-	wait(&fifa);
-	finalizeIPC();
+	for (i = 0 ; i < childs ; ++i){
+		wait(&fifa);
+	}
+	
+	printf("\n%d archivos procesados.\n", childs);
+	
 	closedir(dp);
 
 	return 0;
@@ -133,9 +149,10 @@ int processFile(DIR *dp, country ***countriesTable){
 				return -1;
 			}
 			unlink(fileDir);
+			return i;
 		}
 	}
-	return i;
+	return 0;
 }
 
 int getFilesAmm (DIR *dp){

@@ -31,6 +31,8 @@ int selectIPC(int seconds);
 
 int getIPCStatus(pid_t pid);
 
+int closeIPC();
+
 int finalizeIPC(void);
 
 #endif
