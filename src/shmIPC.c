@@ -35,13 +35,13 @@ int initShMem(int newKey){
 int initSem(int pid, shmElem *aux){
 	char semString[20], pidString[20];
 	
-	strcpy(semString, "./SEMA-");
+	strcpy(semString, "SEMA-");
 	itoa(pid, pidString);
 	strcat(semString, pidString);
 	if ((aux->semA = initmutex(semString)) == NULL){
 		return -1;
 	}
-	strcpy(semString, "./SEMB-");
+	strcpy(semString, "SEMB-");
 	itoa(pid, pidString);
 	strcat(semString, pidString);
 	if ((aux->semB = initmutex(semString)) == NULL){
