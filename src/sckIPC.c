@@ -77,9 +77,9 @@ int synchronize(){
 		++i;
 	}
 	
-	for (i = 0 ; i < clientsAmm ; ++i){
+	/*for (i = 0 ; i < clientsAmm ; ++i){
 		kill (pid[i], SIGALRM);
-	}
+	}*/
 	
 	close(info);
 	itoa(getpid(), pidString);
@@ -124,9 +124,10 @@ int loadIPC(){
 	send(sockfd, &pid, sizeof(pid_t), 0);
 	
 	sigprocmask (SIG_BLOCK, &mask, &oldmask);
-    while (!flag){
+	sleep(1);
+    /*while (!flag){
     	sigsuspend (&oldmask);
-	}
+	}*/
     sigprocmask (SIG_UNBLOCK, &mask, NULL);
 	
 	hashTable = hashCreateTable(1, freeIPCID, compareIPCIDs, copyIPCID);
