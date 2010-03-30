@@ -46,7 +46,7 @@ sem_t * initmutex(char *semName);
 
 int initShMem(int newKey);
 
-sem_t * initSem(int pid, shmElem *aux);
+int initSem(int pid, shmElem *aux);
 
 int initHeaders();
 

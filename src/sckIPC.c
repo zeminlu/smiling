@@ -15,9 +15,7 @@ int setupIPC(int channels){
 	char pid[20], *socketNameStart = "./socket-";
 	
 	itoa (getpid(), pid);
-	/*strcpy(fileName, nameStart);*/
 	strcpy(socketFileName, socketNameStart);
-	/*strcat(fileName, pid);*/
 	strcat(socketFileName, pid);
 	
 	if ((master = malloc(sizeof(fd_set))) == NULL || (slave = malloc(sizeof(fd_set))) == NULL){
@@ -31,7 +29,6 @@ int setupIPC(int channels){
 	
 	FD_ZERO(master);
 	
-	/*data = open(fileName, O_WRONLY | O_CREAT, 0644);*/
 		
 	if ((sockfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1){
 		perror("Error en llamada a socket");
@@ -43,18 +40,12 @@ int setupIPC(int channels){
 		return errno;
 	}
 	
-	/*for (i = 0 ; i < channels ; ++i){
-		write(data, &sockfd, sizeof(int));
-	}*/
 	clientsAmm = channels;
-	/*close(data);
-	info = open(fileName, O_RDONLY);*/
 	
 	return 0;
 }
 
 int addClient(){
-	/*return dup2(info, 0);*/
 	return 0;
 }
 
@@ -120,7 +111,6 @@ int loadIPC(){
 	signal(SIGALRM, sigHandler);
 	sigemptyset (&mask);
 	sigaddset (&mask, SIGALRM);
-	/*read(_stdin_, &ownID, sizeof(int));*/
 	
 	fprintf(stderr, "Por hacer connect con pid = %d\n", pid);
 	while (usleep(60), (acc += 60) < 1000 && connect(sockfd, (struct sockaddr *) &address, sizeof(struct sockaddr_un)) == -1){
@@ -138,8 +128,6 @@ int loadIPC(){
     	sigsuspend (&oldmask);
 	}
     sigprocmask (SIG_UNBLOCK, &mask, NULL);
-	
-	close(_stdin_);
 	
 	hashTable = hashCreateTable(1, freeIPCID, compareIPCIDs, copyIPCID);
 	itoa(getppid(), pidString);
@@ -175,7 +163,11 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 }
 
 int closeIPC(int pid){
-
+	if (hashTable != NULL){
+		hashFreeTable(hashTable);
+	}
+	hashTable = NULL;
+	
 	return 0;
 }
 

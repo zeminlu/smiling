@@ -12,7 +12,6 @@ void sigHandler (int signum){
 	return;
 }
 
-
 sem_t * initmutex(char *semName)
 {
 	sem_t *sd;
@@ -33,20 +32,20 @@ int initShMem(int newKey){
 	return shmemId;
 }
 
-sem_t * initSem(int pid, shmElem *aux){
+int initSem(int pid, shmElem *aux){
 	char semString[20], pidString[20];
 	
-	strcpy(semString, "SEMA-");
+	strcpy(semString, "./SEMA-");
 	itoa(pid, pidString);
 	strcat(semString, pidString);
 	if ((aux->semA = initmutex(semString)) == NULL){
-		return aux->semA;
+		return -1;
 	}
-	strcpy(semString, "SEMB-");
+	strcpy(semString, "./SEMB-");
 	itoa(pid, pidString);
 	strcat(semString, pidString);
 	if ((aux->semB = initmutex(semString)) == NULL){
-		return aux->semB;
+		return -1;
 	}
 	
 	return 0;
@@ -69,7 +68,7 @@ int initHeaders(){
 int setupIPC(int channels){
 	int i, data, aux, key, status;
 	char pid[20], fileName[20], *nameStart = "./";
-	
+		
 	key = getpid();
 	clientsAmm = channels;
 	
@@ -99,6 +98,8 @@ int setupIPC(int channels){
 
 	close(data);
 	info = open(fileName, O_RDONLY);
+	
+	fprintf(stderr, "Salio de setupIPC\n");
 	
 	return 0;
 }
@@ -137,24 +138,37 @@ int synchronize(){
 		}
 	}
 	
-	for (i = 0 ; i < clientsAmm ; ++i){
+	for (i = 0 ; i < clientsAmm ; ++i){		
+		fprintf(stderr, "Entre al for de synchronize con i = %d, clientsAmm = %d\n", i, clientsAmm);
 		auxHead = (shmHeader *)((char *)shmemStart + (i * sizeof(shmHeader)));
-		if (initSem(pid[i] = auxHead->pid, &entry) == NULL){
+		
+		pid[i] = auxHead->pid;
+		if (initSem(pid[i], &entry) == -1){
 			return -1;
 		}
+		
 		itoa(pid[i], pidString);
+		
 		entry.index = i;
+		
 		entry.read = &(auxHead->sReadOff);
+		
 		entry.write = &(auxHead->sWriteOff);
+		
 		entry.otherRead = &(auxHead->cReadOff);
+		
 		entry.otherWrite = &(auxHead->cWriteOff);
-		hashInsert(&hashTable, &entry, pidString, 0);
+		
+		if (hashInsert(&hashTable, &entry, pidString, 0) == NULL){
+			fprintf(stderr, "Error en hashInsert invocado en synchronize con pidString = %s", pidString);
+		}
+		fprintf(stderr, "Sali del for de synchronize con i = %d\n", i);
 	}
 
 	for (i = 0 ; i < clientsAmm ; ++i){
 		kill (pid[i], SIGALRM);
 	}
-
+	
 	close(info);
 	
 	itoa(getpid(), pidString);
@@ -162,20 +176,24 @@ int synchronize(){
 	strcat(fileName, pidString);
 	unlink(fileName);
 	
+	fprintf(stderr, "Salio de synchronize\n");
+	
 	return 0;
 }
 int loadIPC(){
 	sigset_t mask, oldmask;
 	pid_t pid;
-	int data[2], aux;
+	int data[2], aux, l = 0;
 	char pidString[20];
 	shmElem entry;
 	shmHeader *auxHead;
 	sem_t *tmp;
 	
+	fprintf(stderr, "Entre a loadIPC\n");
+	
 	signal(SIGALRM, sigHandler);
 	sigemptyset (&mask);
-	sigaddset (&mask, SIGALRM);
+	sigaddset (&mask, SIGALRM);	
 	
 	if ((aux = read(_stdin_, data, sizeof(int) * 2) != sizeof(int) * 2)){
 		perror("Error en llamada a read");
@@ -197,7 +215,7 @@ int loadIPC(){
 	pid = getpid();
 
 	initSem(pid, &entry);
-
+	
 	itoa(getppid(), pidString);
 	entry.index = data[1];
 	entry.read = &(auxHead->cReadOff);
@@ -212,12 +230,17 @@ int loadIPC(){
 		return -1;
 	}	
 	
+	sleep(3);
 	auxHead->pid = pid;
 	
 	while (!flag){
     	sigsuspend (&oldmask);
-	}		
+	}
+			
 	close(_stdin_);
+	
+	
+	fprintf(stderr, "Sali del load\n");	
 	
 	return 0;
 }
