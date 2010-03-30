@@ -25,7 +25,7 @@ int setupIPC(int channels){
 	}
 	
 	address.sin_family = AF_INET;
-	address.sin_port = 7000;
+	address.sin_port = 8756;
 	address.sin_addr.s_addr = inet_addr("127.0.0.1");
 	
 	FD_ZERO(master);
