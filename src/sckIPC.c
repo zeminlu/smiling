@@ -215,7 +215,7 @@ int finalizeIPC(){
 		hashFreeTable(hashTable);
 	}
 	
-	/*unlink(socketFileName);*/
+	unlink(socketFileName);
 	
 	return 0;
 }

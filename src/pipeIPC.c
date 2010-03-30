@@ -54,7 +54,6 @@ int setupIPC(int channels){
 			varFree(2, master, slave);
 			return -1;	
 		}
-		fprintf(stderr, "setupIPC - ipcIDs[i][1][1]: %d\n", ipcIDs[i][1][1]);
 		if (write(data, &ipcIDs[i][1][1], sizeof(int)) != sizeof(int)){
 			perror("IPCAPI: Setup2 - Error en primitiva write");
 			varFree(2, master, slave);
@@ -107,15 +106,10 @@ int synchronize(){
 		kill (pid[i], SIGALRM);
 	}
 	close(info);
-	
 	itoa(getpid(), pidString);
-	
 	strcpy(fileName, nameStart);
-	
 	strcat(fileName, pidString);
-	
 	unlink(fileName);
-	
 	free(pid);
 	
 	return 0;
@@ -127,53 +121,40 @@ int loadIPC(){
 	pid_t pid;
 	char pidString[20];
 	
-	fprintf(stderr, "Entro a loadIPC, pid = %d\n", getpid());
-
 	pid = getpid();
 	
 	if (read(_stdin_, ownID, sizeof(int) * 2) != sizeof(int) * 2){
 		perror("IPCAPI: loadIPC 1 - Error en primitiva write");
 		return -1;
 	}
-	
-	fprintf(stderr, "Post first read, pid = %d\n", getpid());
-	
-	fprintf(stderr, "ownID[0]: %d, ownID[1] = %d\n", ownID[0], ownID[1]);
+
 	if (write(ownID[1], &pid, sizeof(pid_t)) != sizeof(pid_t)){
 		perror("IPCAPI: loadIPC - Error en primitiva write");
 		return -1;	
 	}
 	
-	fprintf(stderr, "Post write, por dormir, pid = %d\n", getpid());
-	
 	signal(SIGALRM, sigHandler);
 	sigemptyset (&mask);
-	sigaddset (&mask, SIGALRM);
-	
+	sigaddset (&mask, SIGALRM);	
 	sigprocmask (SIG_BLOCK, &mask, &oldmask);
-    while (!flag){
+    
+	while (!flag){
     	sigsuspend (&oldmask);
 	}
     sigprocmask (SIG_UNBLOCK, &mask, NULL);
 	
 	close(_stdin_);
-	
-	fprintf(stderr, "Antes de crear la tabla de hash, pid = %d\n", getpid());
-	
+		
 	if ((hashTable = hashCreateTable(10, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "Error creando tabla de hash en loadIPC\n");
 		return -1;
 	}
 	itoa(getppid(), pidString);
 	
-	fprintf(stderr, "Antes del insert en la tabla, pid = %d\n", getpid());
-	
 	if (hashInsert(&hashTable, ownID, pidString, 0) == NULL){
 		fprintf(stderr, "Error insertando en tabla de hash en loadIPC\n");
 		return -1;
 	}
-	
-	fprintf(stderr, "Salio de loadIPC, pid = %d\n", getpid());
 	
 	return 0;
 }
@@ -204,18 +185,16 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	char pidString[20];
 	
 	itoa(pid, pidString);
-	printf("Antes del hashSearch, con pidString = %s\n", pidString);
 	if ((ipcID = hashSearch(hashTable, pidString, &hkey)) == NULL){
 		fprintf(stderr, "Error en hashSearch de writeIPC, invocado con pid = %s\n", pidString);
 		return -1;
 	}
-	printf("Despues del hashSearch, por hace write en ipcID = %d\n", ipcID[1]);
 	
 	if (write(ipcID[1], buffer, bufferSize) != bufferSize){
 		perror("IPCAPI: writeIPC - Error en primitiva write");
 		return -1;
 	}
-	printf("Después del write\n");
+	
 	free(ipcID);
 	
 	return 0;
@@ -245,6 +224,15 @@ int getIPCStatus(pid_t pid){
 	free(ipcID);
 	
 	return ret;
+}
+
+int closeIPC(){
+/*	if (hashTable != NULL){
+		hashFreeTable(hashTable);
+	}
+	hashTable = NULL;
+*/
+	return 0;
 }
 
 int finalizeIPC(){
