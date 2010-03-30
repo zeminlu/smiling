@@ -3,7 +3,7 @@
 int clientsAmm = 0, flag = FALSE, sockfd, info;
 hashTableADT hashTable = NULL;
 fd_set *master = NULL, *slave = NULL;
-struct sockaddr_un address;
+struct sockaddr_in address;
 char socketFileName[40];
 
 void sigHandler (int signum){
@@ -24,18 +24,18 @@ int setupIPC(int channels){
 		return errno;
 	}
 	
-	address.sun_family = AF_UNIX;
-	strcpy(address.sun_path, socketFileName);
+	address.sin_family = AF_INET;
+	address.sin_port = 7000;
+	address.sin_addr.s_addr = inet_addr("127.0.0.1");
 	
 	FD_ZERO(master);
-	
 		
-	if ((sockfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1){
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
 		perror("Error en llamada a socket");
 		return errno;
 	}
 	
-	if (bind(sockfd, (struct sockaddr *)&address, sizeof(struct sockaddr_un)) == -1){
+	if (bind(sockfd, (struct sockaddr *)&address, sizeof(struct sockaddr_in)) == -1){
 		perror("Error en llamada a bind");
 		return errno;
 	}
@@ -96,7 +96,7 @@ int loadIPC(){
 	int acc = 0;
 	char pidString[20], *socketNameStart = "./socket-";
 	
-	if ((sockfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1){
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
 		perror("Error en llamada a socket");
 		return errno;
 	}
@@ -104,8 +104,9 @@ int loadIPC(){
 	itoa (getppid(), pidString);
 	strcpy(socketFileName, socketNameStart);
 	strcat(socketFileName, pidString);
-	address.sun_family = AF_UNIX;
-	strcpy(address.sun_path, socketFileName);
+	address.sin_family = AF_INET;
+	address.sin_port = 8756;
+	address.sin_addr.s_addr = inet_addr("127.0.0.1");
 	
 	pid = getpid();
 	signal(SIGALRM, sigHandler);
@@ -113,7 +114,7 @@ int loadIPC(){
 	sigaddset (&mask, SIGALRM);
 	
 	fprintf(stderr, "Por hacer connect con pid = %d\n", pid);
-	while (usleep(60), (acc += 60) < 1000 && connect(sockfd, (struct sockaddr *) &address, sizeof(struct sockaddr_un)) == -1){
+	while (usleep(60), (acc += 60) < 1000 && connect(sockfd, (struct sockaddr *) &address, sizeof(struct sockaddr_in)) == -1){
 		if (errno != ECONNREFUSED ){
 			perror("Error en llamada a connect");
 			return errno;
