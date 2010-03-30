@@ -146,6 +146,5 @@ cleanObjects:
 	@echo "Done."
 clean:
 	@echo "Clearing" $(OUTPUT_DIR) "directory..."
-	@rm -f *.o
 	@rm -f $(OUTPUT_DIR)*.bin
 	@echo "Done."

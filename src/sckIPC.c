@@ -1,6 +1,6 @@
  #include "../inc/sckIPC.h"
 
-int clientsAmm = 0, flag = FALSE, sockfd, info;
+int clientsAmm = 0, flag = FALSE, sockfd, info, ownPort = 5000;
 hashTableADT hashTable = NULL;
 fd_set *master = NULL, *slave = NULL;
 struct sockaddr_in address;
@@ -12,11 +12,14 @@ void sigHandler (int signum){
 }
 
 int setupIPC(int channels){
-	char pid[20], *socketNameStart = "./socket-";
+	char pid[20], fileName[20], *socketNameStart = "./socket-", *nameStart = "./";
+	int data, i;
 	
 	itoa (getpid(), pid);
 	strcpy(socketFileName, socketNameStart);
 	strcat(socketFileName, pid);
+	strcpy(fileName, nameStart);
+	strcat(fileName, pid);
 	
 	if ((master = malloc(sizeof(fd_set))) == NULL || (slave = malloc(sizeof(fd_set))) == NULL){
 		perror("Error de memoria\n");
@@ -24,8 +27,14 @@ int setupIPC(int channels){
 		return errno;
 	}
 	
+	if ((data = open(fileName, O_WRONLY | O_CREAT, 0644)) < 0){
+		perror("Error abriendo archivo en setupIPC");
+		varFree(2, master, slave);
+		return -1;
+	}
+	
 	address.sin_family = AF_INET;
-	address.sin_port = 8756;
+	address.sin_port = ownPort;
 	address.sin_addr.s_addr = inet_addr("127.0.0.1");
 	
 	FD_ZERO(master);
@@ -35,18 +44,35 @@ int setupIPC(int channels){
 		return errno;
 	}
 	
-	if (bind(sockfd, (struct sockaddr *)&address, sizeof(struct sockaddr_in)) == -1){
+	while (bind(sockfd, (struct sockaddr *)&address, sizeof(struct sockaddr_in)) == -1){
+		if (errno == EADDRINUSE){
+			++ownPort;
+			address.sin_port = ownPort;
+			continue;
+		}
 		perror("Error en llamada a bind");
 		return errno;
 	}
 	
+	for (i = 0 ; i < channels ; ++i){
+		if (write(data, &ownPort, sizeof(int)) != sizeof(int)){
+			perror("IPCAPI: Setup - Error en primitiva write");
+			varFree(2, master, slave);
+			return -1;
+		}
+	}
+	
 	clientsAmm = channels;
+	close(data);
+	if ((info = open(fileName, O_RDONLY)) < 0){
+		return info;
+	}
 	
 	return 0;
 }
 
 int addClient(){
-	return 0;
+	return dup2(info, 0);
 }
 
 int synchronize(){
@@ -64,7 +90,7 @@ int synchronize(){
 	}
 	
 	pid = malloc(sizeof(int) * clientsAmm);
-	
+	printf("antes while de accepts\n");
 	while (i < clientsAmm){
 		if ((newsockfd = accept(sockfd, NULL, NULL)) == -1){
 			perror("Error en llamada a accept");
@@ -76,17 +102,17 @@ int synchronize(){
 		FD_SET(newsockfd, master);
 		++i;
 	}
-	
-	/*for (i = 0 ; i < clientsAmm ; ++i){
+	printf("sali del while\n");
+	for (i = 0 ; i < clientsAmm ; ++i){
 		kill (pid[i], SIGALRM);
-	}*/
+	}
 	
 	close(info);
 	itoa(getpid(), pidString);
 	strcpy(fileName, nameStart);
 	strcat(fileName, pidString);
 	unlink(fileName);
-	
+	printf("me fui de synchronize\n");
 	return 0;
 }
 
@@ -95,23 +121,32 @@ int loadIPC(){
 	pid_t pid;
 	int acc = 0;
 	char pidString[20], *socketNameStart = "./socket-";
+	printf("loadIPC\n");
+	if (read(_stdin_, &ownPort, sizeof(int)) != sizeof(int)){
+		perror("IPCAPI: loadIPC 1 - Error en primitiva write");
+		return -1;
+	}
+	printf("loadIPC\n");
 	
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
 		perror("Error en llamada a socket");
 		return errno;
 	}
+	printf("loadIPC\n");
 	
 	itoa (getppid(), pidString);
 	strcpy(socketFileName, socketNameStart);
 	strcat(socketFileName, pidString);
 	address.sin_family = AF_INET;
-	address.sin_port = 8756;
+	address.sin_port = ownPort;
 	address.sin_addr.s_addr = inet_addr("127.0.0.1");
+	printf("loadIPC\n");
 	
 	pid = getpid();
 	signal(SIGALRM, sigHandler);
 	sigemptyset (&mask);
 	sigaddset (&mask, SIGALRM);
+	printf("loadIPC\n");
 	
 	fprintf(stderr, "Por hacer connect con pid = %d\n", pid);
 	while (usleep(60), (acc += 60) < 1000 && connect(sockfd, (struct sockaddr *) &address, sizeof(struct sockaddr_in)) == -1){
@@ -124,16 +159,25 @@ int loadIPC(){
 	
 	send(sockfd, &pid, sizeof(pid_t), 0);
 	
+	if ((hashTable = hashCreateTable(10, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
+		fprintf(stderr, "Error creando tabla de hash en loadIPC\n");
+		return -1;
+	}
+	
+	itoa(getppid(), pidString);
+	
+	if (hashInsert(&hashTable, &sockfd, pidString, 0) == NULL){
+		fprintf(stderr, "Error insertando en tabla de hash en loadIPC\n");
+		return -1;
+	}
+	
 	sigprocmask (SIG_BLOCK, &mask, &oldmask);
-	sleep(1);
-    /*while (!flag){
+	while (!flag){
     	sigsuspend (&oldmask);
-	}*/
+	}
     sigprocmask (SIG_UNBLOCK, &mask, NULL);
 	
-	hashTable = hashCreateTable(1, freeIPCID, compareIPCIDs, copyIPCID);
-	itoa(getppid(), pidString);
-	hashInsert(&hashTable, &sockfd, pidString, 0);
+	close(_stdin_);
 	
 	return 0;
 }
