@@ -90,7 +90,6 @@ int synchronize(){
 	}
 	
 	pid = malloc(sizeof(int) * clientsAmm);
-	printf("antes while de accepts\n");
 	while (i < clientsAmm){
 		if ((newsockfd = accept(sockfd, NULL, NULL)) == -1){
 			perror("Error en llamada a accept");
@@ -102,7 +101,6 @@ int synchronize(){
 		FD_SET(newsockfd, master);
 		++i;
 	}
-	printf("sali del while\n");
 	for (i = 0 ; i < clientsAmm ; ++i){
 		kill (pid[i], SIGALRM);
 	}
@@ -121,18 +119,15 @@ int loadIPC(){
 	pid_t pid;
 	int acc = 0;
 	char pidString[20], *socketNameStart = "./socket-";
-	printf("loadIPC\n");
 	if (read(_stdin_, &ownPort, sizeof(int)) != sizeof(int)){
 		perror("IPCAPI: loadIPC 1 - Error en primitiva write");
 		return -1;
 	}
-	printf("loadIPC\n");
 	
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
 		perror("Error en llamada a socket");
 		return errno;
 	}
-	printf("loadIPC\n");
 	
 	itoa (getppid(), pidString);
 	strcpy(socketFileName, socketNameStart);
@@ -140,13 +135,11 @@ int loadIPC(){
 	address.sin_family = AF_INET;
 	address.sin_port = ownPort;
 	address.sin_addr.s_addr = inet_addr("127.0.0.1");
-	printf("loadIPC\n");
 	
 	pid = getpid();
 	signal(SIGALRM, sigHandler);
 	sigemptyset (&mask);
 	sigaddset (&mask, SIGALRM);
-	printf("loadIPC\n");
 	
 	fprintf(stderr, "Por hacer connect con pid = %d\n", pid);
 	while (usleep(60), (acc += 60) < 1000 && connect(sockfd, (struct sockaddr *) &address, sizeof(struct sockaddr_in)) == -1){
@@ -178,6 +171,8 @@ int loadIPC(){
     sigprocmask (SIG_UNBLOCK, &mask, NULL);
 	
 	close(_stdin_);
+
+	printf("Sali de loadIPC\n");
 	
 	return 0;
 }
