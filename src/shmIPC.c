@@ -116,6 +116,8 @@ int synchronize(){
 	shmHeader *auxHead;
 	shmElem entry;
 	
+	fprintf(stderr, "Entre a synchronize\n");
+	
 	if ((hashTable = hashCreateTable(clientsAmm, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "Error al crear la tabla de hash\n");
 		return -1;
