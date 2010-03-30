@@ -21,7 +21,7 @@ int main (void){
 	}
 	printf("<-----------------------------------------------------------------------------------------------------------\n>");
 	
-	closeIPC();
+	closeIPC(getpid());
 	
 	printf("Pre mallocs gays\n");
 	if ((pids = malloc(sizeof(pid_t) * countriesTableEntriesAmm)) == NULL || (fixture = malloc(sizeof(void *) * countriesTableEntriesAmm / 4)) == NULL){

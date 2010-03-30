@@ -218,7 +218,9 @@ int getIPCStatus(pid_t pid){
 	char pidString[10];
 	
 	itoa(pid, pidString);
-	ipcID = hashSearch(hashTable, pidString, &hkey);
+	if ((ipcID = hashSearch(hashTable, pidString, &hkey)) == NULL){
+		fprintf(stderr, "Error en hashSearch invocado en getIPCStatus con pidstring = %s", pidString);
+	}
 	
 	ret = FD_ISSET(ipcID[0], slave);
 	free(ipcID);
@@ -227,11 +229,11 @@ int getIPCStatus(pid_t pid){
 }
 
 int closeIPC(){
-/*	if (hashTable != NULL){
+	if (hashTable != NULL){
 		hashFreeTable(hashTable);
 	}
 	hashTable = NULL;
-*/
+
 	return 0;
 }
 

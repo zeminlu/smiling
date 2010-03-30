@@ -81,7 +81,7 @@ int main (void){
 	}
 	varFree(6, countriesTable, conditions, condArgs->sets, condArgs, group->countries, group);
 	
-	closeIPC();
+	closeIPC(getpid());
 	
 	return status;
 }
@@ -90,7 +90,7 @@ void sendErrorToParent(){
 	int msg = -2;
 	
 	if(writeIPC(getppid(), &msg, sizeof(int)) == -1){
-		fprintf(stderr,"Error de escritura");
+		fprintf(stderr,"Error de escritura del -2\n");
 		return;
 	}
 	

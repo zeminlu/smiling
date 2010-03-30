@@ -183,7 +183,10 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	char pidString[10];
 	
 	itoa(pid, pidString);
-	actsockfd = hashSearch(hashTable, pidString, &hkey);
+	if ((actsockfd = hashSearch(hashTable, pidString, &hkey)) == NULL){
+		fprintf(stderr, "Error en hashSearch invocado en readIPC con pidString = %s\n", pidString);
+		return -1;
+	}
 	recv(actsockfd[0], buffer, bufferSize, 0);
 	free(actsockfd);
 	
@@ -196,7 +199,10 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	char pidString[10];
 	
 	itoa(pid, pidString);
-	actsockfd = hashSearch(hashTable, pidString, &hkey);
+	if ((actsockfd = hashSearch(hashTable, pidString, &hkey)) == NULL){
+		fprintf(stderr, "Error en hashSearch de writeIPC invocado con pidString = %s\n", pidString);
+		return -1;
+	}
 	send(actsockfd[0], buffer, bufferSize, 0);
 	free(actsockfd);
 	
@@ -204,6 +210,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 }
 
 int closeIPC(int pid){
+	fprintf(stderr, "Terminando pid = %d\n", pid);
 	if (hashTable != NULL){
 		hashFreeTable(hashTable);
 	}
@@ -230,7 +237,10 @@ int getIPCStatus(pid_t pid){
 	char pidString[10];
 	
 	itoa(pid, pidString);
-	actsockfd = hashSearch(hashTable, pidString, &hkey);
+	if ((actsockfd = hashSearch(hashTable, pidString, &hkey)) == NULL){
+		fprintf(stderr, "Error en hashSearch de getIPCStatus invocado con pidString = %s\n", pidString);
+		return -1;
+	}
 	ret = FD_ISSET(actsockfd[0], slave);
 	free(actsockfd);
 	
