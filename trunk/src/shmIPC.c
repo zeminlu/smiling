@@ -183,7 +183,7 @@ int synchronize(){
 int loadIPC(){
 	sigset_t mask, oldmask;
 	pid_t pid;
-	int data[2], aux, l = 0;
+	int data[2], aux;
 	char pidString[20];
 	shmElem entry;
 	shmHeader *auxHead;
@@ -362,8 +362,8 @@ int closeIPC(int pid){
 	if (hashTable != NULL){
 		hashFreeTable(hashTable);
 	}
-	if (shmctl(shmemId, IPC_RMID, NULL) == -1){
-		perror("Error liberando la shmem");
+	if (shmdt(shmemStart) == -1){
+		perror("Error desatachandome de la shmem");
 	}
 	return 0;
 }
