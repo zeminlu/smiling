@@ -260,11 +260,13 @@ int loadIPC(){
 }
 
 int readIPC(pid_t pid, void *buffer, int bufferSize){
-	int module, remaining, readAlready;
+	int module, remaining, readAlready, i;
 	unsigned int hkey;
 	shmElem *entry;
 	shmHeader *auxHead = NULL;
 	char pidString[20];
+	
+	printf("Intento leer\n");
 	
 	if (bufferSize > _SHM_SEG_SIZE_ / 2){
 		fprintf(stderr, "IPCAPI: Lectura de tamaño superior a _SHM_SEG_SIZE\n");
@@ -285,7 +287,7 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 		if (*(entry->read) < *(entry->otherWrite)){
 			if (bufferSize > (*(entry->otherWrite) - *(entry->read))){
 				sem_post(entry->semA);
-				sleep(1)
+				sleep(1);
 				continue;
 			}
 			break;
@@ -306,6 +308,15 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 		}
 	}
 	
+	
+	for (i = 0 ; i < bufferSize ; ++i){
+		if (*(entry->read) > _SHM_SEG_SIZE_ / 2){
+			*(entry->read) = 0;
+		}
+		memcpy(((char *)auxHead->startPos) + *(entry->read), ((char *)buffer) + i, sizeof(char));
+		(*(entry->read))++;
+	}
+	/*
 	if (*(entry->read) < *(entry->otherWrite)){
 		memcpy(buffer, ((char *)auxHead->startPos) + (*(entry->read)), bufferSize);
 		*(entry->read) += bufferSize;
@@ -321,10 +332,10 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 			memcpy(buffer, ((char *)auxHead->startPos) + *(entry->read), bufferSize);
 			*(entry->read) += bufferSize;
 		}
-	}
+	}*/
 
 	sem_post(entry->semA);
-	
+	printf("Lei joya\n");
 	return 0;
 }
 
@@ -380,6 +391,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 
 	sem_post(entry->semB);
 	
+	printf("Escribi joya\n");
 	return 0;
 }
 
@@ -407,7 +419,6 @@ int finalizeIPC(){
 
 int selectIPC(int seconds){
 	shmElem *aux;
-	int acc = 0;
 
 	sleep(1);
 	hashSetIterator(hashTable);
