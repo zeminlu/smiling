@@ -62,16 +62,16 @@ int synchronize(){
         pid = malloc(sizeof(pid_t) * clientsAmm);
        
         for (i = 0, j = 1 ; i < clientsAmm ; ++i, j +=2){              
-                printf("SYNCHRONIZE:antes queue_id = %d, Hijo numero = %d I = %d,\n",queue_id, j,i); 
+                printf("SYNCHRONIZE:antes queue_id = %d, Hijo numero = %d I = %d,\n",queue_id, j,i);
 		if((mlen = msgrcv(queue_id ,&entry, sizeof(pid_t), j, MSG_NOERROR)) == -1){
                         perror("msgrcv fallo");
                 return errno;
                 }      
                 memcpy(&pid[i], entry.mtext, sizeof(pid_t));          
                 printf("SYNCHRONIZE:despues ,Numero de escritura = %d,\n", pid[i]); 
-		ids[1]= j+1;
+				ids[1]= j+1;
                 ids[0]= j;
-
+				printf("SYNCHRONIZE ownId[0] = %d , ownID[1] = %d \n",ids[0],ids[1]);
                
                 itoa(pid[i], pidString);
                 if(hashInsert(&hashTable, ids, pidString, 0) == NULL){
@@ -80,7 +80,7 @@ int synchronize(){
 		}
         }
 
-        printf("SYNCHRONIZE:Ya inserte  en la tabla de hash\n"); 
+        printf("SYNCHRONIZE:Ya inserte  en la tabla de hash\n");
 
         for (i = 0 ; i < clientsAmm ; ++i){
                 kill (pid[i], SIGALRM);
@@ -110,13 +110,11 @@ int loadIPC(){
         sigaddset (&mask, SIGALRM);
        
         queue_id = msgget((key_t)getppid(), 0);
-	printf("LOADIPC: ENTRO,\n"); 
 
         aux = read(_stdin_, &(ownID[1]), sizeof(int));
         ownID[0] = 1 + ownID[1];
-	printf("LOADIPC: id = %d,\n",ownID[1]); 
-	
-        if((hashTable = hashCreateTable(10, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
+		printf("LOADIPC ownId[0] = %d , ownID[1] = %d \n",ownID[0],ownID[1]);
+     if((hashTable = hashCreateTable(10, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr,"Error en crear la tabla de hash en loadIPC\n");
 		return -1;
 	}
@@ -131,13 +129,13 @@ int loadIPC(){
         pid = getpid();
         memcpy(entry.mtext, &pid, sizeof(pid_t));
 
-	printf("LOADIPC: queue_id = %d,Numero de escritura = %d, Mtext %d,\n",queue_id, ownID[1], pid); 
+		printf("LOADIPC: queue_id = %d,Numero de escritura = %d, Mtext %d,\n",queue_id, ownID[1], pid);
 
         if((mlen = msgsnd(queue_id, &entry, sizeof(pid_t), 0)) == -1){
 		perror("msgsnd fallo");        
 		return errno;
         }
-       	printf("LOADIPC: SAlio del send\n"); 
+       	printf("LOADIPC: SAlio del send\n");
 
         while (!flag){
         sigsuspend (&oldmask);
@@ -154,20 +152,22 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
         msQ entry;
         char pidString[10];
         itoa(pid, pidString);
+
         if((ipcID = hashSearch(hashTable, pidString, &hkey)) == NULL){
-		fprintf(stderr,"Error en buscar una entry en la tabla de hash en readIPC con pidString = %s\n", pidString);
-		return -1;
-	}
-	printf("READIPC: queue_id = %d,Numero con el que voy a leer = %d, %s\n",queue_id, ipcID[0], pidString); 
+			fprintf(stderr,"Error en buscar una entry en la tabla de hash en readIPC con pidString = %s\n", pidString);
+			return -1;
+		}
+		printf("READIPC: queue_id = %d,Numero con el que voy a leer = %d, %s, bufferSize %d\n",queue_id, ipcID[0], pidString, bufferSize);
 
         if(msLastRead == NULL){
                 if((mlen = msgrcv(queue_id ,&entry, bufferSize, ipcID[0], MSG_NOERROR)) == -1){
-                        perror("msgrcv fallo");
+                        printf("FALLOP: queue_id = %d,Numero con el que voy a leer = %d, %s, bufferSize %d\n",queue_id, ipcID[0], pidString, bufferSize);
+						printf("Entry = mtype %d y mtext%s \n",entry.mtype, entry.mtext);
+						perror("msgrcv fallo");
                         return errno;          
                 }      
                 memcpy(buffer,entry.mtext, bufferSize);
-
-               
+				
         }else if(msLastRead->mtype == ipcID[0]){
                 memcpy(buffer,msLastRead->mtext, bufferSize);
                 free(msLastRead);
@@ -184,14 +184,14 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
         char pidString[10];
        
         itoa(pid, pidString);
-	if((ipcID = hashSearch(hashTable, pidString, &hkey)) == NULL){
-		fprintf(stderr,"Error en buscar una entry en la tabla de hash en writeIPC con pidString = %s\n", pidString);
-		return -1;
+		if((ipcID = hashSearch(hashTable, pidString, &hkey)) == NULL){
+			fprintf(stderr,"Error en buscar una entry en la tabla de hash en writeIPC con pidString = %s\n", pidString);
+			return -1;
 	
-	}
-        entry.mtype = ipcID[1];
+		}
+		entry.mtype = ipcID[1];
         memcpy(entry.mtext, buffer, bufferSize);
-	printf("WRITEIPC: queue_id = %d,Numero con el que voy a escribir = %d, %s\n",queue_id, ipcID[1], pidString); 
+		printf("WRITEIPC: queue_id = %d,Numero con el que voy a escribir = %d, %s\n",queue_id, ipcID[1], pidString); 
 
         if((mlen = msgsnd(queue_id, &entry, bufferSize, 0)) == -1){
                 perror("msgsnd fallo");        
@@ -231,19 +231,23 @@ int getIPCStatus(pid_t pid){
         unsigned int hkey;
         msQ * entry;
         char pidString[10];
-       
+
         if((entry = malloc(sizeof(msQ))) == NULL){
                 perror("GETIPCSTATUS: Errora al crear la memoria para el entry de IPC status");
                 return errno;
         }
         itoa(pid, pidString);
-        ipcID = hashSearch(hashTable, pidString, &hkey);
+        if((ipcID = hashSearch(hashTable, pidString, &hkey)) == NULL){
+			fprintf(stderr,"Error en hashSearch en getIPCStatus, invocado con Pid = %s\n",pidString);
+			return -1;
+		}
        
         if((mlen = msgrcv(queue_id ,entry, bufferSize, ipcID[0],IPC_NOWAIT)) == -1){
-                        return FALSE;          
+			free(entry);
+			return FALSE;          
         }else{
-                msLastRead = entry;
-                return TRUE;
+			msLastRead = entry;
+            return TRUE;
         }      
 }
 
