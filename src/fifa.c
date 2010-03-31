@@ -293,7 +293,7 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 	}
 	free(subFixture);
 	
-	for (i = 0 ; i < countriesTableEntriesAmm ; ++i){
+	for (i = 0 ; i < finished ; ++i){
 		wait(&status);
 		if (status < 0 && status != -2){
 			errorStat = TRUE;
