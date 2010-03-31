@@ -12,8 +12,20 @@ int main (void){
 	printf("Pre loadcountriestable\n");
 	if ((countriesTableEntriesAmm = loadCountriesTable(&countriesTable)) < 0){
 		fprintf(stderr, "Error en loadCountriesTable\n");
+		if (writeIPC(getppid(), &countriesTableEntriesAmm, sizeof(int)) == -1){
+			fprintf(stderr, "Error mandando señal de error a parallel\n");
+		}
+		closeIPC(getpid());
 		return countriesTableEntriesAmm;
 	}
+	
+	if (writeIPC(getppid(), &countriesTableEntriesAmm, sizeof(int)) == -1){
+		fprintf(stderr, "Error mandando señal de OK a parallel\n");
+		free(countriesTable);
+		closeIPC(getpid());
+		return -1;
+	}
+	
 	printf("<-----------------------------------------LLEGO LO SIGUIENTE A FIFA-----------------------------------------\n");
 	for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 		printf("Pais: %s - Continente: %d - Campeon: %d - Peso: %d - Same: %d - Death: %d - ChampG: %d - Weak: %d - Cabeza de Serie: %d\n", 
@@ -46,7 +58,7 @@ int main (void){
 	printf("Pre childsListener\n");	
 	if ((status = childsListener(pids, countriesTable, countriesTableEntriesAmm, fixture)) != 0){
 		fprintf(stderr, "Error en childslistener\n");
-		if (status == -1){
+		if (status == -2){
 			printf("No se encontro una solucion al problema planteado, ver salida de error\n");
 		}
 		else{
@@ -92,20 +104,20 @@ int loadCountriesTable(country ***countriesTable){
 	int countriesTableEntriesAmm, i, j, bufferSize;
 	void *buffer;
 	
+	fprintf(stderr, "Recibiendo countriesTableEntriesAmm\n");
 	if (readIPC(getppid(), &countriesTableEntriesAmm, sizeof(int)) != 0){
 		return -1;
 	}
-		
+	fprintf(stderr, "Recibi countriesTableEntriesAmm = %d\n", countriesTableEntriesAmm);
 	if (((*countriesTable) = malloc(sizeof(void *) * countriesTableEntriesAmm)) == NULL){
 		perror("Error de memoria");
 		return errno;
 	}
-	
+	fprintf(stderr, "Por cargar cada pais\n");
 	for (i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		if (readIPC(getppid(), &bufferSize, sizeof(int)) != 0){
 			return -1;
 		}
-		
 		if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL || ((*countriesTable)[i] = malloc(sizeof(country))) == NULL){
 			perror("Error de memoria");
 			for(j = 0 ; j < i ; ++j){
@@ -198,7 +210,7 @@ int startChildProcesses(country **countriesTable, int countriesTableEntriesAmm, 
 
 int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntriesAmm, country ***fixture){
 	void *buffer;
-	int bufferSize, status, i, j, x, k, reqCountry, flag = FALSE, headsAmm, *finished, errorStat, response;
+	int bufferSize, status, i, j, x, k, reqCountry, flag = FALSE, headsAmm, *finished, finishedAmm = 0, errorStat = FALSE, response;
 	country **subFixture;
 	
 	headsAmm = countriesTableEntriesAmm / 4;
@@ -262,6 +274,7 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 					}
 					printf("Leyo subfixture de %d\n", j);
 					finished[j] = TRUE;
+					finishedAmm++;
 					if (--headsAmm == 0){
 						flag = TRUE;
 						break;
@@ -269,6 +282,7 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 				}
 				else if (reqCountry == -2){
 					finished[j] = TRUE;
+					++finishedAmm;
 					flag = TRUE;
 					break;
 				}
@@ -295,13 +309,12 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 	}
 	free(subFixture);
 	
-	errorStat = FALSE;
-	
-	for (i = 0 ; i < countriesTableEntriesAmm / 4 ; ++i){
+	for (i = 0 ; i < finishedAmm ; ++i){
 		wait(&status);
-		if (status < 0){
+		if (status < 0 && status != -2){
 			errorStat = TRUE;
 			fprintf(stderr, "Error en un groupH: %d\n", status);
+			break;
 		}
 	}
 	
@@ -310,7 +323,7 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 	}
 	
 	if (headsAmm != 0){
-		return -1;
+		return -2;
 	}
 	
 	return 0;

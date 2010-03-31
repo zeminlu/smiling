@@ -22,13 +22,13 @@ int setupIPC(int channels){
 	strcat(fileName, pid);
 	
 	if ((master = malloc(sizeof(fd_set))) == NULL || (slave = malloc(sizeof(fd_set))) == NULL){
-		perror("Error de memoria\n");
+		perror("IPCAPI: Error de memoria en setupIPC\n");
 		free(master);
 		return errno;
 	}
 	
 	if ((data = open(fileName, O_WRONLY | O_CREAT, 0644)) < 0){
-		perror("Error abriendo archivo en setupIPC");
+		perror("IPCAPI: Error abriendo archivo en setupIPC");
 		varFree(2, master, slave);
 		return -1;
 	}
@@ -40,7 +40,7 @@ int setupIPC(int channels){
 	FD_ZERO(master);
 		
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
-		perror("Error en llamada a socket");
+		perror("IPCAPI: Error en llamada a socket");
 		return errno;
 	}
 	
@@ -50,7 +50,7 @@ int setupIPC(int channels){
 			address.sin_port = ownPort;
 			continue;
 		}
-		perror("Error en llamada a bind");
+		perror("IPCAPI: Error en llamada a bind");
 		return errno;
 	}
 	
@@ -80,27 +80,30 @@ int synchronize(){
 	char pidString[20], fileName[20], *nameStart = "./";
 	
 	if ((hashTable = hashCreateTable(clientsAmm, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
-		fprintf(stderr, "Error al crear la tabla de hash\n");
+		fprintf(stderr, "IPCAPI: Error al crear la tabla de hash\n");
 		return -1;
 	}
 	
 	if (listen(sockfd, clientsAmm) == -1){
-		perror("Error en llamada a listen");
+		perror("IPCAPI: Error en llamada a listen");
 		return errno;
 	}
 	
 	pid = malloc(sizeof(int) * clientsAmm);
-	while (i < clientsAmm){
+	for (i = 0 ; i < clientsAmm ; ++i){
 		if ((newsockfd = accept(sockfd, NULL, NULL)) == -1){
-			perror("Error en llamada a accept");
+			perror("IPCAPI: Error en llamada a accept");
 			continue;
 		}
 		recv(newsockfd, &(pid[i]), sizeof(pid_t), 0);
 		itoa(pid[i], pidString);
 		hashInsert(&hashTable, &newsockfd, pidString, 0);
 		FD_SET(newsockfd, master);
-		++i;
 	}
+	
+	printf("Mandando señales\n");
+
+	
 	for (i = 0 ; i < clientsAmm ; ++i){
 		kill (pid[i], SIGALRM);
 	}
@@ -119,13 +122,20 @@ int loadIPC(){
 	pid_t pid;
 	int acc = 0;
 	char pidString[20], *socketNameStart = "./socket-";
+	
+	signal(SIGALRM, sigHandler);
+	sigemptyset (&mask);
+	sigaddset (&mask, SIGALRM);
+	sigprocmask (SIG_BLOCK, &mask, &oldmask);
+
+	
 	if (read(_stdin_, &ownPort, sizeof(int)) != sizeof(int)){
-		perror("IPCAPI: loadIPC 1 - Error en primitiva write");
+		perror("IPCAPI: loadIPC - Error en primitiva write");
 		return -1;
 	}
 	
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
-		perror("Error en llamada a socket");
+		perror("IPCAPI: Error en llamada a socket");
 		return errno;
 	}
 	
@@ -137,14 +147,12 @@ int loadIPC(){
 	address.sin_addr.s_addr = inet_addr("127.0.0.1");
 	
 	pid = getpid();
-	signal(SIGALRM, sigHandler);
-	sigemptyset (&mask);
-	sigaddset (&mask, SIGALRM);
+	
 	
 	fprintf(stderr, "Por hacer connect con pid = %d\n", pid);
-	while (usleep(60), (acc += 60) < 1000 && connect(sockfd, (struct sockaddr *) &address, sizeof(struct sockaddr_in)) == -1){
+	while (usleep(60), /*(acc += 60) < 4000 &&*/ connect(sockfd, (struct sockaddr *) &address, sizeof(struct sockaddr_in)) == -1){
 		if (errno != ECONNREFUSED ){
-			perror("Error en llamada a connect");
+			perror("IPCAPI: Error en llamada a connect");
 			return errno;
 		}
 	}
@@ -153,18 +161,19 @@ int loadIPC(){
 	send(sockfd, &pid, sizeof(pid_t), 0);
 	
 	if ((hashTable = hashCreateTable(10, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
-		fprintf(stderr, "Error creando tabla de hash en loadIPC\n");
+		fprintf(stderr, "IPCAPI: Error creando tabla de hash en loadIPC\n");
 		return -1;
 	}
 	
 	itoa(getppid(), pidString);
 	
 	if (hashInsert(&hashTable, &sockfd, pidString, 0) == NULL){
-		fprintf(stderr, "Error insertando en tabla de hash en loadIPC\n");
+		fprintf(stderr, "IPCAPI: Error insertando en tabla de hash en loadIPC\n");
 		return -1;
 	}
 	
-	sigprocmask (SIG_BLOCK, &mask, &oldmask);
+	printf("Esperando señal, pid = %d\n", pid);
+
 	while (!flag){
     	sigsuspend (&oldmask);
 	}
@@ -184,7 +193,7 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	
 	itoa(pid, pidString);
 	if ((actsockfd = hashSearch(hashTable, pidString, &hkey)) == NULL){
-		fprintf(stderr, "Error en hashSearch invocado en readIPC con pidString = %s\n", pidString);
+		fprintf(stderr, "IPCAPI: Error en hashSearch invocado en readIPC con pidString = %s\n", pidString);
 		return -1;
 	}
 	recv(actsockfd[0], buffer, bufferSize, 0);
@@ -200,7 +209,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	
 	itoa(pid, pidString);
 	if ((actsockfd = hashSearch(hashTable, pidString, &hkey)) == NULL){
-		fprintf(stderr, "Error en hashSearch de writeIPC invocado con pidString = %s\n", pidString);
+		fprintf(stderr, "IPCAPI: Error en hashSearch de writeIPC invocado con pidString = %s\n", pidString);
 		return -1;
 	}
 	send(actsockfd[0], buffer, bufferSize, 0);
@@ -238,7 +247,7 @@ int getIPCStatus(pid_t pid){
 	
 	itoa(pid, pidString);
 	if ((actsockfd = hashSearch(hashTable, pidString, &hkey)) == NULL){
-		fprintf(stderr, "Error en hashSearch de getIPCStatus invocado con pidString = %s\n", pidString);
+		fprintf(stderr, "IPCAPI: Error en hashSearch de getIPCStatus invocado con pidString = %s\n", pidString);
 		return -1;
 	}
 	ret = FD_ISSET(actsockfd[0], slave);
@@ -257,7 +266,6 @@ int finalizeIPC(){
 	if (hashTable != NULL){
 		hashFreeTable(hashTable);
 	}
-	
 	unlink(socketFileName);
 	
 	return 0;

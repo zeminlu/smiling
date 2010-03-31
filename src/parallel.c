@@ -12,7 +12,7 @@ int main(){
 
 int filesListener(){
 	DIR *dp;
-	int i, j, fifa, bufferSize, pid = 0, countriesTableEntriesAmm, childs = 0;
+	int i, j, fifa, bufferSize, pid = 0, countriesTableEntriesAmm, countriesTableEntriesAmm2, childs = 0;
 	void *buffer = NULL;
 	country **countriesTable = NULL;
 	
@@ -51,12 +51,13 @@ int filesListener(){
 			closedir(dp);
 			return -1;
 		}
-
+		fprintf(stderr, "Por mandar countriesTableEntriesAmm = %d\n", countriesTableEntriesAmm);
 		if (writeIPC(pid, &countriesTableEntriesAmm, sizeof(int)) != 0){
 			closedir(dp);
 			return -1;
 		}
-
+		fprintf(stderr, "Mande countriesTableEntriesAmm = %d\n", countriesTableEntriesAmm);
+		
 		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			serializeCountryStruct(&buffer, &bufferSize, countriesTable[j]);
 			if (writeIPC(pid, &bufferSize, sizeof(int)) != 0 || writeIPC(pid, buffer, bufferSize) != 0){
@@ -72,6 +73,16 @@ int filesListener(){
 		}
 		free(countriesTable);
 		countriesTable = NULL;
+		if (readIPC(pid, &countriesTableEntriesAmm2, sizeof(int)) == -1){
+			fprintf(stderr, "Error leyendo señal de fifa\n");
+			finalizeIPC();
+			return -1;
+		}
+		if (countriesTableEntriesAmm2 < countriesTableEntriesAmm){
+			fprintf(stderr, "Fifa no recibio bien la tabla de paises\n");
+			finalizeIPC();
+			return -1;
+		}
 		finalizeIPC();
 	}
 
