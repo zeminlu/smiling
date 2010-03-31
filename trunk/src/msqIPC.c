@@ -62,22 +62,22 @@ int synchronize(){
         pid = malloc(sizeof(pid_t) * clientsAmm);
        
         for (i = 0, j = 1 ; i < clientsAmm ; ++i, j +=2){              
-                printf("SYNCHRONIZE:antes queue_id = %d, Hijo numero = %d I = %d,\n",queue_id, j,i);
-		if((mlen = msgrcv(queue_id ,&entry, sizeof(pid_t), j, MSG_NOERROR)) == -1){
-                        perror("msgrcv fallo");
-                return errno;
-                }      
-                memcpy(&pid[i], entry.mtext, sizeof(pid_t));          
-                printf("SYNCHRONIZE:despues ,Numero de escritura = %d,\n", pid[i]); 
-				ids[1]= j+1;
-                ids[0]= j;
-				printf("SYNCHRONIZE ownId[0] = %d , ownID[1] = %d \n",ids[0],ids[1]);
+            printf("SYNCHRONIZE:antes queue_id = %d, Hijo numero = %d I = %d,\n",queue_id, j,i);
+			if((mlen = msgrcv(queue_id ,&entry, sizeof(pid_t), j, MSG_NOERROR)) == -1){
+				perror("msgrcv fallo");
+				return errno;
+			}      
+			memcpy(&pid[i], entry.mtext, sizeof(pid_t));          
+			printf("SYNCHRONIZE:despues ,Numero de escritura = %d,\n", pid[i]); 
+			ids[1]= j+1;
+			ids[0]= j;
+			printf("SYNCHRONIZE ownId[0] = %d , ownID[1] = %d \n",ids[0],ids[1]);
                
-                itoa(pid[i], pidString);
-                if(hashInsert(&hashTable, ids, pidString, 0) == NULL){
-			  fprintf(stderr,"Error en insertar una entry en la tabla de hash en synchronize con pidString = %s\n", pidString);
-			  return -1;
-		}
+			itoa(pid[i], pidString);
+			if(hashInsert(&hashTable, ids, pidString, 0) == NULL){
+				fprintf(stderr,"Error en insertar una entry en la tabla de hash en synchronize con pidString = %s\n", pidString);
+				return -1;
+			}
         }
 
         printf("SYNCHRONIZE:Ya inserte  en la tabla de hash\n");
@@ -108,7 +108,8 @@ int loadIPC(){
         signal(SIGALRM, sigHandler);
         sigemptyset (&mask);
         sigaddset (&mask, SIGALRM);
-       
+		sigprocmask (SIG_BLOCK, &mask, &oldmask);
+
         queue_id = msgget((key_t)getppid(), 0);
 
         aux = read(_stdin_, &(ownID[1]), sizeof(int));
@@ -138,9 +139,12 @@ int loadIPC(){
        	printf("LOADIPC: SAlio del send\n");
 
         while (!flag){
-        sigsuspend (&oldmask);
+			sigsuspend (&oldmask);
         }              
-        close(_stdin_);
+		sigprocmask (SIG_UNBLOCK, &mask, NULL);
+
+		
+		close(_stdin_);
        
         return 0;
 }

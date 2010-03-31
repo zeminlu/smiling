@@ -16,17 +16,17 @@ sem_t * initmutex(char *semName)
 {
 	sem_t *sd;
 	
-	if ( !(sd = sem_open(semName, O_RDWR|O_CREAT, 0666, 1)) ){
-		perror("Error en llamada a sem_open");
+	if ((sd = sem_open(semName, O_RDWR|O_CREAT, 0666, 1)) == SEM_FAILED ){
+		perror("IPCAPI: Error en llamada a sem_open");
 		return NULL;
 	}
 	return sd;
 }
 
 int initShMem(int newKey){	
-	shmemId = shmget((key_t)(newKey), clientsAmm * (_SHM_SEG_SIZE_ + sizeof(shmHeader)), IPC_CREAT | 0644);
+	shmemId = shmget((key_t)(newKey), clientsAmm * (_SHM_SEG_SIZE_ + sizeof(shmHeader)), IPC_CREAT | 0666);
 	if(shmemId == -1){
-		perror("Error en llamada a shmget");
+		perror("IPCAPI: Error en llamada a shmget");
 		return errno;
 	} 
 	return shmemId;
@@ -56,17 +56,17 @@ int initHeaders(){
 	shmHeader aux;
 	
 	for (i = 0 ; i < clientsAmm ; ++i){
-		aux.startPos = (char *)shmemStart + (sizeof(shmHeader) * clientsAmm + i * _SHM_SEG_SIZE_);
+		aux.startPos = ((char *)shmemStart) + (sizeof(shmHeader) * clientsAmm + i * _SHM_SEG_SIZE_);
 		aux.cReadOff = aux.cWriteOff = aux.sWriteOff = aux.sReadOff = 0;
 		aux.pid = -1;
-		memcpy((char *)shmemStart + (i * sizeof(shmHeader)), &aux, sizeof(shmHeader));
+		memcpy(((char *)shmemStart) + (i * sizeof(shmHeader)), &aux, sizeof(shmHeader));
 	}
 	
 	return 0;
 }
 
 int setupIPC(int channels){
-	int i, data, aux, key, status;
+	int i, data, key, status;
 	char pid[20], fileName[20], *nameStart = "./";
 		
 	key = getpid();
@@ -81,7 +81,7 @@ int setupIPC(int channels){
 	}
 	
 	if ((shmemStart = shmat(shmemId, NULL, 0)) == ERR){
-		perror("Error en llamada a shmat");
+		perror("IPCAPI: Error en llamada a shmat en setupIPC");
 		return errno;
 	}
 	
@@ -92,8 +92,10 @@ int setupIPC(int channels){
 	}
 	
 	for (i = 0 ; i < channels ; ++i){
-		aux = write(data, &shmemId, sizeof(key_t));
-		aux = write(data, &i, sizeof(int));
+		if (write(data, &shmemId, sizeof(key_t)) != sizeof(key_t) || write(data, &i, sizeof(int)) != sizeof(int)){
+			perror("IPCAPI: Error en primitiva write en setupIPC");
+			return errno;
+		}
 	}
 
 	close(data);
@@ -119,12 +121,12 @@ int synchronize(){
 	fprintf(stderr, "Entre a synchronize\n");
 	
 	if ((hashTable = hashCreateTable(clientsAmm, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
-		fprintf(stderr, "Error al crear la tabla de hash\n");
+		fprintf(stderr, "IPCAPI: Error al crear la tabla de hash en synchronize\n");
 		return -1;
 	}
 	
 	if ((pid = malloc(sizeof(pid_t) * clientsAmm)) == NULL){
-		perror("Error de memoria");
+		perror("IPCAPI: Error de memoria allocando pid en synchronize");
 		return errno;
 	}
 	
@@ -133,7 +135,7 @@ int synchronize(){
 	while (!flag){
 		flag = TRUE;
 		for (i = 0 ; i < clientsAmm ; ++i){
-			auxHead = (shmHeader *)((char *)shmemStart + (i * sizeof(shmHeader)));
+			auxHead = (shmHeader *)(((char *)shmemStart) + (i * sizeof(shmHeader)));
 			if (auxHead->pid == -1){
 				flag = FALSE;
 			}
@@ -142,7 +144,7 @@ int synchronize(){
 	
 	for (i = 0 ; i < clientsAmm ; ++i){		
 		fprintf(stderr, "Entre al for de synchronize con i = %d, clientsAmm = %d\n", i, clientsAmm);
-		auxHead = (shmHeader *)((char *)shmemStart + (i * sizeof(shmHeader)));
+		auxHead = (shmHeader *)(((char *)shmemStart) + (i * sizeof(shmHeader)));
 		
 		pid[i] = auxHead->pid;
 		if (initSem(pid[i], &entry) == -1){
@@ -162,7 +164,7 @@ int synchronize(){
 		entry.otherWrite = &(auxHead->cWriteOff);
 		
 		if (hashInsert(&hashTable, &entry, pidString, 0) == NULL){
-			fprintf(stderr, "Error en hashInsert invocado en synchronize con pidString = %s", pidString);
+			fprintf(stderr, "IPCAPI: Error en hashInsert invocado en synchronize con pidString = %s", pidString);
 		}
 		fprintf(stderr, "Sali del for de synchronize con i = %d\n", i);
 	}
@@ -185,7 +187,9 @@ int synchronize(){
 int loadIPC(){
 	sigset_t mask, oldmask;
 	pid_t pid;
-	int data[2], aux;
+	void *data;
+	int aux, index;
+	key_t key;
 	char pidString[20];
 	shmElem entry;
 	shmHeader *auxHead;
@@ -195,31 +199,40 @@ int loadIPC(){
 	
 	signal(SIGALRM, sigHandler);
 	sigemptyset (&mask);
-	sigaddset (&mask, SIGALRM);	
+	sigaddset (&mask, SIGALRM);
+	sigprocmask (SIG_BLOCK, &mask, &oldmask);
 	
-	if ((aux = read(_stdin_, data, sizeof(int) * 2) != sizeof(int) * 2)){
-		perror("Error en llamada a read");
+	if ((data = malloc(sizeof(int) + sizeof(key_t))) == NULL){
+		perror("IPCAPI: Error de memoria alocando data en loadIPC");
 		return errno;
 	}
 	
-	if ((shmemStart = shmat(data[0], NULL, 0)) == ERR){
-		perror("Error en llamada a shmat");
+	if ((aux = read(_stdin_, data, sizeof(int) + sizeof(key_t)) != sizeof(int) + sizeof(key_t))){
+		perror("IPCAPI: Error en llamada a read en loadIPC");
+		return errno;
+	}
+	
+	memcpy(&key, data, sizeof(key_t));
+	memcpy(&index, ((char *)data) + sizeof(key_t), sizeof(int));
+	
+	if ((shmemStart = shmat(key, NULL, 0)) == ERR){
+		perror("IPCAPI: Error en llamada a shmat en loadIPC");
 		return errno;
 	}
 	
 	if ((hashTable = hashCreateTable(1, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
-		fprintf(stderr, "Error en la inicializacion de la tabla de hash\n");
+		fprintf(stderr, "IPCAPI: Error en la inicializacion de la tabla de hash en loadIPC\n");
 		return -1;
 	}
 	
-	auxHead = (shmHeader *)((char *)shmemStart + (data[1] * sizeof(shmHeader)));
+	auxHead = (shmHeader *)(((char *)shmemStart) + (index * sizeof(shmHeader)));
 
 	pid = getpid();
 
 	initSem(pid, &entry);
 	
 	itoa(getppid(), pidString);
-	entry.index = data[1];
+	entry.index = index;
 	entry.read = &(auxHead->cReadOff);
 	entry.write = &(auxHead->cWriteOff);
 	entry.otherRead = &(auxHead->sReadOff);
@@ -228,18 +241,19 @@ int loadIPC(){
 	entry.semA = entry.semB;
 	entry.semB = tmp;
 	if (hashInsert(&hashTable, &entry, pidString, 0) == NULL){
-		fprintf(stderr, "Error en el insert de hashTable\n");
+		fprintf(stderr, "IPCAPI: Error en el insert de hashTable de loadIPC invocado con pidString = %s\n", pidString);
 		return -1;
 	}	
 	
-	sleep(3);
 	auxHead->pid = pid;
 	
 	while (!flag){
     	sigsuspend (&oldmask);
 	}
+    sigprocmask (SIG_UNBLOCK, &mask, NULL);
 			
 	close(_stdin_);
+	free(data);
 	
 	fprintf(stderr, "Sali del load\n");	
 	
@@ -251,10 +265,10 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	unsigned int hkey;
 	shmElem *entry;
 	shmHeader *auxHead = NULL;
-	char pidString[10];
+	char pidString[20];
 	
 	if (bufferSize > _SHM_SEG_SIZE_ / 2){
-		fprintf(stderr, "Lectura de tamaño superior a _SHM_SEG_SIZE\n");
+		fprintf(stderr, "IPCAPI: Lectura de tamaño superior a _SHM_SEG_SIZE\n");
 		return -1;
 	}
 	
@@ -262,14 +276,20 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	readAlready = 0;
 	
 	itoa(pid, pidString);
-	entry = hashSearch(hashTable, pidString, &hkey);
-	auxHead = (shmHeader *)((char *)shmemStart + (entry->index * sizeof(shmHeader)));
+	if ((entry = hashSearch(hashTable, pidString, &hkey)) == NULL){
+		fprintf(stderr, "IPCAPI: Error en hashSearch dentro de readIPC invocado con pidString = %s\n", pidString);
+	}
+	auxHead = (shmHeader *)(((char *)shmemStart) + (entry->index * sizeof(shmHeader)));
 
-	sem_wait(entry->semA);
-	while(sem_post(entry->semA), usleep(100)){
+	while(TRUE){
 		sem_wait(entry->semA);
 		if (*(entry->read) < *(entry->otherWrite)){
 			if (bufferSize > (*(entry->otherWrite) - *(entry->read))){
+				sem_post(entry->semA);
+				if (usleep(60) == -1){
+					fprintf(stderr, "IPCAPI: Error en el usleep de readIPC\n");
+					return -1;
+				}
 				continue;
 			}
 			break;
@@ -277,28 +297,38 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 		else if (*(entry->read) > *(entry->otherWrite)){
 			module = (_SHM_SEG_SIZE_ / 2) - *(entry->read);
 			if (module + *(entry->otherWrite) < bufferSize){
+				sem_post(entry->semA);
+				if (usleep(60) == -1){
+					fprintf(stderr, "IPCAPI: Error en el usleep de readIPC\n");
+					return -1;
+				}
 				continue;
 			}
 			break;
 		}
 		else{
+			sem_post(entry->semA);
+			if (usleep(60) == -1){
+				fprintf(stderr, "IPCAPI: Error en el usleep de readIPC\n");
+				return -1;
+			}
 			continue;
 		}
 	}
 	
 	if (*(entry->read) < *(entry->otherWrite)){
-		memcpy(buffer, (char *)auxHead->startPos + (*(entry->read)), bufferSize);
+		memcpy(buffer, ((char *)auxHead->startPos) + (*(entry->read)), bufferSize);
 		*(entry->read) += bufferSize;
 	}
 	else if (*(entry->read) > *(entry->otherWrite)){
 		if (bufferSize > _SHM_SEG_SIZE_ / 2 - *(entry->read)){
-			memcpy(buffer, (char *)auxHead->startPos + (*(entry->read)), _SHM_SEG_SIZE_ / 2 - *(entry->read));
+			memcpy(buffer, ((char *)auxHead->startPos) + (*(entry->read)), _SHM_SEG_SIZE_ / 2 - *(entry->read));
 			remaining -= _SHM_SEG_SIZE_ / 2 - *(entry->read);
-			memcpy((char *)buffer + (_SHM_SEG_SIZE_ / 2 - *(entry->read)), auxHead->startPos, remaining);
+			memcpy(((char *)buffer) + (_SHM_SEG_SIZE_ / 2 - *(entry->read)), auxHead->startPos, remaining);
 			*(entry->read) = remaining;
 		}
 		else{
-			memcpy(buffer, (char *)auxHead->startPos + *(entry->read), bufferSize);
+			memcpy(buffer, ((char *)auxHead->startPos) + *(entry->read), bufferSize);
 			*(entry->read) += bufferSize;
 		}
 	}
@@ -313,24 +343,30 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	unsigned int hkey;
 	shmElem *entry;
 	shmHeader *auxHead = NULL;
-	char pidString[10];
+	char pidString[20];
 	
 	remaining = bufferSize;
 	wroteAlready = 0;
 	
 	if (bufferSize > _SHM_SEG_SIZE_ / 2){
-		fprintf(stderr, "Escritura de tamaño superior a _SHM_SEG_SIZE\n");
+		fprintf(stderr, "IPCAPI: Escritura de tamaño superior a _SHM_SEG_SIZE\n");
 	}
 	
 	itoa(pid, pidString);
-	entry = hashSearch(hashTable, pidString, &hkey);
-	auxHead = (shmHeader *)((char *)shmemStart + entry->index * sizeof(shmHeader));
+	if ((entry = hashSearch(hashTable, pidString, &hkey)) == NULL){
+		fprintf(stderr, "IPCAPI: Error en hashSearch dentro de writeIPC invocado con pidString = %s\n", pidString);
+	}
+	auxHead = (shmHeader *)(((char *)shmemStart) + entry->index * sizeof(shmHeader));
 	
-	sem_wait(entry->semB);
-	while(sem_post(entry->semB), usleep(60)){
+	while(TRUE){
 		sem_wait(entry->semB);
 		if (*(entry->write) < *(entry->otherRead)){
 			if (bufferSize > (*(entry->otherRead) - *(entry->write))){
+				sem_post(entry->semB);
+				if (usleep(60) == -1){
+					fprintf(stderr, "IPCAPI: Error en el usleep de writeIPC\n");
+					return -1;
+				}
 				continue;
 			}
 			break;
@@ -338,20 +374,23 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 		else if (*(entry->write) > *(entry->otherRead)){
 			module = (_SHM_SEG_SIZE_ / 2) - *(entry->write);
 			if (module + *(entry->otherRead) < bufferSize){
+				sem_post(entry->semB);
+				if (usleep(60) == -1){
+					fprintf(stderr, "IPCAPI: Error en el usleep de writeIPC\n");
+					return -1;
+				}
 				continue;
 			}
 			break;
 		}
-		else{
-			continue;
-		}
+		break;
 	}
 	
 	for (i = 0 ; i < bufferSize ; ++i){
 		if (*(entry->write) > _SHM_SEG_SIZE_ / 2){
 			*(entry->write) = 0;
 		}
-		memcpy((char *)buffer + i,  (char *)auxHead->startPos + *(entry->write), 1);
+		memcpy(((char *)auxHead->startPos) + *(entry->write), ((char *)buffer) + i, sizeof(char));
 		(*(entry->write))++;
 	}
 
@@ -364,8 +403,9 @@ int closeIPC(int pid){
 	if (hashTable != NULL){
 		hashFreeTable(hashTable);
 	}
+	hashTable = NULL;
 	if (shmdt(shmemStart) == -1){
-		perror("Error desatachandome de la shmem");
+		perror("IPCAPI: Error desatachandome de la shmem");
 	}
 	return 0;
 }
@@ -374,8 +414,9 @@ int finalizeIPC(){
 	if (hashTable != NULL){
 		hashFreeTable(hashTable);
 	}
+	hashTable = NULL;
 	if (shmctl(shmemId, IPC_RMID, NULL) == -1){
-		perror("Error liberando la shmem");
+		perror("IPCAPI: Error liberando la shmem");
 	}
 	return 0;
 }
@@ -387,7 +428,7 @@ int selectIPC(int seconds){
 	while (usleep(60), (acc += 60) < seconds * 1000){
 		hashSetIterator(hashTable);
 		while((aux = (shmElem *) hashGetNext(hashTable))){
-			if (*(aux->read) == *(aux->otherWrite)){
+			if (*(aux->read) != *(aux->otherWrite)){
 				return TRUE;
 			}
 		}
@@ -401,9 +442,11 @@ int getIPCStatus(pid_t pid){
 	char pidString[20];
 	
 	itoa(pid, pidString);
-	aux = hashSearch(hashTable, pidString, &hkey);
-	
-	if (aux->read != aux->otherWrite){
+	if ((aux = hashSearch(hashTable, pidString, &hkey)) == NULL){
+		fprintf(stderr, "IPCAPI: Error en hashSearch dentro de getIPCStatus, invocado con pidString = %s\n", pidString);
+		return -1;
+	}
+	if (*(aux->read) != *(aux->otherWrite)){
 		return TRUE;
 	}
 	
@@ -423,10 +466,13 @@ void * copyIPCID(void *elem){
 	return aux;
 }
 void freeIPCID(void *elem){
-	shmElem *aux = (shmElem *)elem;
+	shmElem *aux;
+	
+	aux = (shmElem *)elem;
+	
 	if (sem_close(aux->semA) == -1 || sem_close(aux->semB) == -1){
-		perror("Error liberando semaforo");
+		perror("IPCAPI: Error liberando semaforo");
 	}
-	free(elem);
+	free(aux);
 	return;
 }

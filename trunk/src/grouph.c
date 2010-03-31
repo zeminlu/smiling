@@ -246,14 +246,17 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			noCondition(condArgs);
 
 			if (condArgs->sets[0]->countriesAmm == 0){
-				return -1;
+				return -2;
 			}
 			reqCountry = condArgs->sets[0]->country[0];
 		}
 		else if (i == 1){
 			ret = conditions[0](condArgs);
-			if (ret == NULL || threadsRet[0] < 0 || condArgs->sets[0]->countriesAmm == 0){
+			if (ret == NULL || threadsRet[0] < 0){
 				return -1;
+			}
+			else if (condArgs->sets[0]->countriesAmm == 0){
+				return -2;
 			}
 			reqCountry = condArgs->sets[0]->country[((rand() % condArgs->sets[0]->countriesAmm) + getpid()) % condArgs->sets[0]->countriesAmm];
 		}
@@ -278,7 +281,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			sortPointers(condArgs->sets);
 			
 			if (intersect(condAmm, condArgs, &intersection) == -1){
-				return -1;
+				return -2;
 			}
 						
 			reqCountry = intersection->country[((rand() % intersection->countriesAmm) + getpid()) % intersection->countriesAmm];
