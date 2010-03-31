@@ -6,7 +6,6 @@ int clientsAmm = 0, flag = FALSE;
 int info;
 hashTableADT hashTable = NULL;
 
-
 void sigHandler (int signum){
 	flag = TRUE;
 	return;
@@ -286,10 +285,7 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 		if (*(entry->read) < *(entry->otherWrite)){
 			if (bufferSize > (*(entry->otherWrite) - *(entry->read))){
 				sem_post(entry->semA);
-				if (usleep(60) == -1){
-					fprintf(stderr, "IPCAPI: Error en el usleep de readIPC\n");
-					return -1;
-				}
+				sleep(1)
 				continue;
 			}
 			break;
@@ -298,20 +294,14 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 			module = (_SHM_SEG_SIZE_ / 2) - *(entry->read);
 			if (module + *(entry->otherWrite) < bufferSize){
 				sem_post(entry->semA);
-				if (usleep(60) == -1){
-					fprintf(stderr, "IPCAPI: Error en el usleep de readIPC\n");
-					return -1;
-				}
+				sleep(1);
 				continue;
 			}
 			break;
 		}
 		else{
 			sem_post(entry->semA);
-			if (usleep(60) == -1){
-				fprintf(stderr, "IPCAPI: Error en el usleep de readIPC\n");
-				return -1;
-			}
+			sleep(1);
 			continue;
 		}
 	}
@@ -363,10 +353,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 		if (*(entry->write) < *(entry->otherRead)){
 			if (bufferSize > (*(entry->otherRead) - *(entry->write))){
 				sem_post(entry->semB);
-				if (usleep(60) == -1){
-					fprintf(stderr, "IPCAPI: Error en el usleep de writeIPC\n");
-					return -1;
-				}
+				sleep(1);
 				continue;
 			}
 			break;
@@ -375,10 +362,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 			module = (_SHM_SEG_SIZE_ / 2) - *(entry->write);
 			if (module + *(entry->otherRead) < bufferSize){
 				sem_post(entry->semB);
-				if (usleep(60) == -1){
-					fprintf(stderr, "IPCAPI: Error en el usleep de writeIPC\n");
-					return -1;
-				}
+				sleep(1);
 				continue;
 			}
 			break;
@@ -425,12 +409,11 @@ int selectIPC(int seconds){
 	shmElem *aux;
 	int acc = 0;
 
-	while (usleep(60), (acc += 60) < seconds * 1000){
-		hashSetIterator(hashTable);
-		while((aux = (shmElem *) hashGetNext(hashTable))){
-			if (*(aux->read) != *(aux->otherWrite)){
-				return TRUE;
-			}
+	sleep(1);
+	hashSetIterator(hashTable);
+	while((aux = (shmElem *) hashGetNext(hashTable))){
+		if (*(aux->read) != *(aux->otherWrite)){
+			return TRUE;
 		}
 	}
 	return FALSE;

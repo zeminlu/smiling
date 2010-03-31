@@ -79,12 +79,12 @@ int synchronize(){
 	int i = 0, *pid, newsockfd, status;
 	char pidString[20], fileName[20], *nameStart = "./";
 	
-	if ((hashTable = hashCreateTable(clientsAmm, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
+	if ((hashTable = hashCreateTable(clientsAmm * 4, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "IPCAPI: Error al crear la tabla de hash\n");
 		return -1;
 	}
 	
-	if (listen(sockfd, clientsAmm) == -1){
+	if (listen(sockfd, clientsAmm + 5) == -1){
 		perror("IPCAPI: Error en llamada a listen");
 		return errno;
 	}
@@ -93,37 +93,33 @@ int synchronize(){
 	while (i < clientsAmm){
 		if ((newsockfd = accept(sockfd, NULL, NULL)) == -1){
 			if (errno == EAGAIN || errno == ENETDOWN || errno == EPROTO || errno == ENOPROTOOPT || errno == EHOSTDOWN || errno == ENONET || errno == EHOSTUNREACH || errno == EOPNOTSUPP || errno == ENETUNREACH){
-			continue;
+				continue;
 			}
 			else if (newsockfd < 0){
 				perror("IPCAPI: Error en llamada a accept");
 				return -1;
 			}
 		}
-		printf("newsockfd = %d\n", newsockfd);
 		if ((status = recv(newsockfd, &(pid[i]), sizeof(pid_t), 0)) != sizeof(pid_t)){
 			if (status == 0){
-				fprintf(stderr, "IPCAPI: Peer hizo shutdown del socket\n");
+				perror("IPCAPI: Peer hizo shutdown del socket");
 			}
 			else if( status == -1){
-				fprintf(stderr, "IPCAPI: Error -1 en recv\n");
+				perror("IPCAPI: Error -1 en recv");
 			}
 			else{
-				fprintf(stderr, "IPCAPI: Error desconocido en recv = %d", status);
+				perror("IPCAPI: Error desconocido en recv");
 			}
 			return -1;
 		}
-		
 		itoa(pid[i], pidString);
 		if (hashInsert(&hashTable, &newsockfd, pidString, 0) == NULL){
-			fprintf(stderr, "Error en hashInsert de synchronize invocado con pidString = %d\n", pidString);
+			fprintf(stderr, "IPCAPI: Error en hashInsert de synchronize invocado con pidString = %s a partir de pid[%d] = %d\n", pidString, i, pid[i]);
 			return -1;
 		}
 		FD_SET(newsockfd, master);
 		++i;
 	}
-	
-	printf("Mandando señales\n");
 	
 	for (i = 0 ; i < clientsAmm ; ++i){
 		kill (pid[i], SIGALRM);
@@ -134,14 +130,13 @@ int synchronize(){
 	strcpy(fileName, nameStart);
 	strcat(fileName, pidString);
 	unlink(fileName);
-	printf("me fui de synchronize\n");
 	return 0;
 }
 
 int loadIPC(){
 	sigset_t mask, oldmask;
 	pid_t pid;
-	int acc = 0, status;
+	int status;
 	char pidString[20], *socketNameStart = "./socket-";
 	
 	signal(SIGALRM, sigHandler);
@@ -169,18 +164,15 @@ int loadIPC(){
 	
 	pid = getpid();
 	
-	
-	fprintf(stderr, "Por hacer connect con pid = %d\n", pid);
-	while (usleep(60), /*(acc += 60) < 4000 &&*/ connect(sockfd, (struct sockaddr *) &address, sizeof(struct sockaddr_in)) == -1){
+	while (sleep(1), connect(sockfd, (struct sockaddr *) &address, sizeof(struct sockaddr_in)) == -1){
 		if (errno != ECONNREFUSED ){
 			perror("IPCAPI: Error en llamada a connect");
 			return errno;
 		}
 	}
-	fprintf(stderr, "Hizo connect con pid = %d\n", pid);
 	
 	if ((status = send(sockfd, &pid, sizeof(pid_t), 0)) == -1){
-		perror("Error en send de loadIPC");
+		perror("IPCAPI: Error en send de loadIPC");
 		return errno;
 	}
 	
@@ -196,8 +188,6 @@ int loadIPC(){
 		return -1;
 	}
 	
-	printf("Esperando señal, pid = %d\n", pid);
-
 	while (!flag){
     	sigsuspend (&oldmask);
 	}
@@ -205,8 +195,6 @@ int loadIPC(){
 	
 	close(_stdin_);
 
-	printf("Sali de loadIPC\n");
-	
 	return 0;
 }
 
@@ -222,7 +210,7 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	}
 	if ((status = recv(actsockfd[0], buffer, bufferSize, 0)) != bufferSize){
 		if (status == 0){
-			fprintf(stderr, "IPCAPI: Peer hizo shutdown del socket\n");
+			fprintf(stderr, "IPCAPI: Peer de pid = %d hizo shutdown del socket\n", pid);
 		}
 		else if( status == -1){
 			fprintf(stderr, "IPCAPI: Error -1 en recv\n");
@@ -248,7 +236,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 		return -1;
 	}
 	if((status = send(actsockfd[0], buffer, bufferSize, 0)) == -1){
-		perror("Error en el send de writeIPC");
+		perror("IPCAPI: Error en el send de writeIPC");
 		return errno;
 	}
 	free(actsockfd);
@@ -257,7 +245,6 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 }
 
 int closeIPC(int pid){
-	fprintf(stderr, "Terminando pid = %d\n", pid);
 	if (hashTable != NULL){
 		hashFreeTable(hashTable);
 	}
