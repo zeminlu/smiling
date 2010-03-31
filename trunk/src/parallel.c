@@ -51,12 +51,10 @@ int filesListener(){
 			closedir(dp);
 			return -1;
 		}
-		fprintf(stderr, "Por mandar countriesTableEntriesAmm = %d\n", countriesTableEntriesAmm);
 		if (writeIPC(pid, &countriesTableEntriesAmm, sizeof(int)) != 0){
 			closedir(dp);
 			return -1;
 		}
-		fprintf(stderr, "Mande countriesTableEntriesAmm = %d\n", countriesTableEntriesAmm);
 		
 		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			serializeCountryStruct(&buffer, &bufferSize, countriesTable[j]);

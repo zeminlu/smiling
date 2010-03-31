@@ -26,16 +26,15 @@ int main (void){
 		return -1;
 	}
 	
-	printf("<-----------------------------------------LLEGO LO SIGUIENTE A FIFA-----------------------------------------\n");
+	/*printf("<-----------------------------------------LLEGO LO SIGUIENTE A FIFA-----------------------------------------\n");
 	for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 		printf("Pais: %s - Continente: %d - Campeon: %d - Peso: %d - Same: %d - Death: %d - ChampG: %d - Weak: %d - Cabeza de Serie: %d\n", 
 		countriesTable[j]->name, countriesTable[j]->continent, countriesTable[j]->champ, countriesTable[j]->weight, countriesTable[j]->sameContinent, countriesTable[j]->deathGroup, countriesTable[j]->champGroup, countriesTable[j]->weakGroup, countriesTable[j]->isHead);
 	}
 	printf("<-----------------------------------------------------------------------------------------------------------\n>");
-	
+	*/
 	closeIPC(getpid());
 	
-	printf("Pre mallocs gays\n");
 	if ((pids = malloc(sizeof(pid_t) * countriesTableEntriesAmm)) == NULL || (fixture = malloc(sizeof(void *) * countriesTableEntriesAmm / 4)) == NULL){
 		perror("Error de memoria");
 		/*for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
@@ -74,9 +73,7 @@ int main (void){
 		
 		return status;
 	}
-	printf("Pre finalizeIPC\n");
 	finalizeIPC();
-	printf("TODO JOYA!\n");
 	/*
 	Guardar a archivo la solucion
 	*/
@@ -104,16 +101,13 @@ int loadCountriesTable(country ***countriesTable){
 	int countriesTableEntriesAmm, i, j, bufferSize;
 	void *buffer;
 	
-	fprintf(stderr, "Recibiendo countriesTableEntriesAmm\n");
 	if (readIPC(getppid(), &countriesTableEntriesAmm, sizeof(int)) != 0){
 		return -1;
 	}
-	fprintf(stderr, "Recibi countriesTableEntriesAmm = %d\n", countriesTableEntriesAmm);
 	if (((*countriesTable) = malloc(sizeof(void *) * countriesTableEntriesAmm)) == NULL){
 		perror("Error de memoria");
 		return errno;
 	}
-	fprintf(stderr, "Por cargar cada pais\n");
 	for (i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		if (readIPC(getppid(), &bufferSize, sizeof(int)) != 0){
 			return -1;
@@ -176,17 +170,13 @@ int startChildProcesses(country **countriesTable, int countriesTableEntriesAmm, 
 			++j;
 		}
 	}
-	printf("startChildProcesses: antes del synchronize\n");
 	if ((status = synchronize()) < 0){
 		return status;
 	}
-	printf("startChildProcesses: antes del for que manda la tabla a todos los hijos\n");
 	for (i = 0 ; i < countriesTableEntriesAmm / 4 ; ++i){
-		printf("startChildProcesses: antes del write de la cantidad de paises en la tabla, groupH = %d\n", i);
 		if (writeIPC((*pids)[i], &countriesTableEntriesAmm, sizeof(int)) != 0){
 			return -1;
 		}
-		printf("startChildProcesses: antes del for que manda cada pais de la tabla, groupH = %d\n", i);
 		for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			serializeCountryStruct(&buffer, &bufferSize, countriesTable[j]);
 			if (writeIPC((*pids)[i], &bufferSize, sizeof(int)) != 0 || writeIPC((*pids)[i], buffer, bufferSize) != 0){
@@ -195,7 +185,6 @@ int startChildProcesses(country **countriesTable, int countriesTableEntriesAmm, 
 			}
 			free(buffer);
 		}
-		printf("startChildProcesses: antes de mandar el Head a groupH, groupH = %d\n", i);
 		serializeCountryStruct(&buffer, &bufferSize, countriesTable[i]);
 		if (writeIPC((*pids)[i], &bufferSize, sizeof(int)) != 0 || writeIPC((*pids)[i], buffer, bufferSize) != 0){
 			free(buffer);
@@ -204,7 +193,6 @@ int startChildProcesses(country **countriesTable, int countriesTableEntriesAmm, 
 		
 		free(buffer);
 	}
-	printf("startChildProcesses: antes del return\n");
 	return 0;
 }
 
@@ -244,11 +232,9 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 				
 				if (reqCountry == -1){
 					for (x = 0 ; x < 4 ; ++x){
-						printf("Por leer el pais %d del head %d\n", x, j);
 						if (readIPC(pids[j], &bufferSize, sizeof(int)) != 0){
 							return -1;
 						}
-						
 						if ((buffer = malloc(sizeof(char) * bufferSize)) == NULL || (fixture[j][x] = malloc(sizeof(country))) == NULL){
 							perror("Error de memoria en childsListener allocando buffer y fixture[][]");
 							for (i = 0 ; i < j - 1 ; ++i){
@@ -272,7 +258,6 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 						free(buffer);
 						memcpy(fixture[j][x], subFixture[x], sizeof(country));
 					}
-					printf("Leyo subfixture de %d\n", j);
 					finished[j] = TRUE;
 					finishedAmm++;
 					if (--headsAmm == 0){
@@ -289,7 +274,6 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 				else{
 					if (countriesTable[reqCountry]->used){
 						response = FALSE;
-						printf("Repetido\n");
 					}
 					else{
 						countriesTable[reqCountry]->used = TRUE;

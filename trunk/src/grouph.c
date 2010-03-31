@@ -17,6 +17,7 @@ int main (void){
 	if ((countriesTableEntriesAmm = loadHeadAndCountriesTable(&countriesTable, &data)) < 0){
 		fprintf(stderr, "Error en loadHeadandCountriesTable\n");
 		sendErrorToParent();
+		closeIPC(getpid());
 		return countriesTableEntriesAmm;
 	}
 	
@@ -27,7 +28,8 @@ int main (void){
 		}*/
 		varFree(2, data, countriesTable);
 		sendErrorToParent();
-		
+		closeIPC(getpid());
+
 		return condAmm;
 	}
 	
@@ -39,6 +41,7 @@ int main (void){
 		*/
 		varFree(3, data, countriesTable, conditions);
 		sendErrorToParent();
+		closeIPC(getpid());
 
 		return status;
 	} 
@@ -51,6 +54,8 @@ int main (void){
 		*/
 		varFree(5, data, countriesTable, conditions, condArgs->sets, condArgs);
 		sendErrorToParent();
+		closeIPC(getpid());
+
 		return status;
 	}
 		
@@ -64,6 +69,8 @@ int main (void){
 		}
 		varFree(6, countriesTable, group->countries, group, conditions, condArgs->sets, condArgs);
 		sendErrorToParent();
+		closeIPC(getpid());
+
 		return status;
 	}
 		
@@ -102,7 +109,7 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 	void *buffer;
 	
 	if(readIPC(getppid(), &countriesTableEntriesAmm, sizeof(int)) == -1){
-		fprintf(stderr,"Error en la lectura");
+		fprintf(stderr,"Error en la lectura de la cantidad de paises en loadHeadAndCountriesTable\n");
 		return -1;
 	}
 		
@@ -114,7 +121,7 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 	for (i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		
 		if(readIPC(getppid(), &bufferSize, sizeof(int))==-1){
-			fprintf(stderr,"Error en la lectura");
+			fprintf(stderr,"Error en la lectura del size de la serializacion del pais %d en loadHeadAndCountriesTable\n");
 			return -1;
 		}
 		
@@ -128,7 +135,7 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 		}
 		
 		if(readIPC(getppid(), buffer, bufferSize)==-1){
-			fprintf(stderr,"Error en la lectura");
+			fprintf(stderr,"Error en la lectura del pais %d en loadHeadAndCountriesTable\n", i);
 			return -1;
 		}
 		unserializeCountryStruct(buffer, bufferSize, (*countriesTable)[i]);
@@ -136,7 +143,7 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 	}
 	
 	if(readIPC(getppid(), &bufferSize, sizeof(int))==-1){
-		fprintf(stderr,"Error en la lectura");
+		fprintf(stderr,"Error en la lectura del tamaño del Head en loadHeadAndCountriesTable\n");
 		return -1;
 	}
 	
@@ -149,7 +156,7 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head){
 		return errno;
 	}
 	if(readIPC(getppid(), buffer, bufferSize)==-1){
-		fprintf(stderr,"Error en la lectura");
+		fprintf(stderr,"Error en la lectura del Head en loadHeadAndCountriesTable\n");
 		return -1;
 	}
 	unserializeCountryStruct(buffer, bufferSize, *head);
@@ -295,21 +302,18 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		free(condArgs->sets[0]->country);
 		
 		if(writeIPC(getppid(), &reqCountry, sizeof(int)) ==-1){
-			fprintf(stderr, "Error en la escritura");
+			fprintf(stderr, "Error en la escritura del reqCountry en buildSubfixture para el pid = %d\n", getpid());
 			return -1;
 		}
 		
-		fprintf(stderr, "Esperando respuesta en grouph = %s\n", data->name);
 		if(readIPC(getppid(), &response, sizeof(int)) == -1){
-			fprintf(stderr, "Error en la lectura");
+			fprintf(stderr, "Error en la lectura de la respuesta en buildSubfixture para el pid = %d\n", getpid());
 			return -1;
 		}
 		if (response == FALSE){
-			fprintf(stderr, "Respuesta en grouph = %s fue FALSE\n", data->name);
 			countriesTable[reqCountry]->used = TRUE;
 			continue;
 		}
-		fprintf(stderr, "Respuesta en grouph = %s fue TRUE\n", data->name);
 		free(threadsRet);
 		countriesTable[reqCountry]->used = TRUE;
 		(*group)->countries[(*group)->countriesAmm] = countriesTable[reqCountry];
@@ -381,23 +385,21 @@ int sendSubfixture(subFixture *group){
 	void *buffer;
 	
 	if(writeIPC(getppid(), &msg, sizeof(int)) == -1){
-		fprintf(stderr, "Error en la escritura");
+		fprintf(stderr, "Error en la escritura del -1 en sendSubfixture\n");
 		return -1;
 	}
 	
 	for (i = 0 ; i < 4 ; ++i){
-		printf("Por mandar pais %d...\n", i);
 		serializeCountryStruct(&buffer, &bufferSize, group->countries[i]);
 		if(writeIPC(getppid(), &bufferSize, sizeof(int)) == -1){
-			fprintf(stderr,"Error en la escritura");
+			fprintf(stderr,"Error en la escritura del tamaño de la serializacion del pais %d en sendSubfixture\n", i);
 			return -1;
 		}
 		if(writeIPC(getppid(), buffer, bufferSize) == -1){
-			fprintf(stderr, "Erro en la escritura");
+			fprintf(stderr, "Erro en la escritura del pais %d en sendSubfixture\n", i);
 			return -1;
 		}
 		free(buffer);
-		printf("...Mando pais %d\n", i);
 	}
 	
 	return 0;
