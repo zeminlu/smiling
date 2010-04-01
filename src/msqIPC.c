@@ -57,7 +57,7 @@ int synchronize(){
     char pidString[20], fileName[20], *nameStart = "./";
     msQ entry;
        
-    if ((hashTable = hashCreateTable(clientsAmm * 4, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
+    if ((hashTable = hashCreateTable(clientsAmm * _START_HASH_, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "Error al crear la tabla de hash\n");
         return -1;
     }

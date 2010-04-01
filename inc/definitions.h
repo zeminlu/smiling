@@ -38,6 +38,7 @@ enum 	logicGates { AND = 0, OR, XOR, NAND, NOR, XNOR };
 #define 	_WEAK_GROUP_			4
 #define 	_MAX_COUNTRIES_			32
 
+#define		_START_HASH_			50
 #define		_HALF_DUPLEX_			0
 #define		_FULL_DUPLEX_			1
 
