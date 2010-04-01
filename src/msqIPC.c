@@ -227,9 +227,18 @@ int finalizeIPC(){
 
 int selectIPC(int seconds){
 	struct msqid_ds msq_stat;
-	sleep(seconds);
-	msgctl(queue_id, IPC_STAT, &msq_stat);
-	return msq_stat.msg_qnum;
+	int acc;
+	
+	acc = (seconds * 100);
+	while(--acc){
+		usleep(10000);
+		msgctl(queue_id, IPC_STAT, &msq_stat);
+		if(msq_stat.msg_qnum > 0){
+			return TRUE;
+		}
+	}
+
+	return FALSE;
 	
 }
 
@@ -265,8 +274,8 @@ int compareIPCIDs(void *elem1, void *elem2){
 }
 
 void * copyIPCID(void *elem){
-	int *id;
-		
+        int *id;
+                
     id = malloc(sizeof(int) * 2);
     id[0] = ((int *)elem)[0];
     id[1] = ((int *)elem)[1];
