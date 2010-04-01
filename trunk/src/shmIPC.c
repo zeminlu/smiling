@@ -23,7 +23,7 @@ sem_t * initmutex(char *semName)
 }
 
 int initShMem(int newKey){	
-	shmemId = shmget((key_t)(newKey), clientsAmm * (_SHM_SEG_SIZE_ * 2 + sizeof(shmHeader)), IPC_CREAT | 0666);
+	shmemId = shmget((key_t)(newKey), clientsAmm * shmStruct, IPC_CREAT | 0666);
 	if(shmemId == -1){
 		perror("IPCAPI: Error en llamada a shmget");
 		return errno;
@@ -265,10 +265,10 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	shmHeader *auxHead = NULL;
 	char pidString[20];
 	
-	printf("Intento leer\n");
+	printf("Intento leer con buffersize = %d\n", bufferSize);
 	
 	if (bufferSize > _SHM_SEG_SIZE_){
-		fprintf(stderr, "IPCAPI: Lectura de tamaño superior a _SHM_SEG_SIZE\n");
+		fprintf(stderr, "IPCAPI: Lectura de tamaño superior a _SHM_SEG_SIZE_\n");
 		return -1;
 	}
 	
@@ -349,7 +349,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	wroteAlready = 0;
 	
 	if (bufferSize > _SHM_SEG_SIZE_){
-		fprintf(stderr, "IPCAPI: Escritura de tamaño superior a _SHM_SEG_SIZE\n");
+		fprintf(stderr, "IPCAPI: Escritura de tamaño superior a _SHM_SEG_SIZE_\n");
 	}
 	
 	itoa(pid, pidString);
