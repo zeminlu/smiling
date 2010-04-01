@@ -26,13 +26,13 @@ int main (void){
 		return -1;
 	}
 	
-	/*printf("<-----------------------------------------LLEGO LO SIGUIENTE A FIFA-----------------------------------------\n");
+	printf("<-----------------------------------------LLEGO LO SIGUIENTE A FIFA-----------------------------------------\n");
 	for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 		printf("Pais: %s - Continente: %d - Campeon: %d - Peso: %d - Same: %d - Death: %d - ChampG: %d - Weak: %d - Cabeza de Serie: %d\n", 
 		countriesTable[j]->name, countriesTable[j]->continent, countriesTable[j]->champ, countriesTable[j]->weight, countriesTable[j]->sameContinent, countriesTable[j]->deathGroup, countriesTable[j]->champGroup, countriesTable[j]->weakGroup, countriesTable[j]->isHead);
 	}
 	printf("<-----------------------------------------------------------------------------------------------------------\n>");
-	*/
+	
 	closeIPC(getpid());
 	
 	if ((pids = malloc(sizeof(pid_t) * countriesTableEntriesAmm)) == NULL || (fixture = malloc(sizeof(void *) * countriesTableEntriesAmm / 4)) == NULL){
