@@ -137,7 +137,7 @@ int processFile(DIR *dp, country ***countriesTable){
 						if (((*countriesTable) = realloc((*countriesTable), sizeof(void *) * i)) == NULL){
 							fclose(countryFile);
 							closedir(dp);
-							perror("Error de memoria");
+							perror("Error de memoria en processFile de parallel");
 							return errno;
 						}
 					}
