@@ -161,6 +161,7 @@ int synchronize(){
 		
 		if (hashInsert(&hashTable, &entry, pidString, 0) == NULL){
 			fprintf(stderr, "IPCAPI: Error en hashInsert invocado en synchronize con pidString = %s", pidString);
+			return -1;
 		}
 		fprintf(stderr, "Sali del for de synchronize con i = %d\n", i);
 	}
@@ -278,6 +279,7 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	itoa(pid, pidString);
 	if ((entry = hashSearch(hashTable, pidString, &hkey)) == NULL){
 		fprintf(stderr, "IPCAPI: Error en hashSearch dentro de readIPC invocado con pidString = %s\n", pidString);
+		return -1;
 	}
 	auxHead = &(shmSegs[entry->index].header);
 
@@ -307,13 +309,17 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 		}
 	}
 	
+	printf("readIPC: read = %d, otherWrite = %d\n", *(entry->read), *(entry->otherWrite));
 	
 	for (i = 0 ; i < bufferSize ; ++i){
 		if (*(entry->read) > _SHM_SEG_SIZE_){
 			*(entry->read) = 0;
 		}
-		memcpy(entry->readBuf + *(entry->read), ((char *)buffer) + i, sizeof(char));
+		memcpy(((char *)buffer) + i, entry->readBuf + *(entry->read), sizeof(char));
 		(*(entry->read))++;
+	}
+	if (bufferSize == sizeof(int)){
+		printf("readIPC: Era un int = %d\n", buffer);
 	}
 	/*
 	if (*(entry->read) < *(entry->otherWrite)){
@@ -350,11 +356,13 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	
 	if (bufferSize > _SHM_SEG_SIZE_){
 		fprintf(stderr, "IPCAPI: Escritura de tamaño superior a _SHM_SEG_SIZE_\n");
+		return -1;
 	}
 	
 	itoa(pid, pidString);
 	if ((entry = hashSearch(hashTable, pidString, &hkey)) == NULL){
 		fprintf(stderr, "IPCAPI: Error en hashSearch dentro de writeIPC invocado con pidString = %s\n", pidString);
+		return -1;
 	}
 	auxHead = &(shmSegs[entry->index].header);
 	
@@ -380,6 +388,8 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 		break;
 	}
 	
+	printf("writeIPC: write = %d, otherRead = %d\n", *(entry->write), *(entry->otherRead));
+	
 	for (i = 0 ; i < bufferSize ; ++i){
 		if (*(entry->write) > _SHM_SEG_SIZE_){
 			*(entry->write) = 0;
@@ -389,6 +399,10 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	}
 
 	sem_post(entry->semB);
+	
+	if (bufferSize == sizeof(int)){
+		printf("writeIPC: Era un int = %d\n", buffer);
+	}
 	
 	printf("Escribi joya\n");
 	return 0;
@@ -401,6 +415,7 @@ int closeIPC(int pid){
 	hashTable = NULL;
 	if (shmdt(shmSegs) == -1){
 		perror("IPCAPI: Error desatachandome de la shmem");
+		return errno;
 	}
 	return 0;
 }
@@ -412,6 +427,7 @@ int finalizeIPC(){
 	hashTable = NULL;
 	if (shmctl(shmemId, IPC_RMID, NULL) == -1){
 		perror("IPCAPI: Error liberando la shmem");
+		return errno;
 	}
 	return 0;
 }
