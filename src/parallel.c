@@ -24,6 +24,7 @@ int filesListener(){
 		return errno;
 	}
 	while (signalFlag){
+		usleep(100000);
 		rewinddir(dp);
 
 		if ((countriesTableEntriesAmm =  processFile(dp, &countriesTable)) < 0){
