@@ -80,7 +80,7 @@ int main (void){
 			free(condArgs->sets[i]);
 		}
 		varFree(6, countriesTable, group->countries, group, conditions, condArgs->sets, condArgs);
-		sendErrorToParent((status == -1 ? -3 : -2));
+		sendErrorToParent(-3);
 		closeIPC(getpid());
 		return status;
 	}
