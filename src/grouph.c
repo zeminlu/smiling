@@ -305,7 +305,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 						
 			reqCountry = intersection->country[((rand() % intersection->countriesAmm) + getpid()) % intersection->countriesAmm];
 			
-			/*varFree(2, intersection->country, intersection);*/
+			varFree(2, intersection->country, intersection);
 		}
 
 		for (j = 1 ; j < i ; ++j){

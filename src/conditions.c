@@ -56,7 +56,8 @@ void * sameContinent(void * condi){
 		ans->country = realloc(countryInt, sizeof(int)*(j));
 	}
 	else{
-		free(ans->country);
+		free(countryInt);
+		free(ans);
 	}
 	cond->sets[0] = ans;
 	threadsRet[myIndex] = 1;
@@ -115,7 +116,8 @@ void * deathGroup(void * condi){
 		ans->country = realloc(countryInt, sizeof(int)*(j));
 	}
 	else{
-		free(ans->country);
+		free(countryInt);
+		free(ans);
 	}
 	cond->sets[1] = ans;
 	threadsRet[myIndex] = 1;
@@ -181,7 +183,8 @@ void * champGroup(void * condi){
 		ans->country = realloc(countryInt, sizeof(int)*(j));
 	}
 	else{
-		free(ans->country);
+		free(countryInt);
+		free(ans);
 	}
 	cond->sets[2] = ans;
 	threadsRet[myIndex] = 1;
@@ -241,7 +244,8 @@ void * weakGroup(void * condi){
 		ans->country = realloc(countryInt, sizeof(int)*(j));
 	}
 	else{
-		free(ans->country);
+		free(countryInt);
+		free(ans);
 	}
 	cond->sets[3] = ans;
 	threadsRet[myIndex] = 1;
@@ -292,7 +296,8 @@ int countryFree( condPack * cond){
 		ans->country = realloc(countryInt, sizeof(int)*(j));
 	}
 	else{
-		free(ans->country);
+		free(countryInt);
+		free(ans);
 	}
 	ans->country = countryInt;
 	cond->sets[0] = ans;
