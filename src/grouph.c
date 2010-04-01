@@ -296,6 +296,10 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			sortPointers(condArgs->sets);
 			
 			if (intersect(condAmm, condArgs, &intersection) == -1){
+				return -3;
+			}
+			
+			if (intersection->countriesAmm == 0){
 				return -2;
 			}
 						
@@ -353,9 +357,7 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 		((aux[0])->country)[j] = (((condArgs->sets)[0])->country)[j]; 
 	}
 	(aux[0])->countriesAmm = j;
-	fprintf(stderr,"SALI DEL 1ER A FOR %s\n",condArgs->head->name);
 	
-	fprintf(stderr,"ENTRE A FOR 2do %s\n",condArgs->head->name);
 
 	for (j = 1 ; j < condAmm ; ++j){			
 		if ((aux[j] = malloc(sizeof(set))) == NULL || ((aux[j])->country = malloc(sizeof(int) * (aux[j - 1])->countriesAmm)) == NULL){
@@ -366,9 +368,11 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 				varFree(2, aux[j], aux);
 				return errno;
 		}
-		fprintf(stderr,"ENTRE A WHILE %s\n",condArgs->head->name);
 		
-		x = k = y = 0;
+		x = 0;
+		k = 0;
+		y = 0;
+		
 		while (x < aux[j - 1]->countriesAmm && k < ((condArgs->sets)[j])->countriesAmm) {  
 			if (((aux[j - 1])->country)[x] == (((condArgs->sets)[j])->country)[k]) {  
 				aux[j]->country[y] = ((aux[j - 1])->country)[x];
@@ -383,19 +387,17 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 				k++;  
 			}  
 		}
-		fprintf(stderr,"SALI A WHILE %s\n",condArgs->head->name);
 		
 		aux[j]->countriesAmm = y;
 	}
-	fprintf(stderr,"SALIDEL SEGUNDO A WHILE %s\n",condArgs->head->name);
 	
 
 	*intersection = aux[j - 1];	
-	/*for(i = 0 ; i < j - 2 ; ++i){
+	for(i = 0 ; i < j - 2 ; ++i){
 		varFree(2, aux[i]->country, aux[i]);
 	}
 	free(aux);
-	*/
+		
 	fprintf(stderr,"SALI DE INTERSECT %s\n");
 	
 	return 0;
