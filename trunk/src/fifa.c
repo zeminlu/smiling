@@ -259,8 +259,7 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 						memcpy(fixture[j][x], subFixture[x], sizeof(country));
 					}
 					finished[j] = TRUE;
-					++finishedAmm;
-					if (--headsAmm == 0){
+					if (--headsAmm == 0 || ++finishedAmm == countriesTableEntriesAmm / 4){
 						flag = TRUE;
 						break;
 					}
