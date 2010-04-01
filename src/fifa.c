@@ -306,6 +306,7 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 	}
 	
 	if (errorStat){
+		fprintf(stderr, "Sali por errorStat con status = %d\n", status);
 		return status;
 	}
 	
