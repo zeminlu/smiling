@@ -297,7 +297,7 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 	}
 	free(subFixture);
 	
-	for (i = 0 ; i < headsAmm ; ++i){
+	for (i = 0 ; i <  countriesTableEntriesAmm / 4; ++i){
 		wait(&status);
 		if (status < 0 && status != -2){
 			errorStat = TRUE;
@@ -310,7 +310,7 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 		return status;
 	}
 	
-	if (finishedAmm < headsAmm){
+	if (finishedAmm < countriesTableEntriesAmm / 4){
 		fprintf(stderr, "%d hijo/s no retorno/aron y murio/eron!!\n", headsAmm - finishedAmm);
 		return -1;
 	}
