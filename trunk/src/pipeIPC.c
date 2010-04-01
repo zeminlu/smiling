@@ -77,7 +77,7 @@ int synchronize(){
 	int i, *pid, ids[2];
 	char pidString[20], fileName[20], *nameStart = "./";
 		
-	if ((hashTable = hashCreateTable(clientsAmm * 4, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
+	if ((hashTable = hashCreateTable(clientsAmm * _START_HASH_, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "IPCAPI: Error al crear la tabla de hash\n");
 		return -1;
 	}

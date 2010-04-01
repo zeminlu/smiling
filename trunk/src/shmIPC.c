@@ -118,7 +118,7 @@ int synchronize(){
 	
 	fprintf(stderr, "Entre a synchronize\n");
 	
-	if ((hashTable = hashCreateTable(clientsAmm * 4, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
+	if ((hashTable = hashCreateTable(clientsAmm * _START_HASH_, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "IPCAPI: Error al crear la tabla de hash en synchronize\n");
 		return -1;
 	}
