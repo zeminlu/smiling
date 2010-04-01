@@ -70,6 +70,7 @@ int main (void){
 			free(fixture[j]);
 		}
 		varFree(3, countriesTable, fixture, pids);
+		finalizeIPC();
 		
 		return status;
 	}
