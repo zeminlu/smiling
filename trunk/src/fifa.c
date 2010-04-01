@@ -220,7 +220,7 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 		}
 	}
 	
-	while(flag == FALSE && selectIPC(1) > 0 ){
+	while(flag == FALSE && selectIPC(2) > 0 ){
 		for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
 			if (finished[j] == FALSE && getIPCStatus(pids[j])){
 

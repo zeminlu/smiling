@@ -98,9 +98,7 @@ int setupIPC(int channels){
 
 	close(data);
 	info = open(fileName, O_RDONLY);
-	
-	fprintf(stderr, "Salio de setupIPC\n");
-	
+		
 	return 0;
 }
 
@@ -115,9 +113,7 @@ int synchronize(){
 	char pidString[20], fileName[20], *nameStart = "./";
 	shmHeader *auxHead;
 	shmElem entry;
-	
-	fprintf(stderr, "Entre a synchronize\n");
-	
+		
 	if ((hashTable = hashCreateTable(clientsAmm * _START_HASH_, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "IPCAPI: Error al crear la tabla de hash en synchronize\n");
 		return -1;
@@ -141,10 +137,9 @@ int synchronize(){
 	}
 	
 	for (i = 0 ; i < clientsAmm ; ++i){		
-		fprintf(stderr, "Entre al for de synchronize con i = %d, clientsAmm = %d\n", i, clientsAmm);
 		auxHead = &(shmSegs[i].header);
-		
 		pid[i] = auxHead->pid;
+		
 		if (initSem(pid[i], &entry) == -1){
 			return -1;
 		}
@@ -163,7 +158,6 @@ int synchronize(){
 			fprintf(stderr, "IPCAPI: Error en hashInsert invocado en synchronize con pidString = %s", pidString);
 			return -1;
 		}
-		fprintf(stderr, "Sali del for de synchronize con i = %d\n", i);
 	}
 
 	for (i = 0 ; i < clientsAmm ; ++i){
@@ -176,9 +170,7 @@ int synchronize(){
 	strcpy(fileName, nameStart);
 	strcat(fileName, pidString);
 	unlink(fileName);
-	
-	fprintf(stderr, "Salio de synchronize\n");
-	
+		
 	return 0;
 }
 int loadIPC(){
@@ -191,9 +183,7 @@ int loadIPC(){
 	shmElem entry;
 	shmHeader *auxHead;
 	sem_t *tmp;
-	
-	fprintf(stderr, "Entre a loadIPC\n");
-	
+		
 	signal(SIGALRM, sigHandler);
 	sigemptyset (&mask);
 	sigaddset (&mask, SIGALRM);
@@ -253,9 +243,7 @@ int loadIPC(){
 			
 	close(_stdin_);
 	free(data);
-	
-	fprintf(stderr, "Sali del load\n");	
-	
+		
 	return 0;
 }
 
@@ -265,9 +253,7 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	shmElem *entry;
 	shmHeader *auxHead = NULL;
 	char pidString[20];
-	
-	printf("Intento leer con buffersize = %d\n", bufferSize);
-	
+		
 	if (bufferSize > _SHM_SEG_SIZE_){
 		fprintf(stderr, "IPCAPI: Lectura de tamaño superior a _SHM_SEG_SIZE_\n");
 		return -1;
@@ -308,9 +294,7 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 			continue;
 		}
 	}
-	
-	printf("readIPC: read = %d, otherWrite = %d\n", *(entry->read), *(entry->otherWrite));
-	
+		
 	for (i = 0 ; i < bufferSize ; ++i){
 		if (*(entry->read) > _SHM_SEG_SIZE_){
 			*(entry->read) = 0;
@@ -318,29 +302,8 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 		memcpy(((char *)buffer) + i, entry->readBuf + *(entry->read), sizeof(char));
 		(*(entry->read))++;
 	}
-	if (bufferSize == sizeof(int)){
-		printf("readIPC: Era un int = %d\n", *((int *)buffer));
-	}
-	/*
-	if (*(entry->read) < *(entry->otherWrite)){
-		memcpy(buffer, ((char *)auxHead->startPos) + (*(entry->read)), bufferSize);
-		*(entry->read) += bufferSize;
-	}
-	else if (*(entry->read) > *(entry->otherWrite)){
-		if (bufferSize > _SHM_SEG_SIZE_ / 2 - *(entry->read)){
-			memcpy(buffer, ((char *)auxHead->startPos) + (*(entry->read)), _SHM_SEG_SIZE_ / 2 - *(entry->read));
-			remaining -= _SHM_SEG_SIZE_ / 2 - *(entry->read);
-			memcpy(((char *)buffer) + (_SHM_SEG_SIZE_ / 2 - *(entry->read)), auxHead->startPos, remaining);
-			*(entry->read) = remaining;
-		}
-		else{
-			memcpy(buffer, ((char *)auxHead->startPos) + *(entry->read), bufferSize);
-			*(entry->read) += bufferSize;
-		}
-	}*/
 
 	sem_post(entry->semA);
-	printf("Lei joya\n");
 	return 0;
 }
 
@@ -387,9 +350,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 		}
 		break;
 	}
-	
-	printf("writeIPC: write = %d, otherRead = %d\n", *(entry->write), *(entry->otherRead));
-	
+		
 	for (i = 0 ; i < bufferSize ; ++i){
 		if (*(entry->write) > _SHM_SEG_SIZE_){
 			*(entry->write) = 0;
@@ -399,12 +360,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	}
 
 	sem_post(entry->semB);
-	
-	if (bufferSize == sizeof(int)){
-		printf("readIPC: Era un int = %d\n", *((int *)buffer));
-	}
-	
-	printf("Escribi joya\n");
+
 	return 0;
 }
 
