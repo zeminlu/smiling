@@ -313,6 +313,8 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 		return status;
 	}
 	
+	printf("finishedAmm = %d entriesamm = %d", finishedAmm, countriesTableEntriesAmm / 4);
+	
 	if (finishedAmm < countriesTableEntriesAmm / 4){
 		fprintf(stderr, "%d hijo/s no retorno/aron y murio/eron!!\n", countriesTableEntriesAmm / 4  - finishedAmm);
 		return -1;
