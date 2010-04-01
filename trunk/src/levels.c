@@ -8,7 +8,7 @@
 
 int main ( void )
 {
-	fprintf(stderr, "Antes del Load, PID: %d\n", getppid());
+	fprintf(stderr, "Antes del Load, PPID: %d\n", getppid());
 	loadIPC();
 	fprintf(stderr, "ParentPID: %d Acabo de salir del load\n", getppid());
 	return proccessLevel();

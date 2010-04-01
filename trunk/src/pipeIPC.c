@@ -101,6 +101,7 @@ int synchronize(){
 			fprintf(stderr, "IPCAPI: Error en el insert de la tabla de hash en synchronize, invocado con ids[0] = %d, ids[1] = %d y pidString = %s\n", ids[0], ids[1], pidString);
 			return -1;
 		}
+		fprintf(stderr, "IPCAPI: Se inserto en la hashTable el pid: %s\n", pidString);
 	}
 	for (i = 0 ; i < clientsAmm ; ++i){
 		kill (pid[i], SIGALRM);
