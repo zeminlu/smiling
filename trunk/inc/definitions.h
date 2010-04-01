@@ -21,9 +21,6 @@
 #define		_FORK_ERROR_	-1
 #define		_FORK_SON_		0
 
-#define		_SHM_SEG_SIZE_ 8000
-
-
 /* Gates */
 
 enum 	logicGates { AND = 0, OR, XOR, NAND, NOR, XNOR };

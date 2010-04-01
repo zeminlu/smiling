@@ -1,7 +1,7 @@
 #include "../inc/shmIPC.h"
 
 int shmemId= 0;
-void *shmemStart;
+shmStruct *shmSegs;
 int clientsAmm = 0, flag = FALSE;
 int info;
 hashTableADT hashTable = NULL;
@@ -23,7 +23,7 @@ sem_t * initmutex(char *semName)
 }
 
 int initShMem(int newKey){	
-	shmemId = shmget((key_t)(newKey), clientsAmm * (_SHM_SEG_SIZE_ + sizeof(shmHeader)), IPC_CREAT | 0666);
+	shmemId = shmget((key_t)(newKey), clientsAmm * (_SHM_SEG_SIZE_ * 2 + sizeof(shmHeader)), IPC_CREAT | 0666);
 	if(shmemId == -1){
 		perror("IPCAPI: Error en llamada a shmget");
 		return errno;
@@ -55,10 +55,9 @@ int initHeaders(){
 	shmHeader aux;
 	
 	for (i = 0 ; i < clientsAmm ; ++i){
-		aux.startPos = ((char *)shmemStart) + (sizeof(shmHeader) * clientsAmm + i * _SHM_SEG_SIZE_);
 		aux.cReadOff = aux.cWriteOff = aux.sWriteOff = aux.sReadOff = 0;
 		aux.pid = -1;
-		memcpy(((char *)shmemStart) + (i * sizeof(shmHeader)), &aux, sizeof(shmHeader));
+		memcpy(&(shmSegs[i].header), &aux, sizeof(shmHeader));
 	}
 	
 	return 0;
@@ -79,7 +78,7 @@ int setupIPC(int channels){
 		return status;
 	}
 	
-	if ((shmemStart = shmat(shmemId, NULL, 0)) == ERR){
+	if (((void *)(shmSegs = shmat(shmemId, NULL, 0))) == ERR){
 		perror("IPCAPI: Error en llamada a shmat en setupIPC");
 		return errno;
 	}
@@ -119,7 +118,7 @@ int synchronize(){
 	
 	fprintf(stderr, "Entre a synchronize\n");
 	
-	if ((hashTable = hashCreateTable(clientsAmm, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
+	if ((hashTable = hashCreateTable(clientsAmm * 4, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "IPCAPI: Error al crear la tabla de hash en synchronize\n");
 		return -1;
 	}
@@ -134,7 +133,7 @@ int synchronize(){
 	while (!flag){
 		flag = TRUE;
 		for (i = 0 ; i < clientsAmm ; ++i){
-			auxHead = (shmHeader *)(((char *)shmemStart) + (i * sizeof(shmHeader)));
+			auxHead = &(shmSegs[i].header);
 			if (auxHead->pid == -1){
 				flag = FALSE;
 			}
@@ -143,7 +142,7 @@ int synchronize(){
 	
 	for (i = 0 ; i < clientsAmm ; ++i){		
 		fprintf(stderr, "Entre al for de synchronize con i = %d, clientsAmm = %d\n", i, clientsAmm);
-		auxHead = (shmHeader *)(((char *)shmemStart) + (i * sizeof(shmHeader)));
+		auxHead = &(shmSegs[i].header);
 		
 		pid[i] = auxHead->pid;
 		if (initSem(pid[i], &entry) == -1){
@@ -153,13 +152,11 @@ int synchronize(){
 		itoa(pid[i], pidString);
 		
 		entry.index = i;
-		
+		entry.readBuf = (shmSegs[i]).bufA;
+		entry.writeBuf = (shmSegs[i]).bufB;
 		entry.read = &(auxHead->sReadOff);
-		
 		entry.write = &(auxHead->sWriteOff);
-		
 		entry.otherRead = &(auxHead->cReadOff);
-		
 		entry.otherWrite = &(auxHead->cWriteOff);
 		
 		if (hashInsert(&hashTable, &entry, pidString, 0) == NULL){
@@ -214,17 +211,17 @@ int loadIPC(){
 	memcpy(&key, data, sizeof(key_t));
 	memcpy(&index, ((char *)data) + sizeof(key_t), sizeof(int));
 	
-	if ((shmemStart = shmat(key, NULL, 0)) == ERR){
+	if (((void *)(shmSegs = shmat(key, NULL, 0))) == ERR){
 		perror("IPCAPI: Error en llamada a shmat en loadIPC");
 		return errno;
 	}
 	
-	if ((hashTable = hashCreateTable(1, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
+	if ((hashTable = hashCreateTable(10, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "IPCAPI: Error en la inicializacion de la tabla de hash en loadIPC\n");
 		return -1;
 	}
 	
-	auxHead = (shmHeader *)(((char *)shmemStart) + (index * sizeof(shmHeader)));
+	auxHead = &(shmSegs[index].header);
 
 	pid = getpid();
 
@@ -232,6 +229,8 @@ int loadIPC(){
 	
 	itoa(getppid(), pidString);
 	entry.index = index;
+	entry.readBuf = shmSegs[index].bufB;
+	entry.writeBuf = shmSegs[index].bufA;
 	entry.read = &(auxHead->cReadOff);
 	entry.write = &(auxHead->cWriteOff);
 	entry.otherRead = &(auxHead->sReadOff);
@@ -268,7 +267,7 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	
 	printf("Intento leer\n");
 	
-	if (bufferSize > _SHM_SEG_SIZE_ / 2){
+	if (bufferSize > _SHM_SEG_SIZE_){
 		fprintf(stderr, "IPCAPI: Lectura de tamaño superior a _SHM_SEG_SIZE\n");
 		return -1;
 	}
@@ -280,7 +279,7 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	if ((entry = hashSearch(hashTable, pidString, &hkey)) == NULL){
 		fprintf(stderr, "IPCAPI: Error en hashSearch dentro de readIPC invocado con pidString = %s\n", pidString);
 	}
-	auxHead = (shmHeader *)(((char *)shmemStart) + (entry->index * sizeof(shmHeader)));
+	auxHead = &(shmSegs[entry->index].header);
 
 	while(TRUE){
 		sem_wait(entry->semA);
@@ -293,7 +292,7 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 			break;
 		}
 		else if (*(entry->read) > *(entry->otherWrite)){
-			module = (_SHM_SEG_SIZE_ / 2) - *(entry->read);
+			module = (_SHM_SEG_SIZE_) - *(entry->read);
 			if (module + *(entry->otherWrite) < bufferSize){
 				sem_post(entry->semA);
 				sleep(1);
@@ -310,10 +309,10 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 	
 	
 	for (i = 0 ; i < bufferSize ; ++i){
-		if (*(entry->read) > _SHM_SEG_SIZE_ / 2){
+		if (*(entry->read) > _SHM_SEG_SIZE_){
 			*(entry->read) = 0;
 		}
-		memcpy(((char *)auxHead->startPos) + *(entry->read), ((char *)buffer) + i, sizeof(char));
+		memcpy(entry->readBuf + *(entry->read), ((char *)buffer) + i, sizeof(char));
 		(*(entry->read))++;
 	}
 	/*
@@ -349,7 +348,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	remaining = bufferSize;
 	wroteAlready = 0;
 	
-	if (bufferSize > _SHM_SEG_SIZE_ / 2){
+	if (bufferSize > _SHM_SEG_SIZE_){
 		fprintf(stderr, "IPCAPI: Escritura de tamaño superior a _SHM_SEG_SIZE\n");
 	}
 	
@@ -357,7 +356,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	if ((entry = hashSearch(hashTable, pidString, &hkey)) == NULL){
 		fprintf(stderr, "IPCAPI: Error en hashSearch dentro de writeIPC invocado con pidString = %s\n", pidString);
 	}
-	auxHead = (shmHeader *)(((char *)shmemStart) + entry->index * sizeof(shmHeader));
+	auxHead = &(shmSegs[entry->index].header);
 	
 	while(TRUE){
 		sem_wait(entry->semB);
@@ -370,7 +369,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 			break;
 		}
 		else if (*(entry->write) > *(entry->otherRead)){
-			module = (_SHM_SEG_SIZE_ / 2) - *(entry->write);
+			module = (_SHM_SEG_SIZE_) - *(entry->write);
 			if (module + *(entry->otherRead) < bufferSize){
 				sem_post(entry->semB);
 				sleep(1);
@@ -382,10 +381,10 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	}
 	
 	for (i = 0 ; i < bufferSize ; ++i){
-		if (*(entry->write) > _SHM_SEG_SIZE_ / 2){
+		if (*(entry->write) > _SHM_SEG_SIZE_){
 			*(entry->write) = 0;
 		}
-		memcpy(((char *)auxHead->startPos) + *(entry->write), ((char *)buffer) + i, sizeof(char));
+		memcpy(entry->writeBuf + *(entry->write), ((char *)buffer) + i, sizeof(char));
 		(*(entry->write))++;
 	}
 
@@ -400,7 +399,7 @@ int closeIPC(int pid){
 		hashFreeTable(hashTable);
 	}
 	hashTable = NULL;
-	if (shmdt(shmemStart) == -1){
+	if (shmdt(shmSegs) == -1){
 		perror("IPCAPI: Error desatachandome de la shmem");
 	}
 	return 0;
@@ -419,14 +418,20 @@ int finalizeIPC(){
 
 int selectIPC(int seconds){
 	shmElem *aux;
-
-	sleep(1);
-	hashSetIterator(hashTable);
-	while((aux = (shmElem *) hashGetNext(hashTable))){
-		if (*(aux->read) != *(aux->otherWrite)){
-			return TRUE;
+	int acc;
+	
+	
+	acc = (seconds * 100);
+	while(--acc){
+		usleep(10000);
+		hashSetIterator(hashTable);
+		while((aux = (shmElem *) hashGetNext(hashTable))){
+			if (*(aux->read) != *(aux->otherWrite)){
+				return TRUE;
+			}
 		}
 	}
+	
 	return FALSE;
 }
 

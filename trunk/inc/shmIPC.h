@@ -21,11 +21,11 @@
 #include "../inc/ipcAPI.h"
 #include "../inc/cutils.h"
 
+#define	_SHM_SEG_SIZE_ 4000
 #define ERR ((struct databuf *) -1)
 
 typedef struct{
 	pid_t pid;
-	void *startPos;
 	int sReadOff;
 	int sWriteOff;
 	int cReadOff;
@@ -33,7 +33,15 @@ typedef struct{
 } shmHeader;
 
 typedef struct{
+	shmHeader header;
+	char bufA[_SHM_SEG_SIZE_];
+	char bufB[_SHM_SEG_SIZE_];
+} shmStruct;
+
+typedef struct{
 	int index;
+	char *readBuf;
+	char *writeBuf;
 	int *read;
 	int *write;
 	int *otherRead;
