@@ -87,6 +87,9 @@ int filesListener(){
 
 	for (i = 0 ; i < childs ; ++i){
 		wait(&fifa);
+		if (fifa < 0){
+			fprintf(stderr, "Error en fifa del archivo procesado nro = %d\n", i);
+		}
 	}
 	
 	printf("\n%d archivos procesados.\n", childs);

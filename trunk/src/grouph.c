@@ -74,7 +74,16 @@ int main (void){
 		return status;
 	}
 		
-	status = sendSubfixture(group);
+	if ((status = sendSubfixture(group)) != 0){
+		fprintf(stderr, "Error en sendSubfixture\n");
+		for (i = 0 ; i < condAmm ; ++i){
+			free(condArgs->sets[i]);
+		}
+		varFree(6, countriesTable, group->countries, group, conditions, condArgs->sets, condArgs);
+		sendErrorToParent((status == -1 ? -3 : -2));
+		closeIPC(getpid());
+		return status;
+	}
 	
 	/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 		free(countriesTable[i]);

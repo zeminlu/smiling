@@ -268,7 +268,11 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 				else if (reqCountry == -2){
 					finished[j] = TRUE;
 					++finishedAmm;
-					flag = TRUE;
+					break;
+				}
+				else if (reqCountry == -3){
+					finished[j] = TRUE;
+					++finishedAmm;
 					break;
 				}
 				else{
@@ -297,18 +301,17 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 		wait(&status);
 		if (status < 0 && status != -2){
 			errorStat = TRUE;
-			fprintf(stderr, "Error en un groupH: %d\n", status);
-			break;
+			fprintf(stderr, "Error en un groupH, error: %d\n", status);
 		}
-	}
-	
-	if (finishedAmm < headsAmm){
-		fprintf(stderr, "Error en un groupH: %d\n", status);
-		return -1;
 	}
 	
 	if (errorStat){
 		return status;
+	}
+	
+	if (finishedAmm < headsAmm){
+		fprintf(stderr, "%d hijo/s no retorno/aron y murio/eron!!\n", headsAmm - finishedAmm);
+		return -1;
 	}
 	
 	if (headsAmm != 0){
