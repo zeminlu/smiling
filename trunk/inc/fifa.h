@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <errno.h>
+#include <wait.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <fcntl.h>
