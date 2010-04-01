@@ -64,10 +64,10 @@ int main (void){
 		/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
 		}*/
-		for (i = 0 ; i < condAmm ; ++i){
+		/*for (i = 0 ; i < condAmm ; ++i){
 			free(condArgs->sets[i]);
 		}
-		varFree(6, countriesTable, group->countries, group, conditions, condArgs->sets, condArgs);
+		varFree(6, countriesTable, group->countries, group, conditions, condArgs->sets, condArgs);*/
 		sendErrorToParent((status == -1 ? -3 : -2));
 		closeIPC(getpid());
 
@@ -305,7 +305,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 						
 			reqCountry = intersection->country[((rand() % intersection->countriesAmm) + getpid()) % intersection->countriesAmm];
 			
-			varFree(2, intersection->country, intersection);
+			/*varFree(2, intersection->country, intersection);*/
 		}
 
 		for (j = 1 ; j < i ; ++j){
