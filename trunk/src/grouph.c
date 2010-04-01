@@ -16,7 +16,7 @@ int main (void){
 		
 	if ((countriesTableEntriesAmm = loadHeadAndCountriesTable(&countriesTable, &data)) < 0){
 		fprintf(stderr, "Error en loadHeadandCountriesTable\n");
-		sendErrorToParent();
+		sendErrorToParent(-3);
 		closeIPC(getpid());
 		return countriesTableEntriesAmm;
 	}
@@ -27,7 +27,7 @@ int main (void){
 			free(countriesTable[i]);
 		}*/
 		varFree(2, data, countriesTable);
-		sendErrorToParent();
+		sendErrorToParent(-3);
 		closeIPC(getpid());
 
 		return condAmm;
@@ -40,7 +40,7 @@ int main (void){
 		}
 		*/
 		varFree(3, data, countriesTable, conditions);
-		sendErrorToParent();
+		sendErrorToParent(-3);
 		closeIPC(getpid());
 
 		return status;
@@ -53,7 +53,7 @@ int main (void){
 		}
 		*/
 		varFree(5, data, countriesTable, conditions, condArgs->sets, condArgs);
-		sendErrorToParent();
+		sendErrorToParent(-3);
 		closeIPC(getpid());
 
 		return status;
@@ -68,7 +68,7 @@ int main (void){
 			free(condArgs->sets[i]);
 		}
 		varFree(6, countriesTable, group->countries, group, conditions, condArgs->sets, condArgs);
-		sendErrorToParent();
+		sendErrorToParent((status == -1 ? -3 : -2));
 		closeIPC(getpid());
 
 		return status;
@@ -93,10 +93,9 @@ int main (void){
 	return status;
 }
 
-void sendErrorToParent(){
-	int msg = -2;
-	
-	if(writeIPC(getppid(), &msg, sizeof(int)) == -1){
+void sendErrorToParent(int error){
+		
+	if(writeIPC(getppid(), &error, sizeof(int)) == -1){
 		fprintf(stderr,"Error de escritura del -2\n");
 		return;
 	}

@@ -18,7 +18,7 @@
 #include "../inc/serializable.h"
 #include "../inc/ipcAPI.h"
 
-void sendErrorToParent();
+void sendErrorToParent(int error);
 
 int loadHeadAndCountriesTable(country ***countriesTable, country **head);
 

@@ -302,6 +302,11 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 		}
 	}
 	
+	if (finishedAmm < headsAmm){
+		fprintf(stderr, "Error en un groupH: %d\n", status);
+		return -1;
+	}
+	
 	if (errorStat){
 		return status;
 	}
