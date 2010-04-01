@@ -319,7 +319,7 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 		(*(entry->read))++;
 	}
 	if (bufferSize == sizeof(int)){
-		printf("readIPC: Era un int = %d\n", buffer);
+		printf("readIPC: Era un int = %d\n", *((int *)buffer));
 	}
 	/*
 	if (*(entry->read) < *(entry->otherWrite)){
@@ -401,7 +401,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	sem_post(entry->semB);
 	
 	if (bufferSize == sizeof(int)){
-		printf("writeIPC: Era un int = %d\n", buffer);
+		printf("readIPC: Era un int = %d\n", *((int *)buffer));
 	}
 	
 	printf("Escribi joya\n");
