@@ -339,7 +339,6 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 	set **aux = NULL;
 	int i, j = 0, k = 0, x = 0, y = 0;
 	
-	fprintf(stderr,"ENTRE A INTERSECT\n");
 	if ((aux = malloc(sizeof(void *) * condAmm)) == NULL ||
 		(aux[0] = malloc(sizeof(set))) == NULL ||			
 		(aux[0]->country = malloc(sizeof(int *) * ((condArgs->sets)[0])->countriesAmm)) == NULL){
@@ -347,11 +346,16 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 			varFree(2, aux[0], aux);
 			return errno;
 		}
+
+	fprintf(stderr,"SALI DEL 1ER A FOR %s\n", condArgs->head->name);
 	
 	for (j = 0 ; j < ((condArgs->sets)[0])->countriesAmm ; ++j){
 		((aux[0])->country)[j] = (((condArgs->sets)[0])->country)[j]; 
 	}
 	(aux[0])->countriesAmm = j;
+	fprintf(stderr,"SALI DEL 1ER A FOR\n",condArgs->head->name);
+	
+	fprintf(stderr,"ENTRE A FOR 2do\n",condArgs->head->name);
 
 	for (j = 1 ; j < condAmm ; ++j){			
 		if ((aux[j] = malloc(sizeof(set))) == NULL || ((aux[j])->country = malloc(sizeof(int) * (aux[j - 1])->countriesAmm)) == NULL){
@@ -362,6 +366,7 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 				varFree(2, aux[j], aux);
 				return errno;
 		}
+		fprintf(stderr,"ENTRE A WHILE\n",condArgs->head->name);
 		
 		x = k = y = 0;
 		while (x < aux[j - 1]->countriesAmm && k < ((condArgs->sets)[j])->countriesAmm) {  
@@ -378,14 +383,19 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 				k++;  
 			}  
 		}
+		fprintf(stderr,"SALI A WHILE\n",condArgs->head->name);
+		
 		aux[j]->countriesAmm = y;
 	}
+	fprintf(stderr,"SALIDEL SEGUNDO A WHILE\n",condArgs->head->name);
+	
 
 	*intersection = aux[j - 1];	
-	for(i = 0 ; i < j - 2 ; ++i){
+	/*for(i = 0 ; i < j - 2 ; ++i){
 		varFree(2, aux[i]->country, aux[i]);
 	}
 	free(aux);
+	*/
 	fprintf(stderr,"SALI DE INTERSECT\n");
 	
 	return 0;
