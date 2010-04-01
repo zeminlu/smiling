@@ -101,9 +101,6 @@ int main(void){
 			{
 				closedir(dp);
 				free(dirFile);
-				for( i = 0 ; i < qtyFiles ; ++i )
-					free(table[i]);
-				free(table);
 				perror("Error en la alocacion de memoria\n");
 				return errno;
 			}
@@ -169,9 +166,8 @@ int main(void){
 			}
 		}
 	}
-	
-	finalizeIPC();
 	wait(&pid);
+	finalizeIPC();
 	freeCircuits(table, pos);
 	return 0;
 }

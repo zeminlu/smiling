@@ -70,7 +70,6 @@ int gateInitializer( void )
 		freeCircuits(table, qtyFileCom);
 		return errno;
 	}
-	finalizeIPC();
 	
 	/* COMIENZA EL PIPELINE */
 	
@@ -144,7 +143,7 @@ int gateInitializer( void )
 		fprintf(stderr, "-- FIN DEL CIRCUITO %d\n", i);
 	}
 	
-	/*freeCircuits(table, qtyFileCom);*/
+	freeCircuits(table, qtyFileCom);
 	free(childPids);
 	free(maxLevel);
 	free(levels);
@@ -205,7 +204,11 @@ int startCircuitsPipeline( circuitTable **table, pid_t **childPids, int qtyFiles
 		fprintf(stderr, "startCircuitsPipeline -- pid creados: %d\n", (*childPids)[i]);
 	}
 	
-	synchronize();
+	if( synchronize() == -1 )
+	{
+		perror("Error en el synchronize de Gates");
+		return errno;
+	}
 	fprintf(stderr, "Acabo de sincronizar con el hijo\n");
 	for (i = 0 ; i < qtyFiles ; ++i)
 	{
@@ -221,7 +224,7 @@ int startCircuitsPipeline( circuitTable **table, pid_t **childPids, int qtyFiles
 				perror("Error en la escritura de cur hacia levels\n");
 				return errno;	
 			}
-			printf("Envie el Sending cur\n");
+			printf("Envie el Sending cur pid: %d\n", getpid());
 			fprintf(stderr, "Sending the amount of currently gates -- MyPID: %d childPID: %d\n", getpid(), (*childPids)[i]);
 			if( writeIPC( (*childPids)[i], (void *)&(((table[i][levels[i]]).eachLevel)->qtyGates) , sizeof(int) ) == -1)
 			{
@@ -247,6 +250,7 @@ int startCircuitsPipeline( circuitTable **table, pid_t **childPids, int qtyFiles
 					perror("Error en la escritura, indicando si es el primer nivel\n");
 					return errno;
 				}
+				printf("LALALALALALALA\n");
 			}else
 			{
 				fprintf(stderr, "Sending if it is not the first level -- MyPID: %d childPID: %d\n", getpid(), (*childPids)[i]);
@@ -270,9 +274,11 @@ int startCircuitsPipeline( circuitTable **table, pid_t **childPids, int qtyFiles
 						return errno;
 					}
 				}
+				printf("PAPAPAPAPAPA\n");
 			}
 		}
 	}
+
 	return 0;
 }
 
@@ -356,7 +362,11 @@ circuitTable ** buildCircuitsTable( int qtyFileCom )
 	
 	for( i = 0 ; i < qtyFileCom ; ++i )
 	{
-		readIPC(getppid(), &qtyLevels, sizeof(int));
+		if( readIPC(getppid(), &qtyLevels, sizeof(int)) == -1 )
+		{
+			perror("Error en la lectura de la cantidad de niveles de buildCircuitsTable");
+			return NULL;
+		}
 		fprintf(stderr, "File: %d Cantidad de niveles: %d \n", i, qtyLevels);
 		if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable) * qtyLevels)) == NULL )
 		{
@@ -373,13 +383,16 @@ circuitTable ** buildCircuitsTable( int qtyFileCom )
 				perror("Error en la alocacion de cada nivel\n");
 				return NULL;
 			}
-			readIPC(getppid(), &qtyGatesCom, sizeof(int));
+			if( readIPC(getppid(), &qtyGatesCom, sizeof(int)) == -1 )
+			{
+				perror("Error en la lectura de la cantidad de niveles de buildCircuitsTable");
+				return NULL;
+			}
 			(table[i][j].eachLevel)->qtyGates = qtyGatesCom;
 			fprintf(stderr, "File: %d Level: %d Cantidad de compuertas: %d \n", i, j, qtyGatesCom);
 			if( ((table[i][j].eachLevel)->gates = (gate*)malloc( sizeof(gate) * qtyGatesCom)) == NULL )
 			{
 				perror("Error en la alocacion del arreglo de compuertas\n");
-				free( (table[i][j].eachLevel) );
 				for( i = 0 ; i < qtyFileCom ; ++i )
 					free(table[i]);
 				free(table);
@@ -387,7 +400,11 @@ circuitTable ** buildCircuitsTable( int qtyFileCom )
 			}
 			for( k = 0 ; k < qtyGatesCom ; ++k )
 			{
-				readIPC(getppid(), &((((table[i][j]).eachLevel)->gates)[k]), sizeof(gate) );
+				if( readIPC(getppid(), &((((table[i][j]).eachLevel)->gates)[k]), sizeof(gate) ) == -1 )
+				{
+					perror("Error en la lectura de la cantidad de niveles de buildCircuitsTable");
+					return NULL;
+				}
 			}
 		}
 	}
@@ -408,7 +425,6 @@ void freeCircuits( circuitTable **table, int qtyFile )
 		for( j = 0 ; j < table[i][0].totalLevels ; ++j )
 		{
 			free( ((table[i][j]).eachLevel)->gates );
-			free( (table[i]) );
 		}
 	}
 	free(table);
