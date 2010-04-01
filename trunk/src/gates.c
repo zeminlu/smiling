@@ -201,7 +201,7 @@ int startCircuitsPipeline( circuitTable **table, pid_t **childPids, int qtyFiles
 	}
 	for( i = 0 ; i < qtyFiles ; ++i )
 	{
-		fprintf(stderr, "startCircuitsPipeline -- pid creados: %d\n", (*childPids)[i]);
+		fprintf(stderr, "%d startCircuitsPipeline -- pid creados: %d\n", i, (*childPids)[i]);
 	}
 	
 	if( synchronize() == -1 )
