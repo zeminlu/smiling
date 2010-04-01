@@ -338,6 +338,8 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 int intersect(int condAmm, condPack *condArgs, set **intersection){
 	set **aux = NULL;
 	int i, j = 0, k = 0, x = 0, y = 0;
+	
+	fprintf(stderr,"ENTRE A INTERSECT\n");
 	if ((aux = malloc(sizeof(void *) * condAmm)) == NULL ||
 		(aux[0] = malloc(sizeof(set))) == NULL ||			
 		(aux[0]->country = malloc(sizeof(int *) * ((condArgs->sets)[0])->countriesAmm)) == NULL){
@@ -384,6 +386,7 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 		varFree(2, aux[i]->country, aux[i]);
 	}
 	free(aux);
+	fprintf(stderr,"SALI DE INTERSECT\n");
 	
 	return 0;
 }
