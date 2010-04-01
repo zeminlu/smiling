@@ -23,7 +23,7 @@ sem_t * initmutex(char *semName)
 }
 
 int initShMem(int newKey){	
-	shmemId = shmget((key_t)(newKey), clientsAmm * shmStruct, IPC_CREAT | 0666);
+	shmemId = shmget((key_t)(newKey), clientsAmm * sizeof(shmStruct), IPC_CREAT | 0666);
 	if(shmemId == -1){
 		perror("IPCAPI: Error en llamada a shmget");
 		return errno;
@@ -361,7 +361,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 	while(TRUE){
 		sem_wait(entry->semB);
 		if (*(entry->write) < *(entry->otherRead)){
-			if (bufferSize > (*(entry->otherRead) - *(entry->write))){
+			if (bufferSize > (*(entry->otherRead) - *(entry->write) - 1)){
 				sem_post(entry->semB);
 				sleep(1);
 				continue;
@@ -370,7 +370,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 		}
 		else if (*(entry->write) > *(entry->otherRead)){
 			module = (_SHM_SEG_SIZE_) - *(entry->write);
-			if (module + *(entry->otherRead) < bufferSize){
+			if (module + *(entry->otherRead) - 1 < bufferSize){
 				sem_post(entry->semB);
 				sleep(1);
 				continue;
