@@ -288,7 +288,7 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 		if (*(entry->read) < *(entry->otherWrite)){
 			if (bufferSize > (*(entry->otherWrite) - *(entry->read))){
 				sem_post(entry->semA);
-				sleep(1);
+				usleep(10000);
 				continue;
 			}
 			break;
@@ -297,14 +297,14 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
 			module = (_SHM_SEG_SIZE_) - *(entry->read);
 			if (module + *(entry->otherWrite) < bufferSize){
 				sem_post(entry->semA);
-				sleep(1);
+				usleep(10000);
 				continue;
 			}
 			break;
 		}
 		else{
 			sem_post(entry->semA);
-			sleep(1);
+			usleep(10000);
 			continue;
 		}
 	}
@@ -371,7 +371,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 		if (*(entry->write) < *(entry->otherRead)){
 			if (bufferSize > (*(entry->otherRead) - *(entry->write) - 1)){
 				sem_post(entry->semB);
-				sleep(1);
+				usleep(10000);
 				continue;
 			}
 			break;
@@ -380,7 +380,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
 			module = (_SHM_SEG_SIZE_) - *(entry->write);
 			if (module + *(entry->otherRead) - 1 < bufferSize){
 				sem_post(entry->semB);
-				sleep(1);
+				usleep(10000);
 				continue;
 			}
 			break;
