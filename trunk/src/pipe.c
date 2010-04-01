@@ -16,9 +16,9 @@ int main(void){
 	
 	DIR *dp;
 	struct dirent *d = NULL;
-	int i, j, k, qtyFiles = 0, pos = 0, pid;
+	int i, qtyFiles = 0, pos = 0, pid, k, j;
 	FILE *dataFile = NULL;
-	circuitTable **table = NULL, *auxTable;
+	circuitTable *auxTable, **table;
 	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;	
 	
 	if ((dp = opendir(dir)) == NULL){
@@ -81,7 +81,6 @@ int main(void){
 				{
 					closedir(dp);
 					free(dirFile);
-					free(d);
 					for( i = 0 ; i < qtyFiles ; ++i )
 						free(table[i]);
 					free(table);
@@ -102,8 +101,6 @@ int main(void){
 			{
 				closedir(dp);
 				free(dirFile);
-				free(d);
-				fclose(dataFile);
 				for( i = 0 ; i < qtyFiles ; ++i )
 					free(table[i]);
 				free(table);
@@ -121,6 +118,8 @@ int main(void){
 			unlink(dirFile);
 		}
 	}
+	free(dirFile);
+	free(procCopyDir);
 	
 	setupIPC(1);
 
@@ -144,7 +143,7 @@ int main(void){
 	writeIPC(pid, &pos, sizeof(int) );
 	for( i = 0 ; i < pos ; ++i )
 	{	
-		fprintf(stderr, "Pipe -- WRITE -- MyPID: %d childPid: %d \n", getpid(), pid);
+		/*fprintf(stderr, "Pipe -- WRITE -- MyPID: %d childPid: %d \n", getpid(), pid);*/
 		if( writeIPC(pid, &(table[i][0].totalLevels), sizeof(int)) == -1 )
 		{
 			perror("Error en el write de totalLevels\n");
@@ -152,7 +151,7 @@ int main(void){
 		}
 		for( j = 0 ; j < table[i][0].totalLevels ; ++j )
 		{
-			fprintf(stderr, "Pipe -- WRITE -- MyPID: %d childPid: %d \n", getpid(), pid);
+/*			fprintf(stderr, "Pipe -- WRITE -- MyPID: %d childPid: %d \n", getpid(), pid);*/
 			if( writeIPC(pid, &((table[i][j].eachLevel)->qtyGates), sizeof(int)) == -1 )
 			{
 				perror("Error en el write de cantidad de compuertas\n");
@@ -161,7 +160,7 @@ int main(void){
 			
 			for( k = 0 ; k < (table[i][j].eachLevel)->qtyGates ; ++k )
 			{
-				fprintf(stderr, "Pipe -- WRITE -- MyPID: %d childPid: %d \n", getpid(), pid);
+/*				fprintf(stderr, "Pipe -- WRITE -- MyPID: %d childPid: %d \n", getpid(), pid);*/
 				if( writeIPC(pid, &((table[i][j].eachLevel)->gates[k]), sizeof(gate) ) == -1 )
 				{
 					perror("Error en el write de la compuerta: a Gates\n");
@@ -173,11 +172,7 @@ int main(void){
 	
 	finalizeIPC();
 	wait(&pid);
-	
 	freeCircuits(table, pos);
-	free(d);
-	free(dirFile);
-	free(procCopyDir);
 	return 0;
 }
 
@@ -339,7 +334,7 @@ void parseGatesTags( char *father, xmlNodePtr cur, circuitTable * circuit, int c
 		{
 			cur=cur->next;
 		}
-		if( curLevel % _MAX_GATES_LEVELS_ == 0 )
+		if( curLevel % _MAX_GATES_LEVELS_ == 0 && curLevel != 0)
 		{
 			circuit = (circuitTable*)realloc(circuit, sizeof(circuitTable) * (curLevel + _MAX_GATES_LEVELS_) );
 		}
@@ -349,7 +344,7 @@ void parseGatesTags( char *father, xmlNodePtr cur, circuitTable * circuit, int c
 			if( !xmlIsBlankNode(cur) )
 			{
 				pos = (circuit[curLevel].eachLevel)->qtyGates;
-				if( pos % _MAX_GATES_LEVELS_ == 0 )
+				if( pos % _MAX_GATES_LEVELS_ == 0 && pos != 0 )
 				{
 					
 					(circuit[curLevel].eachLevel)->gates = (gate*)realloc((circuit[curLevel].eachLevel)->gates, 

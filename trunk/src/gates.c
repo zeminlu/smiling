@@ -7,262 +7,6 @@
 
 #include "../inc/gates.h"
 
-circuitTable **table = NULL;
-int qtyFil = 0;
-
-/*
- *	Verifica la cantidad de archivo que hay dentro del directorio
- */
-
-int getFilesAmm (DIR *dp){
-	
-	struct dirent *d;
-	int ret = 0;
-	
-	while ((d = readdir(dp))){
-		 if (d->d_ino != 0){
-			++ret;
-		}
-	}
-	return ret;
-}
-
-/*
- *	Funcion encargada de parsear el archivo XML con todas las compuertas.
- *	Retorna la tabla correspondiente a cada circuito, en caso de error
- *	retorn NULL.
- *	La funcion que lo llama debe realizar free al finalizar su uso.
- */
-
-circuitTable * parseXMLGate( char * docName)
-{
-	xmlDocPtr doc;
-	xmlNodePtr cur;
-	circuitTable * circuit= NULL;
-	
-	doc = xmlParseFile(docName);
-	if( doc == NULL )
-	{
-		perror("El documento no se puede parsear\n");
-		return NULL;
-	}
-	cur = xmlDocGetRootElement( doc );
-	if( cur == NULL )
-	{
-		perror("El archivo esta vacio\n");
-		xmlFreeDoc(doc);
-		return NULL;
-	}
-	if( xmlStrcmp(cur->name, (const xmlChar *) "circuit") )
-	{
-		perror("El documento es invalido, ya que no tiene la raiz <circuit>\n");
-		xmlFreeDoc(doc);
-		return NULL;
-	}
-
-	circuit = parseCircuit( doc, cur );
-	xmlFreeDoc(doc);
-	return circuit;
-}
-
-/*
- *	Funcion que parsea las compuertas, los input de cada comnpuerta
- *	se parsean en otra funcion y se modifica la tabla ya existente.
- *	El proceso al finalizar debe liberar "CIRCUIT"
- */
-
-circuitTable * parseCircuit( xmlDocPtr doc, xmlNodePtr cur )
-{
-	circuitTable * circuit = NULL;
-	xmlNodePtr input;
-	int i, j, curLevel = 0;
-	
-	if( (circuit = (circuitTable*)realloc(NULL, sizeof(circuitTable) * _MAX_GATES_LEVELS_ )) == NULL )
-	{
-		perror("parseCircuit: Error en la alocacion de memoria\n");
-		return NULL;
-	}
-	for( i = 0; i < _MAX_GATES_LEVELS_ ; ++i)
-	{
-		if( (circuit[i].eachLevel = (gatesOfEachLevel*)malloc( sizeof(gatesOfEachLevel)) ) == NULL )
-		{
-			perror("Error en la alocacion de memoria de los indices de circuit\n");
-			return NULL;
-		}
-	}
-	for( i = 0; i < _MAX_GATES_LEVELS_ ; ++i)
-	{
-		if( ( (circuit[i].eachLevel)->gates = (gate*)malloc( sizeof(gate) * _MAX_GATES_LEVELS_) ) == NULL )
-		{
-			perror("Error en la alocacion de memoria de los indices de circuit\n");
-			return NULL;
-		}
-		
-		(circuit[i].eachLevel)->qtyGates = 0;
-		for( j = 0; j < _MAX_GATES_LEVELS_; ++j)
-		{
-			((circuit[i].eachLevel)->gates[j]).fathers[0][0] = '\0';
-			((circuit[i].eachLevel)->gates[j]).fathers[1][0] = '\0';
-		}
-	}
-	
-	
-	cur = (cur->xmlChildrenNode);
-	while( cur != NULL )
-	{	
-		if( !xmlIsBlankNode(cur) )
-		{
-			input = cur;
-			if( !xmlStrcmp(cur->name, (const xmlChar *)"gates") )
-			{	
-				parseGatesTags(NULL, cur->xmlChildrenNode, circuit, curLevel);
-				circuit[0].totalLevels = countLevels(circuit);
-			}
-		}
-		cur = cur->next;
-	}
-	/*printCircuitTable(circuit);*/
-	for( i = 0 ; i < circuit[0].totalLevels ; ++i )
-	{
-		(circuit[i].eachLevel)->gates = realloc((circuit[i].eachLevel)->gates, sizeof(gate) * (circuit[i].eachLevel)->qtyGates);
-	}
-	/*circuit = realloc( circuit, sizeof(circuitTable) * circuit[0].totalLevels);*/
-	return circuit;
-}
-
-/*
- *	Funcion que parsea las compuertas y arma la lista por niveles.
- *	No cuenta los niveles, sino que arma la matriz unicamente.
- */
-
-void parseGatesTags( char *father, xmlNodePtr cur, circuitTable * circuit, int curLevel )
-{
-	
-	int pos = 0, posExist = 0;
-	xmlChar * type=NULL, *input1=NULL, *input2=NULL;
-	
-	if( cur == NULL )
-	{
-		return;
-	}else
-	{
-		while( xmlIsBlankNode(cur) )
-		{
-			cur=cur->next;
-		}
-		if( curLevel % _MAX_GATES_LEVELS_ == 0 && curLevel != 0)
-		{
-			circuit = (circuitTable*)realloc(circuit, sizeof(circuitTable) * (curLevel + _MAX_GATES_LEVELS_) );
-		}
-		while( cur != NULL )
-		{
-			parseGatesTags( (char*)cur->name, cur->xmlChildrenNode, circuit, curLevel + 1 );
-			if( !xmlIsBlankNode(cur) )
-			{
-				pos = (circuit[curLevel].eachLevel)->qtyGates;
-				if( pos % _MAX_GATES_LEVELS_ == 0 && pos != 0 )
-				{
-					
-					(circuit[curLevel].eachLevel)->gates = (gate*)realloc((circuit[curLevel].eachLevel)->gates, 
-															sizeof(gate) * (pos + _MAX_GATES_LEVELS_) );
-				}
-				posExist = checkGateIsLoaded( circuit, (char*)cur->name, curLevel);
-				if( posExist != -1 )
-				{
-					strcpy( ((circuit[curLevel].eachLevel)->gates[posExist]).fathers[1], father );
-				}else
-				{
-					strcpy( ((circuit[curLevel].eachLevel)->gates[pos]).name, (char*)cur->name);
-					if( father != NULL )
-					{
-						strcpy( ((circuit[curLevel].eachLevel)->gates[pos]).fathers[0], father );
-					}
-
-					input1 = (xmlChar*)xmlGetProp(cur,(xmlChar*)"input1");
-					input2 = (xmlChar*)xmlGetProp(cur,(xmlChar*)"input2");		
-					if( input1 == NULL )
-						(circuit[curLevel].eachLevel)->gates[pos].input[0] = _INVALID_INPUT_;
-					else
-						(circuit[curLevel].eachLevel)->gates[pos].input[0] = atoi((char*)input1);
-
-					if( input2 == NULL )
-						(circuit[curLevel].eachLevel)->gates[pos].input[1] = _INVALID_INPUT_;
-					else
-						(circuit[curLevel].eachLevel)->gates[pos].input[1] = atoi((char*)input2);
-
-					(circuit[curLevel].eachLevel)->gates[pos].output = _INVALID_OUTPUT_;
-
-					type = (xmlChar*)xmlGetProp(cur,(xmlChar*)"type");
-					(circuit[curLevel].eachLevel)->gates[pos].type = getType(atoi((char*)type));
-					xmlFree(type);
-					xmlFree(input1);
-					xmlFree(input2);
-					(circuit[curLevel].eachLevel)->qtyGates++;
-					
-				}
-			}
-			cur = cur->next;
-		}
-	}
-}
-
-/*
- *	Devuelve el numero correspondiente al tipo de compuerta que es.
- *	En caso de error devuelve -1.
- */
-
-int getType( int type)
-{
-	switch( type )
-	{
-		case AND:
-			return AND;
-		case OR:
-			return OR;
-		case XOR:
-			return XOR;
-		case NAND:
-			return NAND;
-		case NOR:
-			return NOR;
-		case XNOR:
-			return XNOR;
-	}
-	return -1;
-}
-
-/* 
- *	Cuenta la cantidad de niveles que tiene el circuito
- */
-
-int countLevels( circuitTable* circuit)
-{
-	int level = 0;
-	
-	while( (circuit[level].eachLevel)->qtyGates > 0 )
-	{
-		++level;
-	}
-	return level;
-}
-
-/*
- *	Verifica si la compuerta ya esta agregada a la tabla. Devuelve TRUE si lo esta
- *	FALSE en caso contratio
- */
-
-int checkGateIsLoaded( circuitTable *circuit, char *name, int curLevel)
-{
-	int i;
-	
-	for( i = 0; i < (circuit[curLevel].eachLevel)->qtyGates ; ++i)
-	{
-		if( !strcmp((circuit[curLevel].eachLevel)->gates[i].name, (char*)name) )
-			return i;
-	}
-	return -1;
-}
-
 void printLevel( int *level, int qty )
 {
 	int i;
@@ -297,114 +41,7 @@ void printCircuitTable( circuitTable * circuit)
 
 int main(void){
 	
-	/*loadIPC();*/
-	DIR *dp;
-	struct dirent *d = NULL;
-	int i, qtyFiles = 0, pos = 0;
-	FILE *dataFile = NULL;
-	circuitTable *auxTable;
-	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;	
-	
-	if ((dp = opendir(dir)) == NULL){
-		perror("No se puede abrir el directorio\n");
-		return errno;
-	}
-	while (getFilesAmm(dp) <= 3 ){
-		sleep(1);
-		rewinddir(dp);
-	}
-	sleep(2);
-	rewinddir(dp);
-	
-	qtyFiles = getFilesAmm(dp) - 3;
-	
-	if( (table = (circuitTable**)malloc( sizeof(circuitTable*) * (qtyFiles))) == NULL )
-	{
-		closedir(dp);
-		perror("Error en la alocacion de memoria de table\n");
-		return errno;	
-	}
-	
-	for( i = 0 ; i < qtyFiles ; ++i )
-	{
-		if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable) * _MAX_GATES_LEVELS_)) == NULL )
-		{
-			closedir(dp);
-			free(table);
-			perror("Error en la alocacion de memoria de table[i]\n");
-			return errno;	
-		}
-	}
-	
-	rewinddir(dp);
-	while( getFilesAmm(dp) > 3 )
-	{
-		rewinddir(dp);
-		while( (d = readdir(dp)) )
-		{
-			if(d->d_ino == 0 )
-			{
-				continue;
-			}
-			if (strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0 || strcmp(d->d_name, ".svn") == 0){
-				continue;
-			}
-			else{
-				if( ( dirFile = (char*)malloc(sizeof(char) + strlen(dir) + strlen(d->d_name) + 1 )) == NULL )
-				{
-					closedir(dp);
-					for( i = 0 ; i < qtyFiles ; ++i )
-						free(table[i]);
-					free(table);
-					perror("Error en la alocacion de memoria\n");
-					return errno;
-				}
-				strcpy(dirFile, dir);
-				strcat(dirFile, d->d_name);
-				if( (dataFile = fopen(dirFile, "r")) ==  NULL )
-				{
-					closedir(dp);
-					free(dirFile);
-					for( i = 0 ; i < qtyFiles ; ++i )
-						free(table[i]);
-					free(table);
-					perror("No se pudo abrir el archivo de las compuertas\n");
-					return errno;
-				}
-				
-				auxTable = parseXMLGate( dirFile);
-				if( auxTable[0].totalLevels > _MAX_GATES_LEVELS_ )
-				{
-					table[pos] = realloc( table[pos], sizeof(circuitTable*) * auxTable[0].totalLevels);
-				}
-				table[pos++] = auxTable;
-				/*freeCircuits(&auxTable,1);*/
-			}
-			
-			if( ( procCopyDir = (char*)realloc(procCopyDir, sizeof(char) + strlen(procDir) + strlen(d->d_name) + 1 )) == NULL )
-			{
-				closedir(dp);
-				free(dirFile);
-				for( i = 0 ; i < qtyFiles ; ++i )
-					free(table[i]);
-				free(table);
-				perror("Error en la alocacion de memoria\n");
-				return errno;
-			}
-			strcpy(procCopyDir,procDir);
-			strcat(procCopyDir,d->d_name);
-			fclose( dataFile );
-			if( link(dirFile,procCopyDir) == -1)
-			{
-				perror("Error en el link de pipe\n");
-				return errno;
-			}
-			unlink(dirFile);
-		}
-	}
-	qtyFil = pos;
-	free(dirFile);
-	free(procCopyDir);
+	loadIPC();
 	return gateInitializer();
 }
 
@@ -418,10 +55,9 @@ int gateInitializer( void )
 {
 	int i, qtyFileCom, status, *maxLevel, *levels/*, flag = TRUE, aux*/;
 	pid_t *childPids;
-	/*circuitTable **table = NULL;*/
+	circuitTable **table = NULL;
 	
 	fprintf(stderr, "GATE -- READ -- ParentPID: %d myPid: %d \n", getppid(), getpid() );
-	/*
 	if( readIPC(getppid(), &qtyFileCom, sizeof(int)) == -1 )
 	{
 		perror("Error en la lectura de GATES a PIPE en la cantidad de archivo\n");
@@ -434,11 +70,10 @@ int gateInitializer( void )
 		freeCircuits(table, qtyFileCom);
 		return errno;
 	}
-	finalizeIPC();*/
+	finalizeIPC();
 	
 	/* COMIENZA EL PIPELINE */
 	
-	qtyFileCom = qtyFil;
 	if( ( childPids = (int*)malloc( sizeof(pid_t) * qtyFileCom) ) == NULL )
 	{
 		perror("Error en la alocacion del arreglo de pids\n");
@@ -709,7 +344,7 @@ circuitTable ** buildCircuitsTable( int qtyFileCom )
 		perror("Error en la alocacion de memoria\n");
 		return NULL;
 	}
-	/*for( i = 0 ; i < qtyFileCom ; ++i )
+	for( i = 0 ; i < qtyFileCom ; ++i )
 	{
 		if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable))) == NULL )
 		{
@@ -717,7 +352,7 @@ circuitTable ** buildCircuitsTable( int qtyFileCom )
 			free(table);
 			return NULL;	
 		}
-	}*/
+	}
 	
 	for( i = 0 ; i < qtyFileCom ; ++i )
 	{
