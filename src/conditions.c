@@ -50,13 +50,14 @@ void * sameContinent(void * condi){
 			++j;
 		}
 	}
-	if(j == 0){
-		threadsRet[myIndex] = -1;
-		return NULL;
-	}
 	
 	ans->countriesAmm = j;
-	ans->country = realloc(countryInt, sizeof(int)*(j));
+	if (j != 0){
+		ans->country = realloc(countryInt, sizeof(int)*(j));
+	}
+	else{
+		free(ans->country);
+	}
 	cond->sets[0] = ans;
 	threadsRet[myIndex] = 1;
 	
@@ -108,12 +109,14 @@ void * deathGroup(void * condi){
 			++j;
 		}
 	}
-	if(j == 0){
-		threadsRet[myIndex] = -1;
-		return NULL;
-	}
+	
 	ans->countriesAmm = j;
-	ans->country = realloc(countryInt, sizeof(int)*(j));
+	if (j != 0){
+		ans->country = realloc(countryInt, sizeof(int)*(j));
+	}
+	else{
+		free(ans->country);
+	}
 	cond->sets[1] = ans;
 	threadsRet[myIndex] = 1;
 	return cond;
@@ -172,12 +175,14 @@ void * champGroup(void * condi){
 			}
 		}	
 	}
-	if(j == 0){
-		threadsRet[myIndex] = -1;
-		return NULL;
-	}
+
 	ans->countriesAmm = j;
-	ans->country = realloc(countryInt, sizeof(int)*(j));
+	if (j != 0){
+		ans->country = realloc(countryInt, sizeof(int)*(j));
+	}
+	else{
+		free(ans->country);
+	}
 	cond->sets[2] = ans;
 	threadsRet[myIndex] = 1;
 	return cond;
@@ -230,12 +235,14 @@ void * weakGroup(void * condi){
 			++j;
 		}
 	}
-	if(j == 0){
-		threadsRet[myIndex] = -1;
-		return NULL;
-	}
+
 	ans->countriesAmm = j;
-	ans->country = realloc(countryInt, sizeof(int)*(j));
+	if (j != 0){
+		ans->country = realloc(countryInt, sizeof(int)*(j));
+	}
+	else{
+		free(ans->country);
+	}
 	cond->sets[3] = ans;
 	threadsRet[myIndex] = 1;
 	return cond;
@@ -277,23 +284,19 @@ int countryFree( condPack * cond){
 			++j;
 		}
 	}
-	
-	if(j == 0){
-		free(countryInt);
-		free(ans);
-		return FALSE;
-	}else{
-		
-		ans->countriesAmm = j;
-		
-		countryInt = realloc(countryInt, sizeof(int) * j);
-		ans->country = countryInt;
-		
-		cond->sets[0] = ans;
-		
-		return TRUE;
-	}
 
+	ans->countriesAmm = j;
+
+	if (j != 0){
+		ans->country = realloc(countryInt, sizeof(int)*(j));
+	}
+	else{
+		free(ans->country);
+	}
+	ans->country = countryInt;
+	cond->sets[0] = ans;
+
+	return TRUE;
 }
 /*Nombre: noCondition
 *
