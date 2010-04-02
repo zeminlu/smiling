@@ -13,7 +13,7 @@ int flagFirst = TRUE;
 static circuitTable **table = NULL;
 int finishedAmm = 0, *maxLevel, *levels;
 pid_t *childPids;
-extern pthread_mutex_t mutexIndex;
+pthread_mutex_t mutexIndex;
 
 void printLevel( int *level, int qty )
 {
@@ -50,9 +50,10 @@ void printCircuitTable( circuitTable * circuit)
 int main(void)
 {
 	pthread_t thread;
-	
+	int *aux = 0;
+		
 	loadIPC();
-	pthread_create(&thread, NULL, (void*)(addMoreFiles), NULL);
+	pthread_create(&thread, NULL, addMoreFiles, (void*)aux );
 	return gateInitializer();
 }
 /*
@@ -60,26 +61,26 @@ int main(void)
  *	agrega a la lista.
  */
 
-void * addMoreFiles( void *)
+void * addMoreFiles( void * ret)
 {
-	int i, cont = 0, ret;
-	
+	int i, cont = 0;
+		
 	pthread_mutex_init(&mutexIndex, NULL);
 	
 	fprintf(stderr, "GATE -- READ -- ParentPID: %d myPid: %d \n", getppid(), getpid() );
 	if( readIPC(getppid(), &qtyFileCom, sizeof(int)) == -1 )
 	{
 		perror("Error en la lectura de GATES a PIPE en la cantidad de archivo\n");
-		ret = errno;
-		return (void*)&ret;
+		*(int*)ret = errno;
+		return (void*)ret;
 	}
 	qtyFiles += qtyFileCom;
 	if( (table = buildCircuitsTable()) == NULL )
 	{
 		perror("Error al construir la tabla de los circuitos\n");
 		freeCircuitsGates();
-		ret = errno;
-		return (void*)&ret;	
+		*(int*)ret = errno;
+		return (void*)ret;
 	}
 	if( flagFirst )
 	{
@@ -87,8 +88,8 @@ void * addMoreFiles( void *)
 		{
 			perror("Error en la alocacion del arreglo de pids\n");
 			freeCircuitsGates();
-			ret = errno;
-			return (void*)&ret;
+			*(int*)ret = errno;
+			return (void*)ret;
 		}
 		memset(childPids, 0, qtyFiles);
 		maxLevel = malloc( sizeof(int) * qtyFiles);
@@ -100,8 +101,8 @@ void * addMoreFiles( void *)
 			free(childPids);
 			free(maxLevel);
 			freeCircuitsGates();
-			ret = errno;
-			return (void*)&ret;
+			*(int*)ret = errno;
+			return (void*)ret;
 		}
 		initLevels();
 	}else
@@ -110,8 +111,8 @@ void * addMoreFiles( void *)
 		{
 			perror("Error en la alocacion del arreglo de pids\n");
 			freeCircuitsGates();
-			ret = errno;
-			return (void*)&ret;
+			*(int*)ret = errno;
+			return (void*)ret;
 		}
 		memset(childPids, 0, qtyFiles);
 		maxLevel = realloc( maxLevel, sizeof(int) * qtyFiles);
@@ -123,8 +124,8 @@ void * addMoreFiles( void *)
 			free(childPids);
 			free(maxLevel);
 			freeCircuitsGates();
-			ret = errno;
-			return (void*)&ret;
+			*(int*)ret = errno;
+			return (void*)ret;
 		}
 		if( levels[qtyFiles - initTable + 1] > 0 )
 		{
@@ -144,7 +145,7 @@ void * addMoreFiles( void *)
 	}
 	pthread_mutex_destroy(&mutexIndex);
 	
-	return (void*)&ret;
+	return ret;
 }
 
 /*
