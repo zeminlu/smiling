@@ -11,12 +11,11 @@ int main (void){
 	subFixture *group = NULL;
 	void *(**conditions)(void *condArgs) = NULL;
 	int i = 0, index = 0, countriesTableEntriesAmm, status, condAmm;
-	
+	printf("GROUPH: antes de hace el load\n");
 	if ((status = loadIPC()) == -1){
 		fprintf(stderr, "Error en loadIPC\n");
 		return -1;
 	}
-		
 	if ((countriesTableEntriesAmm = loadHeadAndCountriesTable(&countriesTable, &data)) < 0){
 		fprintf(stderr, "Error en loadHeadandCountriesTable\n");
 		sendErrorToParent(-3);

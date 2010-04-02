@@ -32,30 +32,17 @@ int setupIPC(int channels){
 			return -1;
 		}
 		printf("Primeros pipes  fd0 = %d fd1 = %d\n",ipcIDs[i][0][0], ipcIDs[i][0][1] );
-		/*if (write(data, &ipcIDs[i][0][0], sizeof(int)) != sizeof(int)){
-			perror("IPCAPI: Setup1 - Error en primitiva write");
-			varFree(2, master, slave);
-			return -1;
-		}*/
+
 		if (pipe(ipcIDs[i][1]) == -1){
 			perror("IPCAPI: Error en pipe");
 			varFree(2, master, slave);
 			return -1;	
 		}
 		printf("Segundos pipes  fd0 = %d fd1 = %d\n",ipcIDs[i][1][0], ipcIDs[i][1][1] );
-		/*
-		if (write(data, &ipcIDs[i][1][1], sizeof(int)) != sizeof(int)){
-			perror("IPCAPI: Setup2 - Error en primitiva write");
-			varFree(2, master, slave);
-			return -1;
-		}*/
+
 		FD_SET(ipcIDs[i][1][0], master);
 	}
 	clientsAmm = channels;
-	/*close(data);
-	if ((info = open(fileName, O_RDONLY)) < 0){
-		return info;
-	}*/
 	
 	return 0;
 }
@@ -82,6 +69,7 @@ int addClient(int index){
 	}
 	close(ipcIDs[index][0][1]);
 	close(ipcIDs[index][1][0]);
+	
 	close(info);
 	
 	if ((info = open(fileName, O_RDONLY, 0644)) < 0){
@@ -109,6 +97,7 @@ int synchronize(){
 	for (i = 0 ; i < clientsAmm ; ++i){
 		close(ipcIDs[i][0][0]);
 		close(ipcIDs[i][1][1]);
+		
 		ids[0] = ipcIDs[i][1][0];
 		ids[1] = ipcIDs[i][0][1];
 		if (read(ipcIDs[i][1][0], &(pid[i]), sizeof(pid_t)) != sizeof(pid_t)){
@@ -158,9 +147,7 @@ int loadIPC(){
     	sigsuspend (&oldmask);
 	}
     sigprocmask (SIG_UNBLOCK, &mask, NULL);
-	
-	close(_stdin_);
-		
+			
 	if ((hashTable = hashCreateTable(_START_HASH_, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "IPCAPI: Error creando tabla de hash en loadIPC\n");
 		return -1;
