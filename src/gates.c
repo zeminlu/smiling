@@ -13,10 +13,19 @@ int flagSignal = TRUE, flagFirst = TRUE, finishedAmm = 0, *maxLevel, *levels;
 static circuitTable **table = NULL;
 pid_t *childPids;
 pthread_mutex_t mutexIndex;
+pthread_t thread;
 
 void ctrlC( int sig )
 {
+	int i;
+	
 	flagSignal = FALSE;
+	for( i = 0 ; i < qtyFiles ; ++i )
+	{
+		if( childPids[i] != -1 )
+			kill(childPids[i], SIGINT);
+	}
+
 }
 
 void printLevel( int *level, int qty )
@@ -53,7 +62,7 @@ void printCircuitTable( circuitTable * circuit)
 
 int main(void)
 {
-	pthread_t thread;
+
 	int *aux = 0, status;
 		
 	signal(SIGINT, ctrlC);	
@@ -234,7 +243,7 @@ int gateInitializer( void )
 			pthread_mutex_unlock(&mutexIndex);
 		}
 	}
-	
+	pthread_kill(thread, SIGINT);
 	if( status == 0 )
 	{
 		fprintf(stderr, "Se suspendio el programa por error de startCircuitsPipeline o listenToMyChildren, ppid = %d, pid = %d", getppid(), getpid() );
