@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <errno.h>
+#include <pthread.h>
 
 #include "../inc/definitions.h"
 #include "../inc/types.h"

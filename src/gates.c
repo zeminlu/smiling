@@ -13,6 +13,7 @@ int flagFirst = TRUE;
 static circuitTable **table = NULL;
 int finishedAmm = 0, *maxLevel, *levels;
 pid_t *childPids;
+extern pthread_mutex_t mutexIndex;
 
 void printLevel( int *level, int qty )
 {
@@ -46,9 +47,12 @@ void printCircuitTable( circuitTable * circuit)
 	fprintf(stderr, "--------------------------------------------------\n");
 }
 
-int main(void){
+int main(void)
+{
+	pthread_t thread;
 	
 	loadIPC();
+	pthread_create(&thread, NULL, (void*)(addMoreFiles), NULL);
 	return gateInitializer();
 }
 /*
@@ -56,22 +60,26 @@ int main(void){
  *	agrega a la lista.
  */
 
-int addMoreFiles()
+void * addMoreFiles( void *)
 {
-	int i, cont = 0;
+	int i, cont = 0, ret;
+	
+	pthread_mutex_init(&mutexIndex, NULL);
 	
 	fprintf(stderr, "GATE -- READ -- ParentPID: %d myPid: %d \n", getppid(), getpid() );
 	if( readIPC(getppid(), &qtyFileCom, sizeof(int)) == -1 )
 	{
 		perror("Error en la lectura de GATES a PIPE en la cantidad de archivo\n");
-		return errno;
+		ret = errno;
+		return (void*)&ret;
 	}
 	qtyFiles += qtyFileCom;
 	if( (table = buildCircuitsTable()) == NULL )
 	{
 		perror("Error al construir la tabla de los circuitos\n");
 		freeCircuitsGates();
-		return errno;
+		ret = errno;
+		return (void*)&ret;	
 	}
 	if( flagFirst )
 	{
@@ -79,7 +87,8 @@ int addMoreFiles()
 		{
 			perror("Error en la alocacion del arreglo de pids\n");
 			freeCircuitsGates();
-			return errno;
+			ret = errno;
+			return (void*)&ret;
 		}
 		memset(childPids, 0, qtyFiles);
 		maxLevel = malloc( sizeof(int) * qtyFiles);
@@ -91,7 +100,8 @@ int addMoreFiles()
 			free(childPids);
 			free(maxLevel);
 			freeCircuitsGates();
-			return errno;
+			ret = errno;
+			return (void*)&ret;
 		}
 		initLevels();
 	}else
@@ -100,7 +110,8 @@ int addMoreFiles()
 		{
 			perror("Error en la alocacion del arreglo de pids\n");
 			freeCircuitsGates();
-			return errno;
+			ret = errno;
+			return (void*)&ret;
 		}
 		memset(childPids, 0, qtyFiles);
 		maxLevel = realloc( maxLevel, sizeof(int) * qtyFiles);
@@ -112,7 +123,8 @@ int addMoreFiles()
 			free(childPids);
 			free(maxLevel);
 			freeCircuitsGates();
-			return errno;
+			ret = errno;
+			return (void*)&ret;
 		}
 		if( levels[qtyFiles - initTable + 1] > 0 )
 		{
@@ -130,7 +142,9 @@ int addMoreFiles()
 				levels[i] = cont--;
 		}
 	}
-	return 0;
+	pthread_mutex_destroy(&mutexIndex);
+	
+	return (void*)&ret;
 }
 
 /*
@@ -148,8 +162,10 @@ int gateInitializer( void )
 		printCircuitTable(table[i]);
 	}
 	
-	while( !allFilesWasProccessed() )
+	while( !allFilesWasProccessed() && status == 0 )
 	{
+		pthread_mutex_init(&mutexIndex, NULL);
+		
 		if( finishedAmm >= 5 )
 		{
 			reallocAllOfInfo();
@@ -186,7 +202,15 @@ int gateInitializer( void )
 		memset(childPids, -1, qtyFileCom * sizeof(pid_t) );
 		incLevels();
 		finalizeIPC();
+		pthread_mutex_destroy(&mutexIndex);
 	}
+	
+	if( status == 0 )
+	{
+		perror("Se suspendio el programa por error de startCircuitsPipeline o listenToMyChildren");
+		return errno;
+	}
+	
 	for( i = 0 ; i < qtyFileCom ; ++i )
 		saveProccessFile(table[i], i);
 	
