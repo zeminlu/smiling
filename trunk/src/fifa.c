@@ -56,12 +56,12 @@ int main (void){
 	}
 	printf("Pre childsListener\n");	
 	if ((status = childsListener(pids, countriesTable, countriesTableEntriesAmm, fixture)) != 0){
-		fprintf(stderr, "Error en childslistener\n");
 		if (status == -2){
-			printf("No se encontro una solucion al problema planteado, ver salida de error\n");
+			printf("No se encontro una solucion al problema planteado en esta ocasión, por favor intente nuevamente\n");
 		}
 		else{
-			printf("GroupH retorno con error\n");
+			fprintf(stderr, "Error en childslistener\n");
+			printf("GroupH retorno con error, ver salida de error\n");
 		}
 		/*for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 			free(countriesTable[j]);
