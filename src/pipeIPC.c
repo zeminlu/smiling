@@ -61,6 +61,7 @@ int setupIPC(int channels){
 int addClient(int index){
 	char pid[20], fileName[20], *nameStart = "./";
 	int info;
+	
 	itoa (getpid(), pid);
 	strcpy(fileName, nameStart);
 	strcat(fileName, pid);
@@ -69,14 +70,12 @@ int addClient(int index){
 		perror("IPCAPI: Error abriendo archivo en setupIPC");
 		return -1;
 	}
-	if (write(info, &ipcIDs[index][0][0], sizeof(int)) != sizeof(int)){
-		perror("IPCAPI: Setup2 - Error en primitiva write");
-		varFree(2, master, slave);
+	if (write(info, &(ipcIDs[index][0][0]), sizeof(int)) != sizeof(int)){
+		perror("IPCAPI: addClient - Error en primitiva write");
 		return -1;
 	}
-	if (write(info, &ipcIDs[index][1][1], sizeof(int)) != sizeof(int)){
-		perror("IPCAPI: Setup2 - Error en primitiva write");
-		varFree(2, master, slave);
+	if (write(info, &(ipcIDs[index][1][1]), sizeof(int)) != sizeof(int)){
+		perror("IPCAPI: addClient - Error en primitiva write");
 		return -1;
 	}
 	close(ipcIDs[index][0][1]);
@@ -106,6 +105,8 @@ int synchronize(){
 	}
 	
 	for (i = 0 ; i < clientsAmm ; ++i){
+		close(ipcIDs[i][0][0]);
+		close(ipcIDs[i][1][1]);
 		ids[0] = ipcIDs[i][1][0];
 		ids[1] = ipcIDs[i][0][1];
 		if (read(ipcIDs[i][1][0], &(pid[i]), sizeof(pid_t)) != sizeof(pid_t)){
@@ -168,10 +169,12 @@ int loadIPC(){
 		fprintf(stderr, "IPCAPI: Error insertando en tabla de hash en loadIPC\n");
 		return -1;
 	}
+	
 	itoa(getpid(), pidString);
 	strcpy(fileName, nameStart);
 	strcat(fileName, pidString);
 	unlink(fileName);
+	
 	return 0;
 }
 
