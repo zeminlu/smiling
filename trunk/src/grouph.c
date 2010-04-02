@@ -351,7 +351,6 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 			return errno;
 		}
 
-	fprintf(stderr,"ENTRE DEL 1ER A FOR %s\n", condArgs->head->name);
 	
 	for (j = 0 ; j < ((condArgs->sets)[0])->countriesAmm ; ++j){
 		((aux[0])->country)[j] = (((condArgs->sets)[0])->country)[j]; 
@@ -397,8 +396,6 @@ int intersect(int condAmm, condPack *condArgs, set **intersection){
 		varFree(2, aux[i]->country, aux[i]);
 	}
 	free(aux);
-		
-	fprintf(stderr,"SALI DE INTERSECT %s\n");
 	
 	return 0;
 }
