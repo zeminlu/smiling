@@ -61,7 +61,7 @@ int createTable( void )
 
 int createsGates(void)
 {
-	int pid, procStatus = 0, count = 0, i;
+	int pid, procStatus = 0, i;
 	
 	setupIPC(1);
 
@@ -89,9 +89,8 @@ int createsGates(void)
 		free(table);
 		return errno;
 	}
-	while( /*signalFlag*/ count == 0 )
+	while( signalFlag )
 	{
-		++count;
 		if( (procStatus = fileListener()) == -1)
 		{
 			perror("Error no se pudo escuchar el archivo");

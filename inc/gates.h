@@ -49,4 +49,6 @@ void reallocAllOfInfo( void );
 
 int * getFinalizeFiles( void );
 
+void getProccessAreRunning( void );
+
 #endif
