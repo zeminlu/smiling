@@ -184,7 +184,7 @@ void * addMoreFiles( void * ret)
 
 int gateInitializer( void )
 {
-	int i;
+	int i,status;
 	
 	while( flagSignal )
 	{
