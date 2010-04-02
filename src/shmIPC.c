@@ -63,15 +63,10 @@ int initHeaders(){
 }
 
 int setupIPC(int channels){
-	int i, data, key, status;
-	char pid[20], fileName[20], *nameStart = "./";
-		
-	key = getpid();
-	clientsAmm = channels;
+	int key, status;
 	
-	itoa (getpid(), pid);
-	strcpy(fileName, nameStart);
-	strcat(fileName, pid);
+	clientsAmm = channels;
+	key = getpid();
 	
 	if ((status = initShMem(key)) < 0){
 		return status;
@@ -82,31 +77,38 @@ int setupIPC(int channels){
 		return errno;
 	}
 	
-	data = open(fileName, O_WRONLY | O_CREAT, 0644);
-	
 	if ((status = initHeaders()) < 0){
 		return status;
 	}
-
-	close(data);
-	info = open(fileName, O_RDONLY);
-		
+	
 	return 0;
 }
 
-
 int addClient(int index){
-	if (write(_stdin_, &shmemId, sizeof(key_t)) != sizeof(key_t) || write(_stdin_, &index, sizeof(int)) != sizeof(int)){
+	int data;
+	char pid[20], fileName[20], *nameStart = "./";
+		
+	itoa (getpid(), pid);
+	strcpy(fileName, nameStart);
+	strcat(fileName, pid);
+	
+	data = open(fileName, O_WRONLY | O_CREAT, 0644);
+	
+	if (write(data, &shmemId, sizeof(key_t)) != sizeof(key_t) || write(data, &index, sizeof(int)) != sizeof(int)){
 		perror("IPCAPI: Error en primitiva write en addClient");
 		return errno;
 	}
-	return 0;
+	
+	close(data);
+	info = open(fileName, O_RDONLY);
+	
+	return dup2(info, 0);
 }
 
 int synchronize(){
 	int i, flag;
 	pid_t *pid;
-	char pidString[20], fileName[20], *nameStart = "./";
+	char pidString[20];
 	shmHeader *auxHead;
 	shmElem entry;
 		
@@ -156,12 +158,6 @@ int synchronize(){
 	for (i = 0 ; i < clientsAmm ; ++i){
 		kill (pid[i], SIGALRM);
 	}
-	close(info);
-	
-	itoa(getpid(), pidString);
-	strcpy(fileName, nameStart);
-	strcat(fileName, pidString);
-	unlink(fileName);
 	
 	return 0;
 }
@@ -171,7 +167,7 @@ int loadIPC(){
 	void *data;
 	int aux, index;
 	key_t key;
-	char pidString[20];
+	char pidString[20], fileName[20], *nameStart = "./";
 	shmElem entry;
 	shmHeader *auxHead;
 	sem_t *tmp;
@@ -237,6 +233,11 @@ int loadIPC(){
 			
 	close(_stdin_);
 	free(data);
+	
+	itoa(getpid(), pidString);
+	strcpy(fileName, nameStart);
+	strcat(fileName, pidString);
+	unlink(fileName);
 		
 	return 0;
 }
@@ -385,7 +386,6 @@ int finalizeIPC(){
 int selectIPC(int seconds){
 	shmElem *aux;
 	int acc;
-	
 	
 	acc = (seconds * 100);
 	while(--acc){
