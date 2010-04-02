@@ -19,6 +19,7 @@ void ctrlC( int sig )
 {
 	int i;
 	
+	printf("Estoy en el handler de gatesOfEachLevel\n");
 	flagSignal = FALSE;
 	for( i = 0 ; i < qtyFiles ; ++i )
 	{
