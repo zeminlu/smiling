@@ -9,9 +9,8 @@
 
 static int qtyFiles = 0, qtyFileCom;
 static int initTable = 0;
-int flagFirst = TRUE;
+int flagFirst = TRUE, finishedAmm = 0, *maxLevel, *levels;
 static circuitTable **table = NULL;
-int finishedAmm = 0, *maxLevel, *levels;
 pid_t *childPids;
 pthread_mutex_t mutexIndex;
 
@@ -65,8 +64,6 @@ void * addMoreFiles( void * ret)
 {
 	int i, cont = 0;
 		
-	pthread_mutex_init(&mutexIndex, NULL);
-	
 	fprintf(stderr, "GATE -- READ -- ParentPID: %d myPid: %d \n", getppid(), getpid() );
 	if( readIPC(getppid(), &qtyFileCom, sizeof(int)) == -1 )
 	{
@@ -75,6 +72,7 @@ void * addMoreFiles( void * ret)
 		return (void*)ret;
 	}
 	qtyFiles += qtyFileCom;
+	pthread_mutex_init(&mutexIndex, NULL);
 	if( (table = buildCircuitsTable()) == NULL )
 	{
 		perror("Error al construir la tabla de los circuitos\n");
@@ -158,7 +156,6 @@ int gateInitializer( void )
 {
 	int i, status;
 	
-	printf("sldkfjlsa\n");
 	for( i = 0 ; i < qtyFileCom ; ++i )
 	{
 		printCircuitTable(table[i]);
@@ -167,7 +164,6 @@ int gateInitializer( void )
 	while( !allFilesWasProccessed() && status == 0 )
 	{
 		pthread_mutex_init(&mutexIndex, NULL);
-		
 		if( finishedAmm >= 5 )
 		{
 			reallocAllOfInfo();
@@ -268,7 +264,7 @@ int startCircuitsPipeline()
 					return errno;
 					break;
 				case 0:
-					addClient();
+					addClient(i);
 					execv("./levels.bin", NULL);
 					break;
 				default:					
