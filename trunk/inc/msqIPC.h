@@ -4,7 +4,7 @@
 
 
 #include <sys/ipc.h>
-#include <mqueue.h>
+#include <sys/msg.h>
 
 #include "../inc/ipcAPI.h"
 #include "../inc/cutils.h"
