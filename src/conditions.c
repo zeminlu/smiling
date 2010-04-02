@@ -211,7 +211,6 @@ void * weakGroup(void * condi){
 	
 	head = cond->head;
 	countries = cond->countries;
-	printf("Soy WeakGroup y me llamo el pais %s\n", head->name);
 	pthread_mutex_lock (&mutexIndex);
 	myIndex = threadsIndex;
 	++threadsIndex;
@@ -249,7 +248,6 @@ void * weakGroup(void * condi){
 	}
 	cond->sets[3] = ans;
 	threadsRet[myIndex] = 1;
-		printf("Saliendo de WeakGroup y me llamo el pais %s\n", head->name);
 	return cond;
 }
 /*Nombre: countryFree
