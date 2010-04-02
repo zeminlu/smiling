@@ -54,9 +54,15 @@ void printCircuitTable( circuitTable * circuit)
 int main(void)
 {
 	pthread_t thread;
-	int *aux = 0;
+	int *aux = 0, status;
 		
-	loadIPC();
+	signal(SIGINT, ctrlC);	
+	
+	if( (status = loadIPC()) < 0 )
+	{
+		perror("Error en el LOAD de Gates");
+		return status;
+	}
 	pthread_mutex_init(&mutexIndex, NULL);
 	pthread_create(&thread, NULL, addMoreFiles, (void*)aux );
 	*aux =  gateInitializer();
@@ -73,97 +79,100 @@ void * addMoreFiles( void * ret)
 	int i, cont = 0;
 		
 	fprintf(stderr, "GATE -- READ -- ParentPID: %d myPid: %d \n", getppid(), getpid() );
-	pthread_mutex_lock(&mutexIndex);
-	
-	if( readIPC(getppid(), &qtyFileCom, sizeof(int)) == -1 )
+		
+	while( flagSignal )
 	{
-		perror("Error en la lectura de GATES a PIPE en la cantidad de archivo\n");
-		*(int*)ret = errno;
-		return (void*)ret;
-	}
-	printf("qtyFileCom: %d ppid() = %d\n", qtyFileCom, getppid());
-	qtyFiles += qtyFileCom;
-	if( (table = buildCircuitsTable()) == NULL )
-	{
-		perror("Error al construir la tabla de los circuitos\n");
-		freeCircuitsGates();
-		*(int*)ret = errno;
-		return (void*)ret;
-	}
-	printf("Sali del buildCircuitsTable\n");
-	for( i = 0 ; i < qtyFiles ; ++i )
-	{
-		fprintf(stderr, "I: %d ----------------------------- \n", i);
-		printCircuitTable(table[i]);
-	}
-	if( flagFirst )
-	{
-		if( ( childPids = (int*)malloc( sizeof(pid_t) * qtyFiles) ) == NULL )
+		if( readIPC(getppid(), &qtyFileCom, sizeof(int)) == -1 )
 		{
-			perror("Error en la alocacion del arreglo de pids\n");
+			perror("Error en la lectura de GATES a PIPE en la cantidad de archivo\n");
+			*(int*)ret = errno;
+			return (void*)ret;
+		}
+		pthread_mutex_lock(&mutexIndex);
+		printf("qtyFileCom: %d ppid() = %d\n", qtyFileCom, getppid());
+		qtyFiles += qtyFileCom;
+		if( (table = buildCircuitsTable()) == NULL )
+		{
+			perror("Error al construir la tabla de los circuitos\n");
 			freeCircuitsGates();
 			*(int*)ret = errno;
 			return (void*)ret;
 		}
-		memset(childPids, 0, qtyFiles);
-		maxLevel = malloc( sizeof(int) * qtyFiles);
-		for( i = 0 ; i < qtyFileCom ; ++i )
-			maxLevel[i] = table[i][0].totalLevels;
-		if( ( levels = (int*)malloc( sizeof(int) * qtyFiles) ) == NULL )
-		{
-			perror("Error en la alocacion del arreglo de niveles\n");
-			free(childPids);
-			free(maxLevel);
-			freeCircuitsGates();
-			*(int*)ret = errno;
-			return (void*)ret;
-		}
-		initLevels();
+		printf("Sali del buildCircuitsTable\n");
 		for( i = 0 ; i < qtyFiles ; ++i )
 		{
-			printf("I: %d levels = %d maxLevel: %d childPids: %d\n", i, levels[i], maxLevel[i], childPids[i]);
+			fprintf(stderr, "I: %d ----------------------------- \n", i);
+			printCircuitTable(table[i]);
 		}
-	}else
-	{
-		if( ( childPids = (int*)realloc( childPids, sizeof(pid_t) * qtyFiles) ) == NULL )
+		if( flagFirst )
 		{
-			perror("Error en la alocacion del arreglo de pids\n");
-			freeCircuitsGates();
-			*(int*)ret = errno;
-			return (void*)ret;
-		}
-		memset(childPids, 0, qtyFiles);
-		maxLevel = realloc( maxLevel, sizeof(int) * qtyFiles);
-		for( i = 0 ; i < qtyFileCom ; ++i )
-			maxLevel[i] = table[i][0].totalLevels;
-		if( ( levels = (int*)realloc( levels, sizeof(int) * qtyFiles) ) == NULL )
-		{
-			perror("Error en la alocacion del arreglo de niveles\n");
-			free(childPids);
-			free(maxLevel);
-			freeCircuitsGates();
-			*(int*)ret = errno;
-			return (void*)ret;
-		}
-		if( levels[qtyFiles - initTable + 1] > 0 )
-		{
-			for( i = 0 ; i < qtyFiles - initTable + 1 ; ++i )
-				levels[i] = cont++;
-		}else if( levels[qtyFiles - initTable + 1] == 0 )
-		{
-			cont = -1;
-			for( i = 0 ; i < qtyFiles - initTable + 1 ; ++i )
-				levels[i] = cont--; 
+			if( ( childPids = (int*)malloc( sizeof(pid_t) * qtyFiles) ) == NULL )
+			{
+				perror("Error en la alocacion del arreglo de pids\n");
+				freeCircuitsGates();
+				*(int*)ret = errno;
+				return (void*)ret;
+			}
+			memset(childPids, 0, qtyFiles);
+			maxLevel = malloc( sizeof(int) * qtyFiles);
+			for( i = 0 ; i < qtyFileCom ; ++i )
+				maxLevel[i] = table[i][0].totalLevels;
+			if( ( levels = (int*)malloc( sizeof(int) * qtyFiles) ) == NULL )
+			{
+				perror("Error en la alocacion del arreglo de niveles\n");
+				free(childPids);
+				free(maxLevel);
+				freeCircuitsGates();
+				*(int*)ret = errno;
+				return (void*)ret;
+			}
+			initLevels();
+			for( i = 0 ; i < qtyFiles ; ++i )
+			{
+				printf("I: %d levels = %d maxLevel: %d childPids: %d\n", i, levels[i], maxLevel[i], childPids[i]);
+			}
 		}else
 		{
-			cont =  levels[qtyFiles - initTable];
-			for( i = 0 ; i < qtyFiles - initTable + 1 ; ++i )
-				levels[i] = cont--;
+			if( ( childPids = (int*)realloc( childPids, sizeof(pid_t) * qtyFiles) ) == NULL )
+			{
+				perror("Error en la alocacion del arreglo de pids\n");
+				freeCircuitsGates();
+				*(int*)ret = errno;
+				return (void*)ret;
+			}
+			memset(childPids, 0, qtyFiles);
+			maxLevel = realloc( maxLevel, sizeof(int) * qtyFiles);
+			for( i = 0 ; i < qtyFileCom ; ++i )
+				maxLevel[i] = table[i][0].totalLevels;
+			if( ( levels = (int*)realloc( levels, sizeof(int) * qtyFiles) ) == NULL )
+			{
+				perror("Error en la alocacion del arreglo de niveles\n");
+				free(childPids);
+				free(maxLevel);
+				freeCircuitsGates();
+				*(int*)ret = errno;
+				return (void*)ret;
+			}
+			if( levels[qtyFiles - initTable + 1] > 0 )
+			{
+				for( i = 0 ; i < qtyFiles - initTable + 1 ; ++i )
+					levels[i] = cont++;
+			}else if( levels[qtyFiles - initTable + 1] == 0 )
+			{
+				cont = -1;
+				for( i = 0 ; i < qtyFiles - initTable + 1 ; ++i )
+					levels[i] = cont--; 
+			}else
+			{
+				cont =  levels[qtyFiles - initTable];
+				for( i = 0 ; i < qtyFiles - initTable + 1 ; ++i )
+					levels[i] = cont--;
+			}
 		}
+		pthread_mutex_unlock(&mutexIndex);
 	}
 	printf("Estoy terminando y estoy saliendo del thread\n");
 	flagFirst = FALSE;
-	pthread_mutex_unlock(&mutexIndex);
 	return ret;
 }
 
@@ -175,17 +184,11 @@ void * addMoreFiles( void * ret)
 
 int gateInitializer( void )
 {
-	int i, status;
+	int i;
 	
 	while( flagSignal )
 	{
-		printCircuitTable(table[i]);
-	}
-	
-	while( !allFilesWasProccessed() && status == 0 )
-	{
-		
-		if( finishedAmm >= 5 )
+		if( !allFilesWasProccessed() )
 		{
 			pthread_mutex_lock(&mutexIndex);
 			printf("Estoy dentro del while que procesa los niveles\n");
@@ -282,7 +285,7 @@ int startCircuitsPipeline()
 		return errno;
 	}
 	
-	for (i = 0 ; i < qtyFiles ; ++i)
+	for (i = 0, j = 0 ; i < qtyFiles ; ++i)
 	{
 		if( levels[i] < maxLevel[i] && levels[i] >= 0 )
 		{	
@@ -293,7 +296,7 @@ int startCircuitsPipeline()
 					return errno;
 					break;
 				case 0:
-					addClient(i);
+					addClient(j++);
 					execv("./levels.bin", NULL);
 					break;
 				default:					
@@ -477,26 +480,12 @@ circuitTable ** buildCircuitsTable( void )
 			return NULL;
 		}
 		fprintf(stderr, "File: %d Cantidad de niveles: %d \n", i, qtyLevels);
-		if( flagFirst )
+		printf("Estoy en buildCircuitsTable donde es la primera vez\n");
+		if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable) * qtyLevels)) == NULL )
 		{
-			printf("Estoy en buildCircuitsTable donde es la primera vez\n");
-			if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable) * qtyLevels)) == NULL )
-			{
-				perror("Error en la alocacion de memoria de table[i]\n");
-				free(table);
-				return NULL;	
-			}
-			printf("Termino de malloquer, flagFirst = TRUE\n");
-		}else
-		{
-			printf("Estoy en buildCircuitsTable donde NO es la primera vez\n");
-			if( (table[i] = (circuitTable*)realloc( table[i], sizeof(circuitTable) * qtyLevels)) == NULL )
-			{
-				perror("Error en la alocacion de memoria de table[i]\n");
-				free(table);
-				return NULL;	
-			}
-			printf("Termino de malloquer, flagFirst = TRUE\n");
+			perror("Error en la alocacion de memoria de table[i]\n");
+			free(table);
+			return NULL;	
 		}
 		(table[i][0].totalLevels) = qtyLevels;
 	
