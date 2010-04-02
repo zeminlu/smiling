@@ -7,18 +7,112 @@
 
 #include "../inc/pipe.h"
 
+int signalFlag = TRUE;
+static int qtyFiles = 0;
+static circuitTable **table = NULL;
+static int pos = 0;
+
+void handlerCtrlC(int sig){
+	signalFlag = FALSE;
+}
+
+int main (int argc, char const *argv[])
+{
+
+	if( createsGates() == -1 )
+	{
+		perror("Error en la creacion de la tablas");
+		return errno;
+	}
+	return createsGates();
+}
+
 /*
- *	Funcion encargada de leer el directorio de archivos de pipeDir, llamar a la funcion
- *	que los parsea y finaliza enviando por IPC la tabla con los circuitos a gates.
+ *	Funcion encargada de crear la tabla de circuitos.
+ *	En caso de error retorna -1, sino 0.
  */
 
-int main(void){
+int createTable( void )
+{
+	int i;
 	
+	if( (table = (circuitTable**)malloc( sizeof(circuitTable*) * _MAX_GATES_LEVELS_ )) == NULL )
+	{
+		perror("Error en la alocacion de memoria de table\n");
+		return errno;	
+	}
+	
+	for( i = 0 ; i < qtyFiles ; ++i )
+	{
+		if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable) * _MAX_GATES_LEVELS_)) == NULL )
+		{
+			perror("Error en la alocacion de memoria de table[i]\n");
+			return errno;	
+		}
+	}
+	return 0;
+}
+
+/*
+ *	Funcion encargada de crear al hijo Gates y luego desde el padre va a comenzar a mandar las tablas.
+ */
+
+int createsGates(void)
+{
+	int pid, procStatus = 0;
+	
+	signal(SIGINT, handlerCtrlC);
+	
+	setupIPC(1);
+
+	switch((pid = fork()))
+	{
+		case -1:
+			perror("Error de fork");
+			return errno;
+			break;
+		case 0:
+			addClient();
+			execv("./gates.bin", NULL);
+			break;
+		default:
+			break;
+	}	
+	
+	synchronize();
+	while( signalFlag )
+	{
+		if( (procStatus = fileListener()) == -1)
+		{
+			perror("Error no se pudo escuchar el archivo");
+			return errno;
+		}
+		sendTableToGates(pid);
+		freeCircuits(table,pos);
+		if( createTable() == -1 )
+		{
+			perror("Error en la creacion de la tabla");
+			return errno;
+		}
+		pos = 0;
+		qtyFiles = 0;
+	}
+	wait(&pid);
+	finalizeIPC();	
+	return procStatus;
+}
+
+/*
+ *	Funcion que escucha los archivos constantemente y los va procesando.
+ *	En caso de que ocurra un error retorna -1, sino 0.
+ */
+
+int fileListener( void)
+{
 	DIR *dp;
 	struct dirent *d = NULL;
-	int i, qtyFiles = 0, pos = 0, pid, k, j;
 	FILE *dataFile = NULL;
-	circuitTable *auxTable, **table;
+	circuitTable *auxTable;
 	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;	
 	
 	if ((dp = opendir(dir)) == NULL){
@@ -29,31 +123,12 @@ int main(void){
 		sleep(1);
 		rewinddir(dp);
 	}
-	sleep(2);
 	rewinddir(dp);
 	
 	qtyFiles = getFilesAmm(dp) - 3;
 	
-	if( (table = (circuitTable**)malloc( sizeof(circuitTable*) * (qtyFiles))) == NULL )
-	{
-		closedir(dp);
-		perror("Error en la alocacion de memoria de table\n");
-		return errno;	
-	}
-	
-	for( i = 0 ; i < qtyFiles ; ++i )
-	{
-		if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable) * _MAX_GATES_LEVELS_)) == NULL )
-		{
-			closedir(dp);
-			free(table);
-			perror("Error en la alocacion de memoria de table[i]\n");
-			return errno;	
-		}
-	}
-	
 	rewinddir(dp);
-	while( getFilesAmm(dp) > 3 )
+	while( getFilesAmm(dp) > 3 && signalFlag )
 	{
 		rewinddir(dp);
 		while( (d = readdir(dp)) )
@@ -69,11 +144,8 @@ int main(void){
 				if( ( dirFile = (char*)malloc(sizeof(char) + strlen(dir) + strlen(d->d_name) + 1 )) == NULL )
 				{
 					closedir(dp);
-					for( i = 0 ; i < qtyFiles ; ++i )
-						free(table[i]);
-					free(table);
 					perror("Error en la alocacion de memoria\n");
-					return errno;
+					return -1;
 				}
 				strcpy(dirFile, dir);
 				strcat(dirFile, d->d_name);
@@ -81,11 +153,8 @@ int main(void){
 				{
 					closedir(dp);
 					free(dirFile);
-					for( i = 0 ; i < qtyFiles ; ++i )
-						free(table[i]);
-					free(table);
 					perror("No se pudo abrir el archivo de las compuertas\n");
-					return errno;
+					return -1;
 				}
 				
 				auxTable = parseXMLGate( dirFile);
@@ -94,7 +163,6 @@ int main(void){
 					table[pos] = realloc( table[pos], sizeof(circuitTable*) * auxTable[0].totalLevels);
 				}
 				table[pos++] = auxTable;
-				/*freeCircuits(&auxTable,1);*/
 			}
 			
 			if( ( procCopyDir = (char*)realloc(procCopyDir, sizeof(char) + strlen(procDir) + strlen(d->d_name) + 1 )) == NULL )
@@ -102,7 +170,7 @@ int main(void){
 				closedir(dp);
 				free(dirFile);
 				perror("Error en la alocacion de memoria\n");
-				return errno;
+				return -1;
 			}
 			strcpy(procCopyDir,procDir);
 			strcat(procCopyDir,d->d_name);
@@ -110,33 +178,25 @@ int main(void){
 			if( link(dirFile,procCopyDir) == -1)
 			{
 				perror("Error en el link de pipe\n");
-				return errno;
+				return -1;
 			}
 			unlink(dirFile);
 		}
 	}
 	free(dirFile);
 	free(procCopyDir);
-	
-	setupIPC(1);
+	return 0;
+}
 
-	switch((pid = fork()))
-	{
-		case -1:
-			perror("Error de fork");
-			return errno;
-			break;
-		case 0:
-			addClient();
-			execv("./gates.bin", NULL);
-			break;
-		default:					
-			break;
-	}	
+/*
+ *	Funcion encargada de enviar todos los archivos que se procesaron. Retorna
+ *	-1 en caso de error sino 0.
+ */
+
+int sendTableToGates( int pid )
+{
+	int i, j, k;
 	
-	synchronize();
-	
-	printf("GATES pid: %d cantidad de archivos: %d\n", pid, pos);
 	writeIPC(pid, &pos, sizeof(int) );
 	for( i = 0 ; i < pos ; ++i )
 	{	
@@ -144,7 +204,7 @@ int main(void){
 		if( writeIPC(pid, &(table[i][0].totalLevels), sizeof(int)) == -1 )
 		{
 			perror("Error en el write de totalLevels\n");
-			return errno;
+			return -1;
 		}
 		for( j = 0 ; j < table[i][0].totalLevels ; ++j )
 		{
@@ -152,7 +212,7 @@ int main(void){
 			if( writeIPC(pid, &((table[i][j].eachLevel)->qtyGates), sizeof(int)) == -1 )
 			{
 				perror("Error en el write de cantidad de compuertas\n");
-				return errno;
+				return -1;
 			}
 			
 			for( k = 0 ; k < (table[i][j].eachLevel)->qtyGates ; ++k )
@@ -161,14 +221,11 @@ int main(void){
 				if( writeIPC(pid, &((table[i][j].eachLevel)->gates[k]), sizeof(gate) ) == -1 )
 				{
 					perror("Error en el write de la compuerta: a Gates\n");
-					return errno;
+					return -1;
 				}
 			}
 		}
 	}
-	wait(&pid);
-	finalizeIPC();
-	freeCircuits(table, pos);
 	return 0;
 }
 
