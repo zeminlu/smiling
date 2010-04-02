@@ -14,6 +14,7 @@ static int pos = 0;
 
 void handlerCtrlC(int sig){
 	signalFlag = FALSE;
+	printf("EStoy en el handler de pipe\n");
 	kill(pid, SIGINT);
 }
 
@@ -112,7 +113,7 @@ int createsGates(void)
 		pos = 0;
 		qtyFiles = 0;
 	}
-	wait(&pid);
+	/*wait(&pid);*/
 	finalizeIPC();	
 	return procStatus;
 }
