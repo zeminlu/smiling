@@ -52,6 +52,7 @@ int main(void)
 	int *aux = 0;
 		
 	loadIPC();
+	pthread_mutex_init(&mutexIndex, NULL);
 	pthread_create(&thread, NULL, addMoreFiles, (void*)aux );
 	return gateInitializer();
 }
@@ -163,7 +164,7 @@ int gateInitializer( void )
 	
 	while( !allFilesWasProccessed() && status == 0 )
 	{
-		pthread_mutex_init(&mutexIndex, NULL);
+		
 		if( finishedAmm >= 5 )
 		{
 			reallocAllOfInfo();

@@ -63,7 +63,9 @@ int main (void){
 	}
 		
 	if ((status = buildSubfixture(&group, condAmm, condArgs, data, countriesTable, conditions)) != 0){
-		fprintf(stderr, "Error en buildSubfixture\n");
+		if (status != -2){
+			fprintf(stderr, "Error en buildSubfixture\n");
+		}
 		/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
 		}*/
