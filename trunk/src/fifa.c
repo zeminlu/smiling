@@ -158,15 +158,15 @@ int startChildProcesses(country **countriesTable, int countriesTableEntriesAmm, 
 			}
 			switch(((*pids)[headsAmm++] = fork())){
 				case -1:
-				perror("Error de fork");
-				return errno;
-				break;
+					perror("Error de fork");
+					return errno;
+					break;
 				case 0:
-				addClient();
-				execv("./grouph.bin", NULL);
-				break;
+					addClient();
+					execv("./grouph.bin", NULL);
+					break;
 				default:					
-				break;
+					break;
 			}
 			++j;
 		}
