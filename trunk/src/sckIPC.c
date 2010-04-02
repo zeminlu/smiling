@@ -12,26 +12,17 @@ void sigHandler (int signum){
 }
 
 int setupIPC(int channels){
-	char pid[20], fileName[20], *socketNameStart = "./socket-", *nameStart = "./";
-	int data, i;
+	char pid[20], *socketNameStart = "./socket-";
 	
-	itoa (getpid(), pid);
-	strcpy(socketFileName, socketNameStart);
-	strcat(socketFileName, pid);
-	strcpy(fileName, nameStart);
-	strcat(fileName, pid);
-	
-	if ((master = malloc(sizeof(fd_set))) == NULL || (slave = malloc(sizeof(fd_set))) == NULL || (sockN = malloc(sizeof(int) * channels)) == NULL){
+	if ((master = malloc(sizeof(fd_set))) == NULL || (slave = malloc(sizeof(fd_set))) == NULL){
 		perror("IPCAPI: Error de memoria en setupIPC\n");
 		varFree(2, master, slave);
 		return errno;
 	}
 	
-	if ((data = open(fileName, O_WRONLY | O_CREAT, 0644)) < 0){
-		perror("IPCAPI: Error abriendo archivo en setupIPC");
-		varFree(2, master, slave);
-		return -1;
-	}
+	itoa (getpid(), pid);
+	strcpy(socketFileName, socketNameStart);
+	strcat(socketFileName, pid);
 	
 	address.sin_family = AF_INET;
 	address.sin_port = ownPort;
@@ -53,28 +44,42 @@ int setupIPC(int channels){
 		perror("IPCAPI: Error en llamada a bind");
 		return errno;
 	}
-	
 	clientsAmm = channels;
-	close(data);
-	if ((info = open(fileName, O_RDONLY)) < 0){
-		return info;
-	}
 	
 	return 0;
 }
 
 int addClient(int index){
+	int data;
+	char pid[20], fileName[20], *nameStart = "./";
+	
+	itoa (getpid(), pid);
+	strcpy(fileName, nameStart);
+	strcat(fileName, pid);
+	
+	if ((data = open(fileName, O_WRONLY | O_CREAT, 0644)) < 0){
+		perror("IPCAPI: Error abriendo archivo en setupIPC");
+		varFree(2, master, slave);
+		return -1;
+	}
+	
 	if (write(_stdin_, &ownPort, sizeof(int)) != sizeof(int)){
 		perror("IPCAPI: addClient - Error en primitiva write");
 		varFree(2, master, slave);
 		return errno;
 	}
-	return 0;
+	
+	close(data);
+	if ((info = open(fileName, O_RDONLY)) < 0){
+		return info;
+	}
+	
+	return dup2(info, 0);
 }
 
 int synchronize(){
 	int i = 0, *pid, newsockfd, status;
-	char pidString[20], fileName[20], *nameStart = "./";
+	char pidString[20];
 	
 	if ((hashTable = hashCreateTable(clientsAmm * _START_HASH_, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "IPCAPI: Error al crear la tabla de hash\n");
@@ -122,11 +127,6 @@ int synchronize(){
 		kill (pid[i], SIGALRM);
 	}
 	
-	close(info);
-	itoa(getpid(), pidString);
-	strcpy(fileName, nameStart);
-	strcat(fileName, pidString);
-	unlink(fileName);
 	return 0;
 }
 
@@ -134,7 +134,7 @@ int loadIPC(){
 	sigset_t mask, oldmask;
 	pid_t pid;
 	int status;
-	char pidString[20], *socketNameStart = "./socket-";
+	char pidString[20], fileName[20], *nameStart = "./", *socketNameStart = "./socket-";
 	
 	signal(SIGALRM, sigHandler);
 	sigemptyset (&mask);
@@ -193,6 +193,10 @@ int loadIPC(){
     sigprocmask (SIG_UNBLOCK, &mask, NULL);
 	
 	close(_stdin_);
+	itoa(getpid(), pidString);
+	strcpy(fileName, nameStart);
+	strcat(fileName, pidString);
+	unlink(fileName);
 
 	return 0;
 }
