@@ -26,12 +26,12 @@ int main (void){
 		return -1;
 	}
 	
-	printf("<-----------------------------------------LLEGO LO SIGUIENTE A FIFA-----------------------------------------\n");
+	/*printf("<-----------------------------------------LLEGO LO SIGUIENTE A FIFA-----------------------------------------\n");
 	for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
 		printf("Pais: %s - Continente: %d - Campeon: %d - Peso: %d - Same: %d - Death: %d - ChampG: %d - Weak: %d - Cabeza de Serie: %d\n", 
 		countriesTable[j]->name, countriesTable[j]->continent, countriesTable[j]->champ, countriesTable[j]->weight, countriesTable[j]->sameContinent, countriesTable[j]->deathGroup, countriesTable[j]->champGroup, countriesTable[j]->weakGroup, countriesTable[j]->isHead);
 	}
-	printf("<-----------------------------------------------------------------------------------------------------------\n>");
+	printf("<-----------------------------------------------------------------------------------------------------------\n>");*/
 	
 	closeIPC(getpid());
 	
@@ -229,8 +229,7 @@ int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntr
 					return -1;
 				}
 				
-				printf("IPC : %d, reqCountry desserializado = %d \n", j, reqCountry);
-				
+			/*	printf("IPC : %d, reqCountry desserializado = %d \n", j, reqCountry);*/
 				if (reqCountry == -1){
 					for (x = 0 ; x < 4 ; ++x){
 						if (readIPC(pids[j], &bufferSize, sizeof(int)) != 0){
