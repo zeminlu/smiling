@@ -12,7 +12,10 @@ int main (void){
 	void *(**conditions)(void *condArgs) = NULL;
 	int i = 0, index = 0, countriesTableEntriesAmm, status, condAmm;
 	
-	loadIPC();
+	if ((status = loadIPC()) == -1){
+		fprintf(stderr, "Error en loadIPC\n");
+		return -1;
+	}
 		
 	if ((countriesTableEntriesAmm = loadHeadAndCountriesTable(&countriesTable, &data)) < 0){
 		fprintf(stderr, "Error en loadHeadandCountriesTable\n");
@@ -64,10 +67,10 @@ int main (void){
 		/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
 		}*/
-		/*for (i = 0 ; i < condAmm ; ++i){
+		for (i = 0 ; i < condAmm ; ++i){
 			free(condArgs->sets[i]);
 		}
-		varFree(6, countriesTable, group->countries, group, conditions, condArgs->sets, condArgs);*/
+		varFree(6, countriesTable, group->countries, group, conditions, condArgs->sets, condArgs);
 		sendErrorToParent((status == -1 ? -3 : -2));
 		closeIPC(getpid());
 
