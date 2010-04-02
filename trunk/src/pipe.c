@@ -72,14 +72,23 @@ int createsGates(void)
 			return errno;
 			break;
 		case 0:
-			addClient();
+			addClient(0);
 			execv("./gates.bin", NULL);
 			break;
 		default:
 			break;
 	}	
 	
-	synchronize();
+	if( synchronize() != 0)
+	{
+		wait(&pid);
+		for( i = 0 ; i < qtyFiles ; ++i )
+		{
+			free(table[i]);
+		}
+		free(table);
+		return errno;
+	}
 	while( /*signalFlag*/ count == 0 )
 	{
 		++count;
@@ -176,9 +185,7 @@ int fileListener( void)
 				{
 					table[pos] = realloc( table[pos], sizeof(circuitTable*) * auxTable[0].totalLevels);
 				}
-				printf("Voy a asignar al table[pos]\n");
 				table[pos++] = auxTable;
-				printf("Acabo de asignar auxTable a table[pos]\n");
 				/*freeCircuits(&auxTable,1);*/
 			}
 
