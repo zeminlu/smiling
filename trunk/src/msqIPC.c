@@ -3,7 +3,6 @@
 
 int queue_id= 0;
 int clientsAmm = 0, flag = FALSE;
-int info;
 hashTableADT hashTable = NULL;
 msQ * msLastRead = NULL;
 
@@ -57,7 +56,7 @@ int addClient(int index){
 		return data;
 	}
 	
-	return dup2(info, 0);
+	return dup2(data, 0);
 }
 int synchronize(){
     int i,j, ids[2], mlen;
