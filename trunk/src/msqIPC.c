@@ -124,7 +124,7 @@ int loadIPC(){
 		return errno;
 	}
 	
-	printf("Recibi ownID[1] = %d\n");
+	printf("Recibi ownID[1] = %d\n", ownID[1]);
 	
     ownID[0] = 1 + ownID[1];
      if((hashTable = hashCreateTable(10, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
