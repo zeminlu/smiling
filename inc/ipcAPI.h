@@ -17,7 +17,7 @@
 
 int setupIPC(int channels);
 
-int addClient();
+int addClient(int index);
 
 int synchronize();
 

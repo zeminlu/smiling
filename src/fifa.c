@@ -162,7 +162,7 @@ int startChildProcesses(country **countriesTable, int countriesTableEntriesAmm, 
 					return errno;
 					break;
 				case 0:
-					addClient();
+					addClient(j);
 					execv("./grouph.bin", NULL);
 					break;
 				default:					
