@@ -87,6 +87,7 @@ int createsGates(void)
 			perror("Error no se pudo escuchar el archivo");
 			return errno;
 		}
+		fprintf(stderr, "Pipe pid: %d\n", pid);
 		sendTableToGates(pid);
 		freeCircuits(table,pos);
 		if( createTable() == -1 )
@@ -200,7 +201,7 @@ int sendTableToGates( int pid )
 	writeIPC(pid, &pos, sizeof(int) );
 	for( i = 0 ; i < pos ; ++i )
 	{	
-		/*fprintf(stderr, "Pipe -- WRITE -- MyPID: %d childPid: %d \n", getpid(), pid);*/
+		fprintf(stderr, "Pipe -- WRITE -- MyPID: %d childPid: %d \n", getpid(), pid);
 		if( writeIPC(pid, &(table[i][0].totalLevels), sizeof(int)) == -1 )
 		{
 			perror("Error en el write de totalLevels\n");
@@ -208,7 +209,7 @@ int sendTableToGates( int pid )
 		}
 		for( j = 0 ; j < table[i][0].totalLevels ; ++j )
 		{
-/*			fprintf(stderr, "Pipe -- WRITE -- MyPID: %d childPid: %d \n", getpid(), pid);*/
+			fprintf(stderr, "Pipe -- WRITE -- MyPID: %d childPid: %d \n", getpid(), pid);
 			if( writeIPC(pid, &((table[i][j].eachLevel)->qtyGates), sizeof(int)) == -1 )
 			{
 				perror("Error en el write de cantidad de compuertas\n");
@@ -217,7 +218,7 @@ int sendTableToGates( int pid )
 			
 			for( k = 0 ; k < (table[i][j].eachLevel)->qtyGates ; ++k )
 			{
-/*				fprintf(stderr, "Pipe -- WRITE -- MyPID: %d childPid: %d \n", getpid(), pid);*/
+				fprintf(stderr, "Pipe -- WRITE -- MyPID: %d childPid: %d \n", getpid(), pid);
 				if( writeIPC(pid, &((table[i][j].eachLevel)->gates[k]), sizeof(gate) ) == -1 )
 				{
 					perror("Error en el write de la compuerta: a Gates\n");
