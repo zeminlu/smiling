@@ -19,6 +19,7 @@
 #include "../inc/tpl.h"
 #include "../inc/serializable.h"
 #include "../inc/ipcAPI.h"
+#include "../inc/cutils.h"
 
 int loadCountriesTable(country ***countriesTable);
 
