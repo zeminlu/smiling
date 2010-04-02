@@ -115,6 +115,7 @@ int fileListener( void)
 	FILE *dataFile = NULL;
 	circuitTable *auxTable;
 	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;	
+	int i;
 	
 	if ((dp = opendir(dir)) == NULL){
 		perror("No se puede abrir el directorio\n");
