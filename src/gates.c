@@ -19,15 +19,13 @@ void ctrlC( int sig )
 {
 	int i;
 	
-	printf("Estoy en el handler de gatesOfEachLevel
-	\n");
+	printf("Estoy en el handler de gates\n");
 	flagSignal = FALSE;
 	for( i = 0 ; i < qtyFiles ; ++i )
 	{
 		if( childPids[i] != -1 )
 			kill(childPids[i], SIGINT);
 	}
-
 }
 
 void printLevel( int *level, int qty )
