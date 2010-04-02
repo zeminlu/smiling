@@ -21,7 +21,7 @@
 
 int gateInitializer( void );
 
-void * addMoreFiles( void * );
+void * addMoreFiles( void * ret);
 
 circuitTable ** buildCircuitsTable( void );
 
