@@ -31,6 +31,7 @@ int setupIPC(int channels){
 			varFree(2, master, slave);
 			return -1;
 		}
+		printf("Primeros pipes  fd0 = %d fd1 = %d\n",ipcIDs[i][0][0], ipcIDs[i][0][1] );
 		/*if (write(data, &ipcIDs[i][0][0], sizeof(int)) != sizeof(int)){
 			perror("IPCAPI: Setup1 - Error en primitiva write");
 			varFree(2, master, slave);
@@ -41,6 +42,7 @@ int setupIPC(int channels){
 			varFree(2, master, slave);
 			return -1;	
 		}
+		printf("Segundos pipes  fd0 = %d fd1 = %d\n",ipcIDs[i][1][0], ipcIDs[i][1][1] );
 		/*
 		if (write(data, &ipcIDs[i][1][1], sizeof(int)) != sizeof(int)){
 			perror("IPCAPI: Setup2 - Error en primitiva write");
