@@ -19,7 +19,8 @@ void ctrlC( int sig )
 {
 	int i;
 	
-	printf("Estoy en el handler de gatesOfEachLevel\n");
+	printf("Estoy en el handler de gatesOfEachLevel
+	\n");
 	flagSignal = FALSE;
 	for( i = 0 ; i < qtyFiles ; ++i )
 	{
@@ -244,7 +245,7 @@ int gateInitializer( void )
 			pthread_mutex_unlock(&mutexIndex);
 		}
 	}
-	pthread_kill(thread, SIGINT);
+	pthread_cancel(thread);
 	if( status == 0 )
 	{
 		fprintf(stderr, "Se suspendio el programa por error de startCircuitsPipeline o listenToMyChildren, ppid = %d, pid = %d", getppid(), getpid() );
