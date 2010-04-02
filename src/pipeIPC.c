@@ -90,12 +90,12 @@ int synchronize(){
 	for (i = 0 ; i < clientsAmm ; ++i){
 		ids[0] = ipcIDs[i][1][0];
 		ids[1] = ipcIDs[i][0][1];
-		printf("Esperando pid %d del ipcIDs = %d\n", i, ipcIDs[1][0]);
+		printf("Esperando pid %d del ipcIDs = %d\n", i, ipcIDs[i][1][0]);
 		if (read(ipcIDs[i][1][0], &(pid[i]), sizeof(pid_t)) != sizeof(pid_t)){
 			perror("IPCAPI: synchronize - Error en primitiva read");
 			return -1;
 		}
-		printf("Recibi pid[%d = %d]\n", i, pid[i]);
+		printf("Recibi pid[%d] = %d del ipcIDs = %d\n", i, pid[i], ipcIDs[i][1][0]);
 		itoa(pid[i], pidString);
 		if (hashInsert(&hashTable, ids, pidString, 0) == NULL){
 			fprintf(stderr, "IPCAPI: Error en el insert de la tabla de hash en synchronize, invocado con ids[0] = %d, ids[1] = %d y pidString = %s\n", ids[0], ids[1], pidString);
