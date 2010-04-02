@@ -129,7 +129,7 @@ int fileListener( void)
 	qtyFiles = getFilesAmm(dp) - 3;
 	
 	rewinddir(dp);
-	while( getFilesAmm(dp) > 3 && signalFlag )
+	while( getFilesAmm(dp) > 3 )
 	{
 		rewinddir(dp);
 		while( (d = readdir(dp)) )
@@ -145,8 +145,11 @@ int fileListener( void)
 				if( ( dirFile = (char*)malloc(sizeof(char) + strlen(dir) + strlen(d->d_name) + 1 )) == NULL )
 				{
 					closedir(dp);
+					for( i = 0 ; i < qtyFiles ; ++i )
+						free(table[i]);
+					free(table);
 					perror("Error en la alocacion de memoria\n");
-					return -1;
+					return errno;
 				}
 				strcpy(dirFile, dir);
 				strcat(dirFile, d->d_name);
@@ -154,24 +157,28 @@ int fileListener( void)
 				{
 					closedir(dp);
 					free(dirFile);
+					for( i = 0 ; i < qtyFiles ; ++i )
+						free(table[i]);
+					free(table);
 					perror("No se pudo abrir el archivo de las compuertas\n");
-					return -1;
+					return errno;
 				}
-				
+
 				auxTable = parseXMLGate( dirFile);
 				if( auxTable[0].totalLevels > _MAX_GATES_LEVELS_ )
 				{
 					table[pos] = realloc( table[pos], sizeof(circuitTable*) * auxTable[0].totalLevels);
 				}
 				table[pos++] = auxTable;
+									/*freeCircuits(&auxTable,1);*/
 			}
-			
+
 			if( ( procCopyDir = (char*)realloc(procCopyDir, sizeof(char) + strlen(procDir) + strlen(d->d_name) + 1 )) == NULL )
 			{
 				closedir(dp);
 				free(dirFile);
 				perror("Error en la alocacion de memoria\n");
-				return -1;
+				return errno;
 			}
 			strcpy(procCopyDir,procDir);
 			strcat(procCopyDir,d->d_name);
@@ -179,7 +186,7 @@ int fileListener( void)
 			if( link(dirFile,procCopyDir) == -1)
 			{
 				perror("Error en el link de pipe\n");
-				return -1;
+				return errno;
 			}
 			unlink(dirFile);
 		}
