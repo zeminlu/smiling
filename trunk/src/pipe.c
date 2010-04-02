@@ -7,13 +7,14 @@
 
 #include "../inc/pipe.h"
 
-int signalFlag = TRUE;
+int signalFlag = TRUE, pid;
 static int qtyFiles = 0;
 static circuitTable **table = NULL;
 static int pos = 0;
 
 void handlerCtrlC(int sig){
 	signalFlag = FALSE;
+	kill(pid, SIGINT);
 }
 
 int main (int argc, char const *argv[])
@@ -61,7 +62,7 @@ int createTable( void )
 
 int createsGates(void)
 {
-	int pid, procStatus = 0, i;
+	int procStatus = 0, i;
 	
 	setupIPC(1);
 
