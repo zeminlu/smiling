@@ -1,6 +1,6 @@
 #include "../inc/shmIPC.h"
 
-int info, clientsAmm = 0, flag = FALSE;
+int clientsAmm = 0, flag = FALSE;
 key_t shmemId = 0;
 shmStruct *shmSegs;
 hashTableADT hashTable = NULL;
@@ -92,7 +92,10 @@ int addClient(int index){
 	strcpy(fileName, nameStart);
 	strcat(fileName, pid);
 	
-	data = open(fileName, O_WRONLY | O_CREAT, 0644);
+	if ((data = open(fileName, O_WRONLY | O_CREAT, 0644)) < 0){
+		perror("IPCAPI: Error abriendo archivo en addClient");
+		return -1;
+	}
 	
 	if (write(data, &shmemId, sizeof(key_t)) != sizeof(key_t) || write(data, &index, sizeof(int)) != sizeof(int)){
 		perror("IPCAPI: Error en primitiva write en addClient");
@@ -100,9 +103,11 @@ int addClient(int index){
 	}
 	
 	close(data);
-	info = open(fileName, O_RDONLY);
+	if ((data = open(fileName, O_RDONLY)) < 0){
+		return data;
+	}
 	
-	return dup2(info, 0);
+	return dup2(data, 0);
 }
 
 int synchronize(){

@@ -1,6 +1,6 @@
  #include "../inc/sckIPC.h"
 
-int clientsAmm = 0, flag = FALSE, sockfd, info, ownPort = 5000;
+int clientsAmm = 0, flag = FALSE, sockfd, ownPort = 5000;
 hashTableADT hashTable = NULL;
 fd_set *master = NULL, *slave = NULL;
 struct sockaddr_in address;
@@ -58,23 +58,22 @@ int addClient(int index){
 	strcat(fileName, pid);
 	
 	if ((data = open(fileName, O_WRONLY | O_CREAT, 0644)) < 0){
-		perror("IPCAPI: Error abriendo archivo en setupIPC");
-		varFree(2, master, slave);
+		perror("IPCAPI: Error abriendo archivo en addClient");
 		return -1;
 	}
 	
-	if (write(_stdin_, &ownPort, sizeof(int)) != sizeof(int)){
+	if (write(data, &ownPort, sizeof(int)) != sizeof(int)){
 		perror("IPCAPI: addClient - Error en primitiva write");
 		varFree(2, master, slave);
 		return errno;
 	}
 	
 	close(data);
-	if ((info = open(fileName, O_RDONLY)) < 0){
-		return info;
+	if ((data = open(fileName, O_RDONLY)) < 0){
+		return data;
 	}
 	
-	return dup2(info, 0);
+	return dup2(data, 0);
 }
 
 int synchronize(){
