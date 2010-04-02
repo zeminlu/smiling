@@ -113,19 +113,15 @@ int synchronize(){
 	char pidString[20], fileName[20], *nameStart = "./";
 	shmHeader *auxHead;
 	shmElem entry;
-	
-	printf("Entre al synchronize\n");
 		
 	if ((hashTable = hashCreateTable(clientsAmm * _START_HASH_, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "IPCAPI: Error al crear la tabla de hash en synchronize\n");
 		return -1;
 	}
-	printf("Por allocar pid\n");
 	if ((pid = malloc(sizeof(pid_t) * clientsAmm)) == NULL){
 		perror("IPCAPI: Error de memoria allocando pid en synchronize");
 		return errno;
 	}
-	printf("Entrando al while que revisa los pids de los hijos\n");
 	flag = FALSE;
 	
 	while (!flag){
@@ -137,9 +133,7 @@ int synchronize(){
 			}
 		}
 	}
-	printf("Entrando al for que inicializa entries, semaforos, etc\n");
 	for (i = 0 ; i < clientsAmm ; ++i){		
-		printf("Comienzo de vuelta %d del for\n", i);
 		auxHead = &(shmSegs[i].header);
 		pid[i] = auxHead->pid;
 		
@@ -161,14 +155,11 @@ int synchronize(){
 			fprintf(stderr, "IPCAPI: Error en hashInsert invocado en synchronize con pidString = %s", pidString);
 			return -1;
 		}
-		printf("Saliendo de la vuelta %d del for\n", i);
 	}
-	printf("Por mandar señales\n");
-
+	
 	for (i = 0 ; i < clientsAmm ; ++i){
 		kill (pid[i], SIGALRM);
 	}
-	printf("Mande señales, eliminando archivo\n");
 	close(info);
 	
 	itoa(getpid(), pidString);
@@ -176,7 +167,6 @@ int synchronize(){
 	strcat(fileName, pidString);
 	unlink(fileName);
 	
-	printf("Sali del synchronize\n");
 	return 0;
 }
 int loadIPC(){
@@ -207,6 +197,9 @@ int loadIPC(){
 	
 	memcpy(&key, data, sizeof(key_t));
 	memcpy(&index, ((char *)data) + sizeof(key_t), sizeof(int));
+	
+	printf("Recibi key = %d e index = %d\n", key, index);
+	
 	
 	if (((void *)(shmSegs = shmat(key, NULL, 0))) == ERR){
 		perror("IPCAPI: Error en llamada a shmat en loadIPC");
@@ -239,7 +232,6 @@ int loadIPC(){
 		fprintf(stderr, "IPCAPI: Error en el insert de hashTable de loadIPC invocado con pidString = %s\n", pidString);
 		return -1;
 	}	
-	
 	auxHead->pid = pid;
 	
 	while (!flag){

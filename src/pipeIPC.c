@@ -90,12 +90,10 @@ int synchronize(){
 	for (i = 0 ; i < clientsAmm ; ++i){
 		ids[0] = ipcIDs[i][1][0];
 		ids[1] = ipcIDs[i][0][1];
-		printf("Esperando pid %d del ipcIDs = %d\n", i, ipcIDs[i][1][0]);
 		if (read(ipcIDs[i][1][0], &(pid[i]), sizeof(pid_t)) != sizeof(pid_t)){
 			perror("IPCAPI: synchronize - Error en primitiva read");
 			return -1;
 		}
-		printf("Recibi pid[%d] = %d del ipcIDs = %d\n", i, pid[i], ipcIDs[i][1][0]);
 		itoa(pid[i], pidString);
 		if (hashInsert(&hashTable, ids, pidString, 0) == NULL){
 			fprintf(stderr, "IPCAPI: Error en el insert de la tabla de hash en synchronize, invocado con ids[0] = %d, ids[1] = %d y pidString = %s\n", ids[0], ids[1], pidString);
@@ -129,17 +127,16 @@ int loadIPC(){
 	pid = getpid();
 	
 	if (read(_stdin_, ownID, sizeof(int) * 2) != sizeof(int) * 2){
-		perror("IPCAPI: loadIPC 1 - Error en primitiva read");
+		perror("IPCAPI: loadIPC - Error en primitiva read");
 		return -1;
 	}
+	
+	printf("Recibi los descriptores R = %d y W = %d\n", ownID[0], ownID[1]);
 
-
-	printf("Escribiendo mi pid = %d en ipcIDs = %d\n", pid, ownID[1]);
 	if (write(ownID[1], &pid, sizeof(pid_t)) != sizeof(pid_t)){
 		perror("IPCAPI: loadIPC - Error en primitiva write");
 		return -1;
 	}
-	printf("Ya escribi mi pid = %d en ipcIDs = %d\n", pid, ownID[1]);
 	
 	while (!flag){
     	sigsuspend (&oldmask);
