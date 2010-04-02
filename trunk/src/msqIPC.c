@@ -7,50 +7,62 @@ int info;
 hashTableADT hashTable = NULL;
 msQ * msLastRead = NULL;
 
+void sigHandler (int signum){
+	flag = TRUE;
+    return;
+}
+
 int init_queue(int newKey){    
     return msgget((key_t)(newKey), IPC_CREAT | QPERM);
 }
 
 int setupIPC(int channels){
-    int i,j, data, aux, key;
-    char pid[20], fileName[20], *nameStart = "./";
+    int key;
     key = getpid();
-       
-   	itoa (getpid(), pid);
-    strcpy(fileName, nameStart);
-    strcat(fileName, pid);
 		
     if((queue_id = init_queue(key)) == -1){
 		perror("msgget Fallo");
         return errno;
     }
-    if((data = open(fileName, O_WRONLY | O_CREAT, 0644)) == -1){
-		perror("Error al intentar de crear el archivo en setupIPC");
-		return errno;
-	}
-    
-	for (i = 0, j = 1 ; i < channels ; ++i, j+=2){
-		aux = write(data, &j, sizeof(int));
-	}
-    
+     
 	clientsAmm = channels;
-    close(data);
     
-	if ((info = open(fileName, O_RDONLY)) < 0){
-		return info;
-	}
 	return 0;
-
 }
 
 
-int addClient(){
+int addClient(int index){
+	char pid[20], fileName[20], *nameStart = "./";
+	int data, id = 0;
+	
+	itoa (getpid(), pid);
+    strcpy(fileName, nameStart);
+    strcat(fileName, pid);
+	
+	if((data = open(fileName, O_WRONLY | O_CREAT, 0644)) == -1){
+		perror("Error al intentar de crear el archivo en setupIPC");
+		return errno;
+	}
+	
+	id = (2 * index) + 1;
+	
+	if (write(data, &id, sizeof(int)) != sizeof(int)){
+		perror("Error en la primitiva write en addClient");
+		return errno;
+	}
+	
+	close(data);
+    
+	if ((data = open(fileName, O_RDONLY)) < 0){
+		return data;
+	}
+	
 	return dup2(info, 0);
 }
 int synchronize(){
     int i,j, ids[2], mlen;
     pid_t *pid;
-    char pidString[20], fileName[20], *nameStart = "./";
+    char pidString[20];
     msQ entry;
        
     if ((hashTable = hashCreateTable(clientsAmm * _START_HASH_, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
@@ -78,20 +90,14 @@ int synchronize(){
     for (i = 0 ; i < clientsAmm ; ++i){
 		kill (pid[i], SIGALRM);
     }
-
-    close(info);
-    itoa(getpid(), pidString);
-    strcpy(fileName, nameStart);
-    strcat(fileName, pidString);
-    unlink(fileName);
-       
+   
 	return 0;
 }
 int loadIPC(){
 	sigset_t mask, oldmask;
     pid_t pid;
 	int ownID[2], mlen, aux;
-    char pidString[10];
+    char pidString[20], fileName[20], *nameStart = "./";
     msQ entry;
 
     if(signal(SIGALRM, sigHandler) == SIG_ERR){
@@ -147,10 +153,14 @@ int loadIPC(){
 		sigsuspend (&oldmask);
     }              
 	sigprocmask (SIG_UNBLOCK, &mask, NULL);
-
 		
 	close(_stdin_);
        
+	itoa(getpid(), pidString);
+    strcpy(fileName, nameStart);
+    strcat(fileName, pidString);
+    unlink(fileName);
+
 	return 0;
 }
 

@@ -303,6 +303,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 			}
 			
 			if (intersection->countriesAmm == 0){
+				varFree(2, intersection->country, intersection);
 				return -2;
 			}
 						
