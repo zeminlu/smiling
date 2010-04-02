@@ -29,6 +29,14 @@ typedef struct{
 	int	totalLevels;
 }circuitTable;
 
+int createsGates(void);
+
+int createTable( void );
+
+int fileListener( void );
+
+int sendTableToGates( int pid );
+
 int initializeGates();
 
 void freeCircuits( circuitTable **table, int qtyFile );

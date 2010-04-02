@@ -8,11 +8,11 @@
 #include <string.h>
 #include <stdarg.h>
 #include <errno.h>
-#include <wait.h>
+/*#include <wait.h>*/
 #include <sys/time.h>
 #include <sys/types.h>
 #include <fcntl.h>
-#include <wait.h>
+#include <sys/wait.h>
 
 #include "../inc/definitions.h"
 #include "../inc/types.h"

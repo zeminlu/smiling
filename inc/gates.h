@@ -20,26 +20,32 @@
 
 int gateInitializer( void );
 
-circuitTable ** buildCircuitsTable( int qtyFileCom );
+int addMoreFiles( void );
 
-void freeCircuits( circuitTable **table, int qtyFile );
+circuitTable ** buildCircuitsTable( void );
 
-int startCircuitsPipeline( circuitTable **table, pid_t **childPids, int qtyFiles, int *levels, int *maxLevel);
-int listenToMyChildren( circuitTable **table, int *childPids, int qtyFiles, int **levels, int *maxLevel);
+void freeCircuitsGates( void );
 
-void initLevels( int **levels, int qtyFiles );
+int startCircuitsPipeline( void);
 
-void incLevels( int **levels, int qtyFiles );
+int listenToMyChildren( void );
 
-int checkAvailableFiles( int * levels, int qtyFiles, int *maxLevel );
+void initLevels( void );
 
-int getCurrentPipeFiles( int * levels, int qtyFiles, int *maxLevel );
+void incLevels( void );
+
+int checkAvailableFiles( void );
+
+int getCurrentPipeFiles( void );
 
 int saveProccessFile( circuitTable *table, int pos );
 
-int allFilesWasProccessed( int * levels, int qtyFiles, int *maxLevel );
+int allFilesWasProccessed( void );
 
 void itoa(int n, char s[]);
 
+void reallocAllOfInfo( void );
+
+int * getFinalizeFiles( void );
 
 #endif
