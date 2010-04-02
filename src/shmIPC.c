@@ -96,7 +96,7 @@ int setupIPC(int channels){
 
 
 int addClient(int index){
-	if (write(_stdin_, &shmemId, sizeof(key_t)) != sizeof(key_t) || write(_stdin:, &index, sizeof(int)) != sizeof(int)){
+	if (write(_stdin_, &shmemId, sizeof(key_t)) != sizeof(key_t) || write(_stdin_, &index, sizeof(int)) != sizeof(int)){
 		perror("IPCAPI: Error en primitiva write en addClient");
 		return errno;
 	}
