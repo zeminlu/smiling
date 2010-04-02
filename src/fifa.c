@@ -4,8 +4,6 @@ int main (void){
 	int i, j, status, countriesTableEntriesAmm;
 	pid_t *pids;
 	country ***fixture = NULL, **countriesTable = NULL;
-	int data, aux;
-	char pid[20], fileName[20], *nameStart = "./";
 	
 	if (loadIPC() != 0){
 		return -1;
@@ -80,22 +78,15 @@ int main (void){
 	/*
 	Guardar a archivo la solucion
 	*/
-	
-		itoa (getpid(), pid);
-		strcpy(fileName, nameStart);
-		strcat(fileName, pid);
-		data = open(fileName, O_WRONLY | O_CREAT, 0644);
 		
 	printf("\n");
 	for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
-		
-		aux = write(data, &j, sizeof(int));
+		printf("Grupo %d:\n", j + 1);
 		for(i = 0; i < 4; ++i){
-			aux = write(data, (fixture[j][i])->name, (sizeof(char)*45));
-			/*fprintf(stderr,"%s\n", (fixture[j][i])->name);*/
+			printf("%s\n", (fixture[j][i])->name);
 			/*free(fixture[j][i]);*/
 		}
-		/*fprintf(stderr,"\n");*/
+		printf("\n");
 		/*free(fixture[j]);*/
 	}
 	
