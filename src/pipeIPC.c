@@ -1,7 +1,7 @@
 #include "../inc/pipeIPC.h"
 
 int ***ipcIDs = NULL;
-int clientsAmm = 0, flag = FALSE, info;
+int clientsAmm = 0, flag = FALSE;
 hashTableADT hashTable = NULL;
 fd_set *master = NULL, *slave = NULL;
 
@@ -12,12 +12,6 @@ void sigHandler (int signum){
 
 int setupIPC(int channels){
 	int i;
-	char pid[20], fileName[20], *nameStart = "./";
-	int data;
-	
-	itoa (getpid(), pid);
-	strcpy(fileName, nameStart);
-	strcat(fileName, pid);
 	
 	if ((master = malloc(sizeof(fd_set))) == NULL || (slave = malloc(sizeof(fd_set))) == NULL || (ipcIDs = malloc (sizeof(void *) * channels)) == NULL){
 		perror("IPCAPI: Error de memoria en setupIPC\n");
@@ -27,12 +21,6 @@ int setupIPC(int channels){
 	}
 	
 	FD_ZERO(master);
-	
-	if ((data = open(fileName, O_WRONLY | O_CREAT, 0644)) < 0){
-		perror("IPCAPI: Error abriendo archivo en setupIPC");
-		varFree(2, master, slave);
-		return -1;
-	}
 
 	for (i = 0 ; i < channels ; ++i){
 		ipcIDs[i] = malloc(sizeof(void *) * 2);
@@ -43,40 +31,70 @@ int setupIPC(int channels){
 			varFree(2, master, slave);
 			return -1;
 		}
-		if (write(data, &ipcIDs[i][0][0], sizeof(int)) != sizeof(int)){
+		/*if (write(data, &ipcIDs[i][0][0], sizeof(int)) != sizeof(int)){
 			perror("IPCAPI: Setup1 - Error en primitiva write");
 			varFree(2, master, slave);
 			return -1;
-		}
+		}*/
 		if (pipe(ipcIDs[i][1]) == -1){
 			perror("IPCAPI: Error en pipe");
 			varFree(2, master, slave);
 			return -1;	
 		}
+		/*
 		if (write(data, &ipcIDs[i][1][1], sizeof(int)) != sizeof(int)){
 			perror("IPCAPI: Setup2 - Error en primitiva write");
 			varFree(2, master, slave);
 			return -1;
-		}
+		}*/
 		FD_SET(ipcIDs[i][1][0], master);
 	}
 	clientsAmm = channels;
-	close(data);
+	/*close(data);
 	if ((info = open(fileName, O_RDONLY)) < 0){
 		return info;
-	}
+	}*/
 	
 	return 0;
 }
 
-int addClient(){
+int addClient(int index){
+	char pid[20], fileName[20], *nameStart = "./";
+	int info;
+	itoa (getpid(), pid);
+	strcpy(fileName, nameStart);
+	strcat(fileName, pid);
+	
+	if ((info = open(fileName, O_WRONLY | O_CREAT, 0644)) < 0){
+		perror("IPCAPI: Error abriendo archivo en setupIPC");
+		return -1;
+	}
+	if (write(info, &ipcIDs[index][0][0], sizeof(int)) != sizeof(int)){
+		perror("IPCAPI: Setup2 - Error en primitiva write");
+		varFree(2, master, slave);
+		return -1;
+	}
+	if (write(info, &ipcIDs[index][1][1], sizeof(int)) != sizeof(int)){
+		perror("IPCAPI: Setup2 - Error en primitiva write");
+		varFree(2, master, slave);
+		return -1;
+	}
+	close(ipcIDs[index][0][1]);
+	close(ipcIDs[index][1][0]);
+	close(info);
+	
+	if ((info = open(fileName, O_RDONLY, 0644)) < 0){
+		perror("IPCAPI: Error abriendo archivo en setupIPC");
+		return -1;
+	}
 	return dup2(info, 0);
 }
 
 int synchronize(){
 	int i, *pid, ids[2];
-	char pidString[20], fileName[20], *nameStart = "./";
-		
+	char pidString[20];
+	
+	
 	if ((hashTable = hashCreateTable(clientsAmm * _START_HASH_, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
 		fprintf(stderr, "IPCAPI: Error al crear la tabla de hash\n");
 		return -1;
@@ -103,11 +121,6 @@ int synchronize(){
 	for (i = 0 ; i < clientsAmm ; ++i){
 		kill (pid[i], SIGALRM);
 	}
-	close(info);
-	itoa(getpid(), pidString);
-	strcpy(fileName, nameStart);
-	strcat(fileName, pidString);
-	unlink(fileName);
 	free(pid);
 		
 	return 0;
@@ -117,8 +130,8 @@ int loadIPC(){
 	sigset_t mask, oldmask;
 	int ownID[2];
 	pid_t pid;
-	char pidString[20];
-		
+	char pidString[20], fileName[20], *nameStart = "./";
+	
 	signal(SIGALRM, sigHandler);
 	sigemptyset (&mask);
 	sigaddset (&mask, SIGALRM);
@@ -155,7 +168,10 @@ int loadIPC(){
 		fprintf(stderr, "IPCAPI: Error insertando en tabla de hash en loadIPC\n");
 		return -1;
 	}
-
+	itoa(getpid(), pidString);
+	strcpy(fileName, nameStart);
+	strcat(fileName, pidString);
+	unlink(fileName);
 	return 0;
 }
 
