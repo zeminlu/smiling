@@ -7,11 +7,6 @@ int info;
 hashTableADT hashTable = NULL;
 msQ * msLastRead = NULL;
 
-void sigHandler (int signum){
-	flag = TRUE;
-    return;
-}
-
 int init_queue(int newKey){    
     return msgget((key_t)(newKey), IPC_CREAT | QPERM);
 }
@@ -21,7 +16,7 @@ int setupIPC(int channels){
     char pid[20], fileName[20], *nameStart = "./";
     key = getpid();
        
-    itoa (getpid(), pid);
+   	itoa (getpid(), pid);
     strcpy(fileName, nameStart);
     strcat(fileName, pid);
 		
@@ -45,6 +40,7 @@ int setupIPC(int channels){
 		return info;
 	}
 	return 0;
+
 }
 
 
