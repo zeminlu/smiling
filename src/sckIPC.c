@@ -166,7 +166,7 @@ int loadIPC(){
 	
 	pid = getpid();
 	
-	while (sleep(1), connect(sockfd, (struct sockaddr *) &address, sizeof(struct sockaddr_in)) == -1){
+	while (usleep(10000), connect(sockfd, (struct sockaddr *) &address, sizeof(struct sockaddr_in)) == -1){
 		if (errno != ECONNREFUSED ){
 			perror("IPCAPI: Error en llamada a connect");
 			return errno;
