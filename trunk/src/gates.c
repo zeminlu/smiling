@@ -26,7 +26,7 @@ void printCircuitTable( circuitTable * circuit)
 {
 	int i,j;
 	
-	fprintf(stderr, "Cantidad de niveles: %d\n", circuit[0].totalLevels);
+	fprintf(stderr, "GATES -- Cantidad de niveles: %d\n", circuit[0].totalLevels);
 	fprintf(stderr, "--------------------------------------------------\n");
 	for( i = 0; i < circuit[0].totalLevels ; ++i)
 	{
@@ -158,6 +158,7 @@ int gateInitializer( void )
 {
 	int i, status;
 	
+	printf("sldkfjlsa\n");
 	for( i = 0 ; i < qtyFileCom ; ++i )
 	{
 		printCircuitTable(table[i]);

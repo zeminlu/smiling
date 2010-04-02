@@ -18,8 +18,10 @@ void handlerCtrlC(int sig){
 
 int main (int argc, char const *argv[])
 {
+	
+	signal(SIGINT, handlerCtrlC);
 
-	if( createsGates() == -1 )
+	if( createTable() == -1 )
 	{
 		perror("Error en la creacion de la tablas");
 		return errno;
@@ -59,9 +61,7 @@ int createTable( void )
 
 int createsGates(void)
 {
-	int pid, procStatus = 0;
-	
-	signal(SIGINT, handlerCtrlC);
+	int pid, procStatus = 0, count = 0, i;
 	
 	setupIPC(1);
 
@@ -80,14 +80,19 @@ int createsGates(void)
 	}	
 	
 	synchronize();
-	while( signalFlag )
+	while( /*signalFlag*/ count == 0 )
 	{
+		++count;
 		if( (procStatus = fileListener()) == -1)
 		{
 			perror("Error no se pudo escuchar el archivo");
 			return errno;
 		}
 		fprintf(stderr, "Pipe pid: %d\n", pid);
+		for( i = 0 ; i < qtyFiles ; ++i )
+		{
+			printCircuitTable(table[i]);
+		}
 		sendTableToGates(pid);
 		freeCircuits(table,pos);
 		if( createTable() == -1 )
@@ -113,7 +118,7 @@ int fileListener( void)
 	DIR *dp;
 	struct dirent *d = NULL;
 	FILE *dataFile = NULL;
-	circuitTable *auxTable;
+	circuitTable *auxTable = NULL;
 	char *dir = "../bin/pipeDir/", *procDir = "../bin/processed/", *dirFile = NULL, *procCopyDir = NULL;	
 	int i;
 	
@@ -165,13 +170,16 @@ int fileListener( void)
 					return errno;
 				}
 
+
 				auxTable = parseXMLGate( dirFile);
 				if( auxTable[0].totalLevels > _MAX_GATES_LEVELS_ )
 				{
 					table[pos] = realloc( table[pos], sizeof(circuitTable*) * auxTable[0].totalLevels);
 				}
+				printf("Voy a asignar al table[pos]\n");
 				table[pos++] = auxTable;
-									/*freeCircuits(&auxTable,1);*/
+				printf("Acabo de asignar auxTable a table[pos]\n");
+				/*freeCircuits(&auxTable,1);*/
 			}
 
 			if( ( procCopyDir = (char*)realloc(procCopyDir, sizeof(char) + strlen(procDir) + strlen(d->d_name) + 1 )) == NULL )
@@ -517,7 +525,7 @@ void printCircuitTable( circuitTable * circuit)
 {
 	int i,j;
 	
-	fprintf(stderr, "Cantidad de niveles: %d\n", circuit[0].totalLevels);
+	fprintf(stderr, "PIPE - Cantidad de niveles: %d\n", circuit[0].totalLevels);
 	fprintf(stderr, "--------------------------------------------------\n");
 	for( i = 0; i < circuit[0].totalLevels ; ++i)
 	{
