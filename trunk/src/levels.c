@@ -112,6 +112,7 @@ int proccessLevel( void )
 	if( first != 0 )
 		free(prevLevel);	
 	free(curLevelTable);
+	closeIPC();
 	
 	return 0;
 }
