@@ -1,9 +1,8 @@
 #include "../inc/shmIPC.h"
 
-int shmemId= 0;
+int info, clientsAmm = 0, flag = FALSE;
+key_t shmemId = 0;
 shmStruct *shmSegs;
-int clientsAmm = 0, flag = FALSE;
-int info;
 hashTableADT hashTable = NULL;
 
 void sigHandler (int signum){
@@ -88,13 +87,6 @@ int setupIPC(int channels){
 	if ((status = initHeaders()) < 0){
 		return status;
 	}
-	
-	for (i = 0 ; i < channels ; ++i){
-		if (write(data, &shmemId, sizeof(key_t)) != sizeof(key_t) || write(data, &i, sizeof(int)) != sizeof(int)){
-			perror("IPCAPI: Error en primitiva write en setupIPC");
-			return errno;
-		}
-	}
 
 	close(data);
 	info = open(fileName, O_RDONLY);
@@ -103,8 +95,12 @@ int setupIPC(int channels){
 }
 
 
-int addClient(){
-	return dup2(info, 0);
+int addClient(int index){
+	if (write(_stdin_, &shmemId, sizeof(key_t)) != sizeof(key_t) || write(_stdin:, &index, sizeof(int)) != sizeof(int)){
+		perror("IPCAPI: Error en primitiva write en addClient");
+		return errno;
+	}
+	return 0;
 }
 
 int synchronize(){

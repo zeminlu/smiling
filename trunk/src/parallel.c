@@ -42,7 +42,7 @@ int filesListener(){
 				return errno;
 				break;
 			case 0:
-				addClient();
+				addClient(0);
 				execv("./fifa.bin", NULL);
 				break;
 			default:					

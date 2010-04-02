@@ -21,9 +21,9 @@ int setupIPC(int channels){
 	strcpy(fileName, nameStart);
 	strcat(fileName, pid);
 	
-	if ((master = malloc(sizeof(fd_set))) == NULL || (slave = malloc(sizeof(fd_set))) == NULL){
+	if ((master = malloc(sizeof(fd_set))) == NULL || (slave = malloc(sizeof(fd_set))) == NULL || (sockN = malloc(sizeof(int) * channels)) == NULL){
 		perror("IPCAPI: Error de memoria en setupIPC\n");
-		free(master);
+		varFree(2, master, slave);
 		return errno;
 	}
 	
@@ -54,14 +54,6 @@ int setupIPC(int channels){
 		return errno;
 	}
 	
-	for (i = 0 ; i < channels ; ++i){
-		if (write(data, &ownPort, sizeof(int)) != sizeof(int)){
-			perror("IPCAPI: Setup - Error en primitiva write");
-			varFree(2, master, slave);
-			return -1;
-		}
-	}
-	
 	clientsAmm = channels;
 	close(data);
 	if ((info = open(fileName, O_RDONLY)) < 0){
@@ -71,8 +63,13 @@ int setupIPC(int channels){
 	return 0;
 }
 
-int addClient(){
-	return dup2(info, 0);
+int addClient(int index){
+	if (write(_stdin_, &ownPort, sizeof(int)) != sizeof(int)){
+		perror("IPCAPI: addClient - Error en primitiva write");
+		varFree(2, master, slave);
+		return errno;
+	}
+	return 0;
 }
 
 int synchronize(){
