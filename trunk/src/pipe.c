@@ -7,17 +7,15 @@
 
 #include "../inc/pipe.h"
 
-int signalFlag = TRUE, pid;
-static int qtyFiles = 0;
-static circuitTable **table = NULL;
-static int pos = 0;
+int signalFlag = TRUE, qtyFiles = 0, pos = 0;
+circuitTable **table = NULL;
+pid_t pid;
 
 void handlerCtrlC(int sig)
 {
 	signalFlag = FALSE;
 	printf("EStoy en el handler de pipe %d\n", pid);
 	kill(pid, SIGINT);
-	printf("Despues del kill del handler de pipe\n");
 }
 
 int main (int argc, char const *argv[])
@@ -85,7 +83,7 @@ int createsGates(void)
 	
 	if( synchronize() != 0)
 	{
-		wait(&pid);
+		kill(pid, SIGINT);
 		for( i = 0 ; i < qtyFiles ; ++i )
 		{
 			free(table[i]);
@@ -106,7 +104,6 @@ int createsGates(void)
 			printCircuitTable(table[i]);
 		}
 		sendTableToGates(pid);
-		wait(&pid);
 		freeCircuits(table,pos);
 		if( createTable() == -1 )
 		{
@@ -115,7 +112,9 @@ int createsGates(void)
 		}
 		pos = 0;
 		qtyFiles = 0;
+		wait(&pid);
 	}
+	wait(&pid);
 	finalizeIPC();	
 	return procStatus;
 }
