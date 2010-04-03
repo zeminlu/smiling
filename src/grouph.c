@@ -241,11 +241,13 @@ int prepareGroup(subFixture **group, country *data){
 }
 
 int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country *data, country **countriesTable, void *(**conditions)(void *condArgs)){
-	int i, j = 0, k, reqCountry, threadsFlag, response;
+	int i, j = 0, k, reqCountry, threadsFlag, response, status;
 	pthread_t *threads = NULL;
 	void *ret;
 	set *intersection = NULL;
-		
+	pthread_attr_t flag;
+	
+	
 	pthread_mutex_init(&mutexIndex, NULL);
 	
 	if ((threads = malloc(sizeof(pthread_t) * condAmm)) == NULL){
@@ -282,7 +284,21 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 		}
 		else{
 			for (j = 0 ; j < i ; ++j){
-				pthread_create(&threads[j], NULL, conditions[j], (void *)(condArgs));
+				if((status = pthread_attr_init(&flag)) != 0){
+					fprintf(stderr,"Error al crear el flags de atributos de los threads, salio con error numero %d\n", status);
+					return -1;
+				}
+				if(( status = pthread_attr_setdetachstate(&flag,PTHREAD_CREATE_DETACHED)) != 0 ){
+					fprintf(stderr,"Error al intentar de cargar el flag de threads, salio con error numero %d\n", status);
+					return-1;
+				}
+				
+				pthread_create(&threads[j], &flag, conditions[j], (void *)(condArgs));
+				
+				if((status = pthread_attr_destroy(&flag ) )!= 0){
+					fprintf(stderr,"Error al destruir el flags de atributos de los threads, salio con error numero %d\n", status);
+					return -1;
+				}
 			}
 			threadsFlag = FALSE;
 			while (!threadsFlag){
