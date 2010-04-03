@@ -86,16 +86,7 @@ int proccessLevel( void )
 	}
 	
 	evaluateLevel( prevLevel, &curLevelTable, qtyGatesPrev, qtyGatesCur, first );
-	/*for( i = 0 ; i < qtyGatesCur ; ++i )
-	{
-		fprintf(stderr, "CurLevel: %d CurFile: %d Gate Name:%s Output: %d Input1: %d Input2: %d\n", 
-								cur.curLevel,
-								cur.curFile,
-								curLevelTable[i].name, 
-								curLevelTable[i].output,
-								curLevelTable[i].input[0],
-								curLevelTable[i].input[1]);
-	}*/
+	
 	if( writeIPC( getppid(), &cur, sizeof(curCircuit)) == -1 )
 	{
 		perror("Error en la escritura de LEVELS hacia GATES, cur\n");
