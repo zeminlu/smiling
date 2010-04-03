@@ -106,6 +106,7 @@ int createsGates(void)
 			printCircuitTable(table[i]);
 		}
 		sendTableToGates(pid);
+		wait(&pid);
 		freeCircuits(table,pos);
 		if( createTable() == -1 )
 		{
@@ -115,7 +116,6 @@ int createsGates(void)
 		pos = 0;
 		qtyFiles = 0;
 	}
-	/*wait(&pid);*/
 	finalizeIPC();	
 	return procStatus;
 }
