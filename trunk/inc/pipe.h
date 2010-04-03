@@ -20,9 +20,8 @@
 typedef int (*handler)(int in1,int in2);
 
 /*
- *	\struct
- *	
- *	\brief This struct contains the array of gates and the quantity.
+ *	\struct gatesOfEachLevel
+ *		\brief This struct contains the array of gates and the quantity.
  */
 
 typedef struct{
@@ -31,7 +30,7 @@ typedef struct{
 	} gatesOfEachLevel;
 
 /*
- *	\struct
+ *	\struct circuitTable
  *	
  *	\brief This struct show each level os the circuit.
  */
