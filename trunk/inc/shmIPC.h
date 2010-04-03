@@ -1,5 +1,5 @@
 /*
- * \file
+ * \file shmIPC.h
  *
  *  \date Created on: 3-apr-2010
  *  \author Luciano R. Zemin & Nicolás Magni & Nicolás Purita
