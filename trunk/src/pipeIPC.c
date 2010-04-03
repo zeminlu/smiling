@@ -133,8 +133,6 @@ int loadIPC(){
 		return -1;
 	}
 	
-	printf("Recibi los descriptores R = %d y W = %d\n", ownID[0], ownID[1]);
-
 	if (write(ownID[1], &pid, sizeof(pid_t)) != sizeof(pid_t)){
 		perror("IPCAPI: loadIPC - Error en primitiva write");
 		return -1;
