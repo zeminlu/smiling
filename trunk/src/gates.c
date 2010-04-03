@@ -337,6 +337,8 @@ int listenToMyChildren( void )
 		if( levelsAmm == 0 )
 			break;
 		for( i = 0 ; i < qtyFiles ; ++i )
+			printf("childPids[%d]: %d\n", i , childPids[i]);
+		for( i = 0 ; i < qtyFiles ; ++i )
 		{
 			/*fprintf(stderr, "childPids[%d] = %d qtyFiles: %d\n", i, childPids[i],  qtyFiles);*/
 			if( childPids[i] != -1 && (auxGet = getIPCStatus(childPids[i])) )
