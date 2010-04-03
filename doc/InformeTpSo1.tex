@@ -1,0 +1,41 @@
+\documentclass[10pt,a4paper]{report}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{makeidx}
+\author{Magni Nicol\'as, Purita Nicol\'as, Zemin Luciano R.  }
+\title{Filesystems, IPCs y Servidores Concurrentes\\ "Smiling"}
+\begin{document}
+\maketitle
+\newpage
+\tableofcontents
+\clearpage
+\section{Introducci\'on}
+\section{Objetivos}
+\subsection{Objetivos del Trabajo}
+El objetivo de este trabajo es familiarizarse con el uso de sistemas cliente- servidor concurrentes, implementando el servidor mediante la creac\'ion de procesos hijos utilizando fork() y mediante la creac\'ion de threads. Al mismo tiempo, ejercitar el uso de los distintos tipos de primitivas de sincronizai\'on y comunicaci\'on de procesos (IPC) y manejar con autoridad el filesystem de Linux desde el lado usuario.
+\subsection{Objetivos Personales}
+\section{Enunciado}
+Se desea implementar un servicio de resoluci\'on general de problemas. La idea consiste en tener un servidor dedicado a resolver dos tipos de problemas: un problema paralelizable y un problema que soporte pipelining. Este servidor estar\'a escuchando dos directorios, en donde esperar\'a a que alguien ingrese archivos de entrada con informaci\'on sobre los problemas. Cada directorio recibir\'a archivos de entrada de uno de los dos tipos de problema.
+El servidor deber\'a consumir todos los archivos de entrada en esos directorios y procesar la informaci\'on, distribuyendola en threads y procesos que proceder\'an a obtener las soluci\'on parciales de cada uno de los archivos de entrada, para luego reunirlas en la soluci\'on final, que ser\'a guardada en un archivo nuevo en la carpeta de soluciones correspondiente.
+La c\'atedra no obliga a implementar ning\'un problema ni algoritmo en particular. Los alumnos est\'an en condiciones de elegir los problemas que deseen.
+\section{Desarollo}
+En esta secci\'on, se detallara todo lo relacionado al desarrollo del trabajo practico.
+\subsection{Paralleling}
+La computaci\'on paralela es una t\'ecnica de programaci\'on en la que muchas instrucciones se ejecutan simult\'aneamente. Se basa en el principio de que los problemas grandes se pueden dividir en partes m\'as peque\~nas que pueden resolverse de forma concurrente. Existen varios tipos de computaci\'on paralela: paralelismo a nivel de bit, paralelismo a nivel de instrucci\'on, paralelismo de datos y paralelismo de tareas. Durante muchos a\~nos, la computaci\'on paralela se ha aplicado en la computaci\'on de altas prestaciones, pero el inter\'es en ella ha aumentado en los \'ultimos anios debido a las restricci\'ones f\'isicas que impiden el escalado en frecuencia. La computaci\'on paralela se ha convertido en el paradigma dominante en la aquitectura de computadores, principalmente en los procesadores multin\'ucleo. Sin embargo, recientemente, el consumo de energ\'ia de los ordenadores paralelos se ha convertido en una preocupaci\'on.\\
+
+\textbf{Paralelismo de tareas} es un paradigma de la programaci\'on concurrente que consiste en asignar distintas tareas a cada uno de los procesadores de un sistema de c\'omputo. En consecuencia, cada procesador efectuar\'a su propia secuencia de operaciones.
+
+\textbf{Paralelismo de datos} es un paradigma de la programación concurrente que consiste en subdividir el conjunto de datos de entrada a un programa, de manera que a cada procesador le corresponda un subconjunto de esos datos. Cada procesador efectuará la misma secuencia de operaciones que los otros procesadores sobre su subconjunto de datos asignado. En resumen: se distribuyen los datos y se replican las tareas.
+
+\subsubsection{Algoritmo}
+\subsection{Consideraciones Tomadas}
+\subsection{Problemas Encontrados}
+\subsection{Pipelining}
+\subsubsection{Algoritmo}
+\subsection{Consideraciones Tomadas}
+\subsection{Problemas Encontrados}
+\section{Librerias adicionales}
+\section{Conclusi\'on}
+\end{document}
