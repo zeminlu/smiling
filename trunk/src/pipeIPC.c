@@ -120,7 +120,7 @@ int loadIPC(){
 	int ownID[2];
 	pid_t pid;
 	char pidString[20], fileName[20], *nameStart = "./";
-	printf("Entro a LoadIPC\n");
+
 	signal(SIGALRM, sigHandler);
 	sigemptyset (&mask);
 	sigaddset (&mask, SIGALRM);
@@ -132,7 +132,6 @@ int loadIPC(){
 		perror("IPCAPI: loadIPC - Error en primitiva read");
 		return -1;
 	}
-	printf("LoadIPC Recibi voy a leer= %d voy a escribir en %d \n", ownID[0], ownID[1]);
 	if (write(ownID[1], &pid, sizeof(pid_t)) != sizeof(pid_t)){
 		perror("IPCAPI: loadIPC - Error en primitiva write");
 		return -1;
