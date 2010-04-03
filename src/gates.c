@@ -333,14 +333,15 @@ int listenToMyChildren( void )
 	
 	while( levelsAmm > 0 && (auxSelect = selectIPC(2)) > 0 )
 	{
+		printf("levelsAmm: %d\n", levelsAmm);
 		if( levelsAmm == 0 )
 			break;
 		for( i = 0 ; i < qtyFiles ; ++i )
 		{
-			fprintf(stderr, "childPids[%d] = %d qtyFiles: %d\n", i, childPids[i],  qtyFiles);
+			/*fprintf(stderr, "childPids[%d] = %d qtyFiles: %d\n", i, childPids[i],  qtyFiles);*/
 			if( childPids[i] != -1 && (auxGet = getIPCStatus(childPids[i])) )
 			{
-				fprintf(stderr, "listenToMyChildren -- I = %d -- READING -- MyPID: %d childPID:%d\n", i, getpid(), (childPids)[i]);
+				/*fprintf(stderr, "listenToMyChildren -- I = %d -- READING -- MyPID: %d childPID:%d\n", i, getpid(), (childPids)[i]);*/
 				if( readIPC( childPids[i], &cur, sizeof(curCircuit)) == -1 )
 				{
 					perror("Error en la lectura de LEVELS a GATE, cur\n");
@@ -349,7 +350,7 @@ int listenToMyChildren( void )
 				
 				for( j = 0 ; j < ((table[cur.curFile][cur.curLevel]).eachLevel)->qtyGates ; ++j )
 				{
-					fprintf(stderr, "listenToMyChildren 2-- READING -- MyPID: %d childPID:%d\n", getpid(), (childPids)[i]);
+					/*fprintf(stderr, "listenToMyChildren 2-- READING -- MyPID: %d childPID:%d\n", getpid(), (childPids)[i]);*/
 					if( readIPC(childPids[i], &auxGate, sizeof(gate)) == -1)
 					{
 						perror("Error en la lectura de las compuertas desde Levels\n");
