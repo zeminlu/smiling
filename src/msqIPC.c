@@ -65,7 +65,7 @@ int synchronize(){
     msQ entry;
        
     if ((hashTable = hashCreateTable(clientsAmm * _START_HASH_, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
-		fprintf(stderr, "Error al crear la tabla de hash\n");
+	fprintf(stderr, "Error al crear la tabla de hash\n");
         return -1;
     }
     pid = malloc(sizeof(pid_t) * clientsAmm);
