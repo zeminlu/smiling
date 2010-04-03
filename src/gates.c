@@ -227,7 +227,6 @@ int startCircuitsPipeline()
 					return errno;
 					break;
 				case 0:
-					
 					addClient(j);
 					execv("./levels.bin", NULL);
 					break;
@@ -475,7 +474,7 @@ void initLevels( void )
 	
 	for( i = 0 ; i < qtyFiles ; ++i )
 	{
-		levels[i] = (i * -1) + 1;
+		levels[i] = (i * -1);
 	}
 }
 
