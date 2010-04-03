@@ -17,6 +17,30 @@ void sigHandler (int signum){
 	return;
 }
 
+int compareIPCIDs(void *elem1, void *elem2){
+	return (((shmElem *)elem1)->index == ((shmElem *)elem2)->index);
+}
+
+void * copyIPCID(void *elem){
+	shmElem *aux;
+	
+	aux = malloc(sizeof(shmElem));
+	*aux = *((shmElem *) elem);
+	
+	return aux;
+}
+void freeIPCID(void *elem){
+	shmElem *aux;
+	
+	aux = (shmElem *)elem;
+	
+	if (sem_close(aux->semA) == -1 || sem_close(aux->semB) == -1){
+		perror("IPCAPI: Error liberando semaforo");
+	}
+	free(aux);
+	return;
+}
+
 sem_t * initmutex(char *semName)
 {
 	sem_t *sd;
@@ -425,28 +449,4 @@ int getIPCStatus(pid_t pid){
 	}
 	
 	return FALSE;
-}
-
-int compareIPCIDs(void *elem1, void *elem2){
-	return (((shmElem *)elem1)->index == ((shmElem *)elem2)->index);
-}
-
-void * copyIPCID(void *elem){
-	shmElem *aux;
-	
-	aux = malloc(sizeof(shmElem));
-	*aux = *((shmElem *) elem);
-	
-	return aux;
-}
-void freeIPCID(void *elem){
-	shmElem *aux;
-	
-	aux = (shmElem *)elem;
-	
-	if (sem_close(aux->semA) == -1 || sem_close(aux->semB) == -1){
-		perror("IPCAPI: Error liberando semaforo");
-	}
-	free(aux);
-	return;
 }

@@ -17,6 +17,25 @@ void sigHandler (int signum){
 	return;
 }
 
+int compareIPCIDs(void *elem1, void *elem2){
+	return (((int *)elem1)[0] == ((int *)elem2)[0] && ((int *)elem1)[1] == ((int *)elem2)[1]);
+}
+
+void * copyIPCID(void *elem){
+	int *id;
+	
+	id = malloc(sizeof(int) * 2);
+	id[0] = ((int *)elem)[0];
+	id[1] = ((int *)elem)[1];
+	
+	return id;
+}
+void freeIPCID(void *elem){
+	close(((int *)elem)[0]);
+	close(((int *)elem)[1]);
+	free(elem);
+	return;
+}
 int setupIPC(int channels){
 	int i;
 	
@@ -262,24 +281,4 @@ int finalizeIPC(){
 		hashFreeTable(hashTable);
 	}
 	return 0;
-}
-
-int compareIPCIDs(void *elem1, void *elem2){
-	return (((int *)elem1)[0] == ((int *)elem2)[0] && ((int *)elem1)[1] == ((int *)elem2)[1]);
-}
-
-void * copyIPCID(void *elem){
-	int *id;
-	
-	id = malloc(sizeof(int) * 2);
-	id[0] = ((int *)elem)[0];
-	id[1] = ((int *)elem)[1];
-	
-	return id;
-}
-void freeIPCID(void *elem){
-	close(((int *)elem)[0]);
-	close(((int *)elem)[1]);
-	free(elem);
-	return;
 }
