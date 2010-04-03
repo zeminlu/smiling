@@ -33,6 +33,28 @@ void printLevel( int *level, int qty )
 		fprintf(stderr, "Level[%d]: %d    MaxLevel[%d] = %d\n", i, level[i], i, maxLevel[i]);
 }
 
+void printCircuitTable( circuitTable * circuit)
+{
+	int i,j;
+	
+	for( i = 0; i < circuit[0].totalLevels ; ++i)
+	{
+		for( j = 0; j < (circuit[i].eachLevel)->qtyGates ; ++j)
+		{
+			printf( "LEVEL: %d Name: %s, Father[0]: %s, Father[1]: %s, Type: %d, Input[0]: %d, Input[1]: %d, Output: %d\n", 
+						i,
+						(circuit[i].eachLevel)->gates[j].name,
+						(circuit[i].eachLevel)->gates[j].fathers[0],
+						(circuit[i].eachLevel)->gates[j].fathers[1],
+						(circuit[i].eachLevel)->gates[j].type,
+						(circuit[i].eachLevel)->gates[j].input[0],
+						(circuit[i].eachLevel)->gates[j].input[1],
+						(circuit[i].eachLevel)->gates[j].output);
+		}
+	}
+	printf("\n\n\n");
+}
+
 int main(void)
 {
 
