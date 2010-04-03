@@ -341,7 +341,7 @@ int listenToMyChildren( void )
 		for( i = 0 ; i < qtyFiles ; ++i )
 		{
 			/*fprintf(stderr, "childPids[%d] = %d qtyFiles: %d\n", i, childPids[i],  qtyFiles);*/
-			if( childPids[i] != -1 && (auxGet = getIPCStatus(childPids[i])) )
+			if( childPids[i] > 0 && (auxGet = getIPCStatus(childPids[i])) )
 			{
 				/*fprintf(stderr, "listenToMyChildren -- I = %d -- READING -- MyPID: %d childPID:%d\n", i, getpid(), (childPids)[i]);*/
 				if( readIPC( childPids[i], &cur, sizeof(curCircuit)) == -1 )
@@ -371,8 +371,14 @@ int listenToMyChildren( void )
 					printf("Acabo de HACER EL BREAK\n");
 					break;
 				}
+				childPids[i] = childPids[i] * -1;
 			}
 		}
+	}
+	for( i = 0 ; i < qtyFiles ; ++i )
+	{
+		if( childPids[i] != -1 )
+			childPids[i] = childPids[i] * -1;
 	}
 	printf("------ Fin de la lectura --------\n");
 	return 0;
