@@ -23,7 +23,7 @@ int gateInitializer( void );
 
 void * addMoreFiles( void * ret);
 
-circuitTable ** buildCircuitsTable( void );
+int buildCircuitsTable( void );
 
 void freeCircuitsGates( void );
 
