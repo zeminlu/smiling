@@ -16,20 +16,20 @@
 #include "../inc/linearHashADT.h"
 
 /**
- * \def
- * 		Description here
+ * \def QKEY
+ * 		\brief Description here
  */
 #define QKEY	(key_t)0105
 
 /**
- * \def
- * 		Description here
+ * \def QPERM
+ * 		\brief Description here
  */
 #define QPERM	0666
 
 /**
- * \struct
- * 		Description here
+ * \struct msQ
+ * 		\brief Description here
  */
 typedef struct q_entry{
 	long mtype;
@@ -37,7 +37,7 @@ typedef struct q_entry{
 	}msQ;
 
 /**
- * \fn
+ * \fn int init_queue(int newKey)
  *
  * 		\brief
  *

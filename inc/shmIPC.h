@@ -29,20 +29,20 @@
 #include "../inc/cutils.h"
 
 /**
- * \def
- * 		Description here
+ * \def _SHM_SEG_SIZE_
+ * 		\brief Description here
  */
 #define	_SHM_SEG_SIZE_ 4000
 
 /**
- * \def
- * 		Description here
+ * \def ERR
+ * 		\brief Description here
  */
 #define ERR ((struct databuf *) -1)
 
 /**
- * \struct
- * 		Description here
+ * \struct shmHeader
+ * 		\brief Description here
  */
 typedef struct{
 	pid_t pid;
@@ -53,8 +53,8 @@ typedef struct{
 } shmHeader;
 
 /**
- * \struct
- * 		Description here
+ * \struct shmStruct
+ * 		\brief Description here
  */
 typedef struct{
 	shmHeader header;
@@ -63,8 +63,8 @@ typedef struct{
 } shmStruct;
 
 /**
- * \struct
- * 		Description here
+ * \struct shmElem
+ * 		\brief Description here
  */
 typedef struct{
 	int index;
@@ -79,7 +79,7 @@ typedef struct{
 } shmElem;
 
 /**
- * \fn
+ * \fn sem_t * initmutex(char *semName)
  *
  * 		\brief
  *
@@ -98,7 +98,7 @@ typedef struct{
 sem_t * initmutex(char *semName);
 
 /**
- * \fn
+ * \fn int initShMem(int newKey)
  *
  * 		\brief
  *
@@ -117,7 +117,7 @@ sem_t * initmutex(char *semName);
 int initShMem(int newKey);
 
 /**
- * \fn
+ * \fn int initSem(int pid, shmElem *aux)
  *
  * 		\brief
  *
@@ -136,7 +136,7 @@ int initShMem(int newKey);
 int initSem(int pid, shmElem *aux);
 
 /**
- * \fn
+ * \fn int initHeaders()
  *
  * 		\brief
  *
