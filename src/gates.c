@@ -473,7 +473,7 @@ void initLevels( void )
 	
 	for( i = 0 ; i < qtyFiles ; ++i )
 	{
-		levels[i] = (i * -1);
+		levels[i] = (i * -1) + 1;
 	}
 }
 
