@@ -1,3 +1,10 @@
+/*
+ * \file grouph.c
+ *
+ *  \date Created on: 3-apr-2010
+ *  \author Luciano R. Zemin & Nicolás Magni & Nicolás Purita
+ */
+
 #include "../inc/grouph.h"
 
 extern pthread_mutex_t mutexIndex;

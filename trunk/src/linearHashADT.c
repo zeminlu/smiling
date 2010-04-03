@@ -2,15 +2,24 @@
  * \file linearHashADT.c
  *
  *  \date Created on: 29-oct-2008
- *  \author: Luciano R. Zemin & Maria Eugenia Cura
+ *  \author: Luciano R. Zemin
  */
 #include "linearHashADT.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
+/**
+ * \def MAX_LINE
+ *		A line's max length definition
+ */
 #define MAX_LINE 1000
 
+/**
+ * \enum bucketStates
+ *
+ * 		\brief Enumeration of posible hashTable bucket states.
+ */
 typedef enum
 {
 	PHYSICAL,
@@ -19,6 +28,11 @@ typedef enum
 }
 bucketStates;
 
+/**
+ * \struct tBucket
+ *
+ * 		\brief The hashTable bucket struct
+ */
 typedef struct tBucket
 {
 	hashTableElement item;
@@ -26,6 +40,11 @@ typedef struct tBucket
 	char *key;
 }tBucket;
 
+/**
+ * \struct hashTableCDT
+ *
+ * 		\brief CDT Struct from the hashTableADT
+ */
 typedef struct hashTableCDT
 {
 	tBucket *buckets;

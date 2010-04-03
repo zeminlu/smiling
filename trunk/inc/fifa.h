@@ -1,3 +1,10 @@
+/*
+ * \file fifa.h
+ *
+ *  \date Created on: 3-apr-2010
+ *  \author Luciano R. Zemin & Nicolás Magni & Nicolás Purita
+ */
+
 #ifndef FIFA_H_
 #define FIFA_H_
 
@@ -8,7 +15,6 @@
 #include <string.h>
 #include <stdarg.h>
 #include <errno.h>
-/*#include <wait.h>*/
 #include <sys/time.h>
 #include <sys/types.h>
 #include <fcntl.h>
@@ -21,10 +27,61 @@
 #include "../inc/ipcAPI.h"
 #include "../inc/cutils.h"
 
+/**
+ * \fn
+ *
+ * 		\brief
+ *
+ * 		\param
+ * 		
+ * 		\return
+ *
+ * 		Use:
+ * 		\code
+ * 		
+ *		\endcode
+ *
+ * 		\sa
+ *
+ */
 int loadCountriesTable(country ***countriesTable);
 
+/**
+ * \fn
+ *
+ * 		\brief
+ *
+ * 		\param
+ * 		
+ * 		\return
+ *
+ * 		Use:
+ * 		\code
+ * 		
+ *		\endcode
+ *
+ * 		\sa
+ *
+ */
 int startChildProcesses(country **countriesTable, int countriesTableEntriesAmm, country ****fixture, pid_t **pids);
 
+/**
+ * \fn
+ *
+ * 		\brief
+ *
+ * 		\param
+ * 		
+ * 		\return
+ *
+ * 		Use:
+ * 		\code
+ * 		
+ *		\endcode
+ *
+ * 		\sa
+ *
+ */
 int childsListener(pid_t *pids, country **countriesTable, int countriesTableEntriesAmm, country ***fixture);
 
 #endif

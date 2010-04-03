@@ -1,3 +1,10 @@
+/*
+ * \file main.h
+ *
+ *  \date Created on: 3-apr-2010
+ *  \author Luciano R. Zemin & Nicolás Magni & Nicolás Purita
+ */
+
 #ifndef MAIN_H_
 #define MAIN_H_
 

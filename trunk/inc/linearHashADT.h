@@ -2,7 +2,7 @@
  * \file linearHashADT.h
  *
  *  \date Created on: 29-oct-2008
- *  \author Luciano R. Zemin & Maria Eugenia Cura
+ *  \author Luciano R. Zemin
  */
 
 #ifndef LINEARHASHADT_H_
@@ -14,10 +14,25 @@
 #include "../inc/definitions.h"
 #include "../inc/functionTypes.h"
 
+/**
+ * \var hashTableADT
+ *
+ * 		\brief Typedef of the hashTableCDT pointer.
+ */
 typedef struct hashTableCDT *hashTableADT;
 
+/**
+ * \var hashTableElement
+ *
+ * 		\brief Typedef of the hashTableElement referencing to a void *
+ */
 typedef void *hashTableElement;
 
+/**
+ * \var compFuncT
+ *
+ * 		\brief Typedef of the prototype of a function that converts inner table elements.
+ */
 typedef hashTableElement (*hashConvFuncT)(char *aux, hashTableElement, char **key);
 
 /**

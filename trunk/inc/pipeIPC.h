@@ -1,3 +1,10 @@
+/*
+ * \file
+ *
+ *  \date Created on: 3-apr-2010
+ *  \author Luciano R. Zemin & Nicolás Magni & Nicolás Purita
+ */
+
 #ifndef PIPEIPC_H_
 #define PIPEIPC_H_
 
@@ -18,11 +25,5 @@
 #include "../inc/linearHashADT.h"
 #include "../inc/ipcAPI.h"
 #include "../inc/cutils.h"
-
-int compareIPCIDs(void *elem1, void *elem2);
-
-void * copyIPCID(void *elem);
-
-void freeIPCID(void *elem);
 
 #endif

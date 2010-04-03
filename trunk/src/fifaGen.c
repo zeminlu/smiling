@@ -1,3 +1,10 @@
+/*
+ * \file fifaGen.c
+ *
+ *  \date Created on: 3-apr-2010
+ *  \author Luciano R. Zemin & Nicolás Magni & Nicolás Purita
+ */
+
 #include "../inc/fifaGen.h"
 
 int main (void){

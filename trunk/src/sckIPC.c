@@ -1,3 +1,10 @@
+/*
+ * \file sckIPC.c
+ *
+ *  \date Created on: 3-apr-2010
+ *  \author Luciano R. Zemin & Nicolás Magni & Nicolás Purita
+ */
+
  #include "../inc/sckIPC.h"
 
 int clientsAmm = 0, flag = FALSE, sockfd, ownPort = 5000;

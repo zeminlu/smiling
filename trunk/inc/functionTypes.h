@@ -1,8 +1,8 @@
 /*
- * functionTypes.h
+ * \file functionTypes.h
  *
- *  Created on: 07-nov-2008
- *      Author: Luciano
+ *  \date Created on: 07-nov-2008
+ *  \author Luciano R. Zemin
  */
 
 #ifndef FUNCTIONTYPES_H_
