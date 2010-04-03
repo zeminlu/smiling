@@ -81,18 +81,13 @@ typedef struct{
 /**
  * \fn sem_t * initmutex(char *semName)
  *
- * 		\brief
+ * 		\brief This function opens a semaphore with the given semName path.
  *
- * 		\param
+ * 		\param semName The path to the semaphore.
  * 		
- * 		\return
+ * 		\return The sem_t address of the new semaphore on success, NULL on error.
  *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
+ * 		\sa initSem()
  *
  */
 sem_t * initmutex(char *semName);
@@ -100,18 +95,11 @@ sem_t * initmutex(char *semName);
 /**
  * \fn int initShMem(int newKey)
  *
- * 		\brief
+ * 		\brief This function initializes the shared memory segment using the given key.
  *
- * 		\param
+ * 		\param newKey The key to be used for the initialization.
  * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
+ * 		\return 0 on success, < 0 on error.
  *
  */
 int initShMem(int newKey);
@@ -119,18 +107,14 @@ int initShMem(int newKey);
 /**
  * \fn int initSem(int pid, shmElem *aux)
  *
- * 		\brief
+ * 		\brief This function initializes the semaphores for the given pid number and stores it in the given shmElem struct using initMutex().
  *
- * 		\param
+ * 		\param pid The pid number of the process that will own the semaphores.
+ *		\param aux The address of the shmElem where the semaphores' data will be stored.
  * 		
- * 		\return
+ * 		\return 0 on success, < 0 on error.
  *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
+ *		\sa initMutex()
  *
  */
 int initSem(int pid, shmElem *aux);
@@ -138,18 +122,9 @@ int initSem(int pid, shmElem *aux);
 /**
  * \fn int initHeaders()
  *
- * 		\brief
+ * 		\brief This function initializes the shmHeader structs from the shared memory segment.
  *
- * 		\param
- * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
+ * 		\return 0 on success, < 0 on error.
  *
  */
 int initHeaders();

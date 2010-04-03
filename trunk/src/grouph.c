@@ -221,7 +221,7 @@ int checkConditions(country *data, void *(***conditions)(void *condArgs)){
 	return i;
 }
 
-int buildCondArgs(condPack **condArgs, country **countriesTable, int countriesTableEntriesAmm, country *data, int condAmm, int *index){
+int buildCondArgs(condPack **condArgs, country **countriesTable, int countriesTableEntriesAmm, country *data){
 	if (((*condArgs) = malloc(sizeof(condPack))) == NULL || ((*condArgs)->sets = malloc(sizeof(void *) * 4)) == NULL){
 		perror("Error de memoria");
 		free(*condArgs);
