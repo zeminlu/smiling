@@ -16,6 +16,7 @@
 #include "../inc/types.h"
 #include "../inc/serializable.h"
 #include "../inc/ipcAPI.h"
+#include "../inc/cutils.h"
 
 typedef int (*handler)(int in1,int in2);
 
@@ -56,5 +57,7 @@ int countLevels( circuitTable * circuit);
 int checkGateIsLoaded( circuitTable *circuit, char *name, int curLevel);
 
 void printCircuitTable( circuitTable * circuit);
+
+int saveProccessFile( circuitTable *table );
 
 #endif

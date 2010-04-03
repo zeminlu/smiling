@@ -33,31 +33,6 @@ void printLevel( int *level, int qty )
 		fprintf(stderr, "Level[%d]: %d    MaxLevel[%d] = %d\n", i, level[i], i, maxLevel[i]);
 }
 
-void printCircuitTable( circuitTable * circuit)
-{
-	int i,j;
-	
-	fprintf(stderr, "GATES -- Cantidad de niveles: %d\n", circuit[0].totalLevels);
-	fprintf(stderr, "--------------------------------------------------\n");
-	for( i = 0; i < circuit[0].totalLevels ; ++i)
-	{
-		fprintf(stderr, "Cantidad de compuertas: %d\n", (circuit[i].eachLevel)->qtyGates);
-		for( j = 0; j < (circuit[i].eachLevel)->qtyGates ; ++j)
-		{
-			fprintf(stderr, "LEVEL: %d Name: %s, Father[0]: %s, Father[1]: %s, Type: %d, Input[0]: %d, Input[1]: %d, Output: %d\n", 
-						i,
-						(circuit[i].eachLevel)->gates[j].name,
-						(circuit[i].eachLevel)->gates[j].fathers[0],
-						(circuit[i].eachLevel)->gates[j].fathers[1],
-						(circuit[i].eachLevel)->gates[j].type,
-						(circuit[i].eachLevel)->gates[j].input[0],
-						(circuit[i].eachLevel)->gates[j].input[1],
-						(circuit[i].eachLevel)->gates[j].output);
-		}
-	}
-	fprintf(stderr, "--------------------------------------------------\n");
-}
-
 int main(void)
 {
 
@@ -117,10 +92,10 @@ int addMoreFiles( void)
 		return errno;
 	}
 	initLevels();
-	for( i = 0 ; i < qtyFiles ; ++i )
+	/*for( i = 0 ; i < qtyFiles ; ++i )
 	{
 		printCircuitTable(table[i]);
-	}
+	}*/
 	return 0;
 }
 
@@ -158,22 +133,12 @@ int gateInitializer( void )
 		{
 			if( levels[i] < maxLevel[i] && levels[i] >= 0 )
 			{
-				fprintf(stderr, "Haciendo el wait -- i = %d childPids: %d\n", i, childPids[i]);
 				wait(&(childPids[i]));
 			}
 		}
 		memset( childPids, -1, sizeof(pid_t) * qtyFiles);
 		incLevels();
 		finalizeIPC();
-	}
-	
-	for( i = 0 ; i < qtyFileCom ; ++i )
-		saveProccessFile(table[i], i);
-	
-	for( i = 0 ; i < qtyFileCom ; ++i )
-	{
-		fprintf(stderr, "-- COMIENZO DEL CIRCUITO\n");
-		printCircuitTable(table[i]);
 	}
 	
 	freeCircuitsGates();
@@ -191,8 +156,6 @@ int startCircuitsPipeline()
 {
 	int i, j, first = 0, notFirst = 1;
 	curCircuit cur;
-	
-	printLevel(levels,qtyFiles);
 	
 	for (i = 0, j = 0 ; i < qtyFiles ; ++i)
 	{
@@ -497,42 +460,4 @@ int getCurrentPipeFiles( void )
 			flag++;
 	}
 	return flag;
-}
-
-/*
- *	Carga en el directorio los archivos ya procesados. EL nombre va a estar conformado por
- *	circuit + pos en la tabla.txt
- */
-
-int saveProccessFile( circuitTable *table, int pos )
-{
-	int i,j;
-	char *nameStart = "./results/finalCircuit", *endFile = ".txt", fileName[30], posi[10], pidS[20];
-	FILE *proFile;
-	
-	itoa(pos, posi);
-	itoa(childPids[pos], pidS);
-	strcpy( fileName, nameStart);
-	strcat(fileName, pidS);
-	strcat(fileName, endFile);
-	
-	if( (proFile = fopen(fileName, "w")) == NULL )
-	{
-		perror("Error al abrir el archivo procesado");
-		return errno;
-	}
-	for( i = 0 ; i < table[0].totalLevels ; ++i )
-	{
-		for( j = 0 ; j < (table[i].eachLevel)->qtyGates ; ++j )
-		{
-			fprintf(proFile, "Level: %d -- Name of the Gate: %s, Type of gate: %d, Input: (1)->%d (2)->%d, Output: %d\n\n",
-			 										i,
-													(table[i].eachLevel)->gates[j].name,
-			 										(table[i].eachLevel)->gates[j].type,
-													(table[i].eachLevel)->gates[j].input[0],
-													(table[i].eachLevel)->gates[j].input[1],
-													(table[i].eachLevel)->gates[j].output);
-		}
-	}
-	return 0;
 }
