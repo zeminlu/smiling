@@ -7,14 +7,24 @@
 
 #include "../inc/main.h"
 
+pid_t pid1, pid2;
+
+void handler(int sig){
+	kill(pid1, SIGINT);
+	kill(pid2, SIGINT);
+}
+
 int main (void){
 	int p1, p2;
-	switch (fork()){
+	
+	signal(SIGINT, handler);
+	
+	switch (pid1 = fork()){
 		case 0:
 			execv("./parallel.bin", NULL);
 			break;
 		default:
-			switch (fork()){
+			switch (pid2 = fork()){
 				case 0:
 					execv("./pipe.bin", NULL);
 					break;
