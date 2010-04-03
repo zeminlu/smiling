@@ -356,8 +356,6 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 	pthread_mutex_destroy(&mutexIndex);
 	free(threads);
 	
-	fprintf(stderr, "TERMINO GROUPH DE %s\n", data->name);
-	
 	return 0;
 }
 

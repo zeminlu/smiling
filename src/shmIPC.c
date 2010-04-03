@@ -195,9 +195,6 @@ int loadIPC(){
 	memcpy(&key, data, sizeof(key_t));
 	memcpy(&index, ((char *)data) + sizeof(key_t), sizeof(int));
 	
-	printf("Recibi key = %d e index = %d\n", key, index);
-	
-	
 	if (((void *)(shmSegs = shmat(key, NULL, 0))) == ERR){
 		perror("IPCAPI: Error en llamada a shmat en loadIPC");
 		return errno;

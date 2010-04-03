@@ -31,15 +31,12 @@ int setupIPC(int channels){
 			varFree(2, master, slave);
 			return -1;
 		}
-		printf("Primeros pipes  fd0 = %d fd1 = %d\n",ipcIDs[i][0][0], ipcIDs[i][0][1] );
-
+		
 		if (pipe(ipcIDs[i][1]) == -1){
 			perror("IPCAPI: Error en pipe");
 			varFree(2, master, slave);
 			return -1;	
 		}
-		printf("Segundos pipes  fd0 = %d fd1 = %d\n",ipcIDs[i][1][0], ipcIDs[i][1][1] );
-
 		FD_SET(ipcIDs[i][1][0], master);
 	}
 	clientsAmm = channels;

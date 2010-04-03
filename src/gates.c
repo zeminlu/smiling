@@ -120,6 +120,10 @@ int addMoreFiles( void)
 		return errno;
 	}
 	initLevels();
+	for( i = 0 ; i < qtyFiles ; ++i )
+	{
+		printCircuitTable(table[i]);
+	}
 	return 0;
 }
 
