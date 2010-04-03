@@ -1,3 +1,10 @@
+/*
+ * \file
+ *
+ *  \date Created on: 3-apr-2010
+ *  \author Luciano R. Zemin & Nicolás Magni & Nicolás Purita
+ */
+
 #ifndef SHMIPC_H_
 #define SHMIPC_H_
 
@@ -21,9 +28,22 @@
 #include "../inc/ipcAPI.h"
 #include "../inc/cutils.h"
 
+/**
+ * \def
+ * 		Description here
+ */
 #define	_SHM_SEG_SIZE_ 4000
+
+/**
+ * \def
+ * 		Description here
+ */
 #define ERR ((struct databuf *) -1)
 
+/**
+ * \struct
+ * 		Description here
+ */
 typedef struct{
 	pid_t pid;
 	int sReadOff;
@@ -32,12 +52,20 @@ typedef struct{
 	int cWriteOff;
 } shmHeader;
 
+/**
+ * \struct
+ * 		Description here
+ */
 typedef struct{
 	shmHeader header;
 	char bufA[_SHM_SEG_SIZE_];
 	char bufB[_SHM_SEG_SIZE_];
 } shmStruct;
 
+/**
+ * \struct
+ * 		Description here
+ */
 typedef struct{
 	int index;
 	char *readBuf;
@@ -50,18 +78,80 @@ typedef struct{
 	sem_t *semB;
 } shmElem;
 
+/**
+ * \fn
+ *
+ * 		\brief
+ *
+ * 		\param
+ * 		
+ * 		\return
+ *
+ * 		Use:
+ * 		\code
+ * 		
+ *		\endcode
+ *
+ * 		\sa
+ *
+ */
 sem_t * initmutex(char *semName);
 
+/**
+ * \fn
+ *
+ * 		\brief
+ *
+ * 		\param
+ * 		
+ * 		\return
+ *
+ * 		Use:
+ * 		\code
+ * 		
+ *		\endcode
+ *
+ * 		\sa
+ *
+ */
 int initShMem(int newKey);
 
+/**
+ * \fn
+ *
+ * 		\brief
+ *
+ * 		\param
+ * 		
+ * 		\return
+ *
+ * 		Use:
+ * 		\code
+ * 		
+ *		\endcode
+ *
+ * 		\sa
+ *
+ */
 int initSem(int pid, shmElem *aux);
 
+/**
+ * \fn
+ *
+ * 		\brief
+ *
+ * 		\param
+ * 		
+ * 		\return
+ *
+ * 		Use:
+ * 		\code
+ * 		
+ *		\endcode
+ *
+ * 		\sa
+ *
+ */
 int initHeaders();
-
-int compareIPCIDs(void *elem1, void *elem2);
-
-void * copyIPCID(void *elem);
-
-void freeIPCID(void *elem);
 
 #endif

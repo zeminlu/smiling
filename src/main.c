@@ -1,3 +1,10 @@
+/*
+ * \file main.c
+ *
+ *  \date Created on: 3-apr-2010
+ *  \author Luciano R. Zemin & Nicolás Magni & Nicolás Purita
+ */
+
 #include "../inc/main.h"
 
 int main (void){

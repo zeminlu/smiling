@@ -1,7 +1,12 @@
+/*
+ * \file
+ *
+ *  \date Created on: 3-apr-2010
+ *  \author Luciano R. Zemin & Nicolás Magni & Nicolás Purita
+ */
 
 #ifndef MSQIPC_H_
 #define MSQIPC_H_
-
 
 #include <sys/ipc.h>
 #include <sys/msg.h>
@@ -10,20 +15,44 @@
 #include "../inc/cutils.h"
 #include "../inc/linearHashADT.h"
 
+/**
+ * \def
+ * 		Description here
+ */
+#define QKEY	(key_t)0105
 
-#define QKEY 			(key_t)0105
-#define QPERM			0666
+/**
+ * \def
+ * 		Description here
+ */
+#define QPERM	0666
 
+/**
+ * \struct
+ * 		Description here
+ */
 typedef struct q_entry{
 	long mtype;
 	char mtext[200];
 	}msQ;
 
+/**
+ * \fn
+ *
+ * 		\brief
+ *
+ * 		\param
+ * 		
+ * 		\return
+ *
+ * 		Use:
+ * 		\code
+ * 		
+ *		\endcode
+ *
+ * 		\sa
+ *
+ */
 int init_queue(int newKey);
-int compareIPCIDs(void *elem1, void *elem2);
-
-void * copyIPCID(void *elem);
-
-void freeIPCID(void *elem);
 
 #endif
