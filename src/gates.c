@@ -17,7 +17,6 @@ void ctrlC( int sig )
 {
 	int i;
 	
-	printf("Estoy en el handler de GATES\n");
 	flagSignal = FALSE;
 	
 	for( i = 0 ; i < qtyFiles ; ++i )
@@ -89,8 +88,6 @@ int addMoreFiles( void)
 		perror("Error en la lectura de GATES a PIPE en la cantidad de archivo\n");
 		return errno;
 	}
-	printf("Entre al thread y bloquee\n");
-	printf("qtyFileCom: %d ppid() = %d\n", qtyFileCom, getppid());
 	qtyFiles = qtyFileCom;
 	
 	if( (buildCircuitsTable()) != 0 )
@@ -99,7 +96,6 @@ int addMoreFiles( void)
 		freeCircuitsGates();
 		return errno;
 	}
-	fprintf(stderr, "TERMINE DE CARGAR TODA LA TABLA\n");
 	if( ( childPids = (int*)malloc( sizeof(pid_t) * qtyFiles) ) == NULL )
 	{
 		perror("Error en la alocacion del arreglo de pids\n");
@@ -158,7 +154,6 @@ int gateInitializer( void )
 			freeCircuitsGates();
 			return status;
 		}
-		fprintf(stderr, "Termine el listenToMyChildren status: %d\n", status);
 		for (i = 0 ; i < qtyFiles ; ++i)
 		{
 			if( levels[i] < maxLevel[i] && levels[i] >= 0 )
@@ -177,16 +172,14 @@ int gateInitializer( void )
 	
 	for( i = 0 ; i < qtyFileCom ; ++i )
 	{
-		fprintf(stderr, "-- COMIENZO DEL CIRCUITO %d\n", i);
+		fprintf(stderr, "-- COMIENZO DEL CIRCUITO\n");
 		printCircuitTable(table[i]);
-		fprintf(stderr, "-- FIN DEL CIRCUITO %d\n", i);
 	}
 	
 	freeCircuitsGates();
 	free(childPids);
 	free(maxLevel);
 	free(levels);
-	fprintf(stderr, "Termine de correr el gateInitializer\n");
 	return 0;
 }
 
@@ -209,7 +202,6 @@ int startCircuitsPipeline()
 		}
 	}
 	
-	fprintf(stderr, "Creando %d procesos\n", j );
 	if( setupIPC(j) == -1 )
 	{
 		perror("Error en la creacion del setupIPC en gates\n");
@@ -234,7 +226,6 @@ int startCircuitsPipeline()
 					j++;
 					break;
 			}
-			fprintf(stderr, "childPids = %d\n", childPids[i]);
 		}else
 		{
 			childPids[i] = -1;
@@ -252,16 +243,12 @@ int startCircuitsPipeline()
 		{
 			cur.curFile = i;
 			cur.curLevel = levels[i];
-			fprintf(stderr, "cur.curFile: %d cur.curLevel: %d\n", cur.curFile, cur.curLevel);
-			fprintf(stderr, "Sending Cur -- MyPID: %d childPID: %d\n", getpid(), childPids[i]);
 			
 			if( writeIPC( childPids[i], &cur, sizeof(curCircuit) ) == -1 )
 			{
 				perror("Error en la escritura de cur hacia levels\n");
 				return errno;	
 			}
-			printf("Envie el Sending cur pid: %d\n", getpid());
-			fprintf(stderr, "Sending the amount of currently gates -- MyPID: %d childPID: %d\n", getpid(), childPids[i]);
 			
 			if( writeIPC( childPids[i], (void *)&(((table[i][levels[i]]).eachLevel)->qtyGates) , sizeof(int) ) == -1)
 			{
@@ -271,7 +258,6 @@ int startCircuitsPipeline()
 			
 			for( j = 0 ; j < ((table[i][levels[i]]).eachLevel)->qtyGates ; ++j )
 			{
-				fprintf(stderr, "Sending each gate of currently J:%d -- MyPID: %d childPID: %d\n", j, getpid(), childPids[i]);
 				if( writeIPC( childPids[i], (void*)(&(((table[i][levels[i]]).eachLevel)->gates[j])), sizeof(gate) ) == -1)
 				{
 					perror("Error en la escritura de compuertas\n");
@@ -281,7 +267,6 @@ int startCircuitsPipeline()
 			
 			if( levels[i] == 0 )
 			{
-				fprintf(stderr, "Sending if it is the first level -- MyPID: %d childPID: %d\n", getpid(), childPids[i]);
 				if( writeIPC( childPids[i], (void*)(&first), sizeof(int) ) == -1 )
 				{
 					perror("Error en la escritura, indicando si es el primer nivel\n");
@@ -289,13 +274,11 @@ int startCircuitsPipeline()
 				}
 			}else
 			{
-				fprintf(stderr, "Sending if it is not the first level -- MyPID: %d childPID: %d\n", getpid(), childPids[i]);
 				if( writeIPC( childPids[i], (void*)(&notFirst), sizeof(int) ) == -1 )
 				{
 					perror("Error en la escritura, indicando si es el primer nivel\n");
 					return errno;
 				}
-				fprintf(stderr, "Sending the amount of previously gates -- MyPID: %d childPID: %d\n", getpid(), childPids[i]);
 				if( writeIPC( childPids[i], (void *)&(((table[i][levels[i]-1]).eachLevel)->qtyGates) , sizeof(int) ) == -1)
 				{
 					perror("Error en la escritura de la cantidad de gates de Previously\n");
@@ -303,7 +286,6 @@ int startCircuitsPipeline()
 				}
 				for( j = 0 ; j < ((table[i][ (levels[i]-1) ]).eachLevel)->qtyGates ; ++j )
 				{
-					fprintf(stderr, "Sending previously each gates -- j:%d MyPID: %d childPID: %d\n", j, getpid(), childPids[i]);
 					if( writeIPC( childPids[i], (void*)(&(((table[i][levels[i]-1]).eachLevel)->gates[j])), sizeof(gate) ) == -1)
 					{
 						perror("Error en la escritura de compuertas de previously\n");
@@ -328,22 +310,15 @@ int listenToMyChildren( void )
 	curCircuit cur;
 	
 	levelsAmm = getCurrentPipeFiles();
-	
-	fprintf(stderr, "levelsAmm: %d \n", levelsAmm);
-	
+		
 	while( levelsAmm > 0 && (auxSelect = selectIPC(2)) > 0 )
 	{
-		printf("levelsAmm: %d\n", levelsAmm);
 		if( levelsAmm == 0 )
 			break;
 		for( i = 0 ; i < qtyFiles ; ++i )
-			printf("childPids[%d]: %d\n", i , childPids[i]);
-		for( i = 0 ; i < qtyFiles ; ++i )
 		{
-			/*fprintf(stderr, "childPids[%d] = %d qtyFiles: %d\n", i, childPids[i],  qtyFiles);*/
 			if( childPids[i] > 0 && (auxGet = getIPCStatus(childPids[i])) )
 			{
-				/*fprintf(stderr, "listenToMyChildren -- I = %d -- READING -- MyPID: %d childPID:%d\n", i, getpid(), (childPids)[i]);*/
 				if( readIPC( childPids[i], &cur, sizeof(curCircuit)) == -1 )
 				{
 					perror("Error en la lectura de LEVELS a GATE, cur\n");
@@ -352,23 +327,15 @@ int listenToMyChildren( void )
 				
 				for( j = 0 ; j < ((table[cur.curFile][cur.curLevel]).eachLevel)->qtyGates ; ++j )
 				{
-					/*fprintf(stderr, "listenToMyChildren 2-- READING -- MyPID: %d childPID:%d\n", getpid(), (childPids)[i]);*/
 					if( readIPC(childPids[i], &auxGate, sizeof(gate)) == -1)
 					{
 						perror("Error en la lectura de las compuertas desde Levels\n");
 						return errno;
 					}
-				
-					printf( "Reading -- pid: %d Circuit: %d Level: %d Gate: %s Output: %d\n", 	childPids[i], 
-																								cur.curFile, 
-																								cur.curLevel, 
-																								auxGate.name, 
-																								auxGate.output );
 					memcpy( &(((table[cur.curFile][cur.curLevel]).eachLevel)->gates)[j], &auxGate, sizeof(gate));
 				}
 				if (--levelsAmm == 0 )
 				{
-					printf("Acabo de HACER EL BREAK\n");
 					break;
 				}
 				childPids[i] = childPids[i] * -1;
@@ -380,7 +347,6 @@ int listenToMyChildren( void )
 		if( childPids[i] != -1 )
 			childPids[i] = childPids[i] * -1;
 	}
-	printf("------ Fin de la lectura --------\n");
 	return 0;
 }
 
@@ -400,13 +366,11 @@ int buildCircuitsTable( void )
 	
 	for( i = initTable ; i < qtyFiles ; ++i )
 	{
-		printf("Estoy en buildCircuitsTable: %d ppid: %d\n", i, getppid());
 		if( readIPC(getppid(), &qtyLevels, sizeof(int)) == -1 )
 		{
 			perror("Error en la lectura de la cantidad de niveles de buildCircuitsTable");
 			return errno;
 		}
-		fprintf(stderr, "File: %d Cantidad de niveles: %d \n", i, qtyLevels);
 		if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable) * qtyLevels)) == NULL )
 		{
 			perror("Error en la alocacion de memoria de table[i]\n");
@@ -422,14 +386,12 @@ int buildCircuitsTable( void )
 				perror("Error en la alocacion de cada nivel\n");
 				return errno;
 			}
-			fprintf(stderr, "Voy a leer la cantidad de compuertas del nivel -- j: %d\n", j);
 			if( readIPC(getppid(), &qtyGatesCom, sizeof(int)) == -1 )
 			{
 				perror("Error en la lectura de la cantidad de niveles de buildCircuitsTable");
 				return errno;
 			}
 			(table[i][j].eachLevel)->qtyGates = qtyGatesCom;
-			fprintf(stderr, "File: %d Level: %d Cantidad de compuertas: %d ppid=%d \n", i, j, qtyGatesCom, getppid());
 			if( ((table[i][j].eachLevel)->gates = (gate*)malloc( sizeof(gate) * qtyGatesCom)) == NULL )
 			{
 				perror("Error en la alocacion del arreglo de compuertas\n");
@@ -545,12 +507,13 @@ int getCurrentPipeFiles( void )
 int saveProccessFile( circuitTable *table, int pos )
 {
 	int i,j;
-	char *nameStart = "./results/finalCircuit", *endFile = ".txt", fileName[30], posi[10];
+	char *nameStart = "./results/finalCircuit", *endFile = ".txt", fileName[30], posi[10], pidS[20];
 	FILE *proFile;
 	
 	itoa(pos, posi);
+	itoa(childPids[pos], pidS);
 	strcpy( fileName, nameStart);
-	strcat(fileName, posi);
+	strcat(fileName, pidS);
 	strcat(fileName, endFile);
 	
 	if( (proFile = fopen(fileName, "w")) == NULL )

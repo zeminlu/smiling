@@ -87,11 +87,6 @@ int createsGates(void)
 		if( synchronize() != 0)
 		{
 			kill(pid, SIGINT);
-			for( i = 0 ; i < qtyFiles ; ++i )
-			{
-				free(table[i]);
-			}
-			free(table);
 			return errno;
 		}
 		
@@ -100,7 +95,6 @@ int createsGates(void)
 			perror("Error no se pudo escuchar el archivo");
 			return errno;
 		}
-		fprintf(stderr, "Pipe pid: %d\n", pid);
 		for( i = 0 ; i < qtyFiles ; ++i )
 		{
 			printCircuitTable(table[i]);
@@ -117,8 +111,9 @@ int createsGates(void)
 		qtyFiles = 0;
 		wait(&pid);
 	}
-	/*wait(&pid);*/
-	finalizeIPC();	
+	wait(&pid);
+	finalizeIPC();
+	printf("Se procesaron %d archivos\n", totalProccessFiles);	
 	return procStatus;
 }
 

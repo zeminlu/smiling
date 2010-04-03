@@ -42,7 +42,7 @@ enum 	logicGates { AND = 0, OR, XOR, NAND, NOR, XNOR };
 #define		_HALF_DUPLEX_			0
 #define		_FULL_DUPLEX_			1
 
-#define		_MAX_GATES_LEVELS_		10
+#define		_MAX_GATES_LEVELS_		30
 #define		_MAX_CIRCUITS_			5
 
 #define 	_MAX_LEVELS_			50
