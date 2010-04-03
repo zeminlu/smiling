@@ -181,9 +181,8 @@ int synchronize();
  * 			return status;
  * 		}
  *
- *		/////////////////////////////////////////////////////////////////////
  *      //As first instruction of "childProcess", loadIPC() must be called.//
- *		/////////////////////////////////////////////////////////////////////
+ *
  *		\endcode
  *
  * 		\sa setupIPC() addClient() synchronize()
@@ -366,9 +365,7 @@ int getIPCStatus(pid_t pid);
  *			return status;
  *		}
  *
- *		///////////////////////////
  *		//Communicate with parent// 		
- *		///////////////////////////
  *
  *		closeIPC();
  *
@@ -413,9 +410,7 @@ int closeIPC();
  * 			return status;
  * 		}
  *
- *		///////////////////////////////////
  *		//Comunicate with child processes//
- *		///////////////////////////////////
  *
  *		if ((status = finalizeIPC()) < 0){
  *			return status;
