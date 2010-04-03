@@ -9,11 +9,9 @@
 
 static int qtyFiles = 0, qtyFileCom;
 static int initTable = 0;
-int flagSignal = TRUE, flagFirst = TRUE, finishedAmm = 0, *maxLevel, *levels;
+int flagSignal = TRUE, flagFirst = TRUE, *maxLevel, *levels;
 static circuitTable **table = NULL;
 pid_t *childPids;
-pthread_mutex_t mutexIndex;
-pthread_t thread;
 
 void ctrlC( int sig )
 {
@@ -64,7 +62,7 @@ void printCircuitTable( circuitTable * circuit)
 int main(void)
 {
 
-	int *aux = 0, status;
+	int status;
 		
 	signal(SIGINT, ctrlC );	
 	
@@ -73,112 +71,56 @@ int main(void)
 		perror("Error en el LOAD de Gates");
 		return status;
 	}
-	pthread_mutex_init(&mutexIndex, NULL);
-	pthread_create(&thread, NULL, addMoreFiles, (void*)aux );
-	*aux =  gateInitializer();
-	pthread_mutex_destroy(&mutexIndex);
-	return *aux;
+	addMoreFiles();
+	closeIPC();
+	return gateInitializer();
 }
 /*
  * 	Thread encargado de leer y cuando llega algun archivo lo
  *	agrega a la lista.
  */
 
-void * addMoreFiles( void * ret)
+int addMoreFiles( void)
 {
-	int i, cont = 0;
+	int i;
 		
-	fprintf(stderr, "Thread, GATE -- READ -- ParentPID: %d myPid: %d \n", getppid(), getpid() );
-		
-	while( flagSignal )
+	if( readIPC(getppid(), &qtyFileCom, sizeof(int)) == -1 )
 	{
-		if( readIPC(getppid(), &qtyFileCom, sizeof(int)) == -1 )
-		{
-			perror("Error en la lectura de GATES a PIPE en la cantidad de archivo\n");
-			*(int*)ret = errno;
-			return (void*)ret;
-		}
-		printf("Entre al thread y bloquee\n");
-		pthread_mutex_lock(&mutexIndex);
-		printf("qtyFileCom: %d ppid() = %d\n", qtyFileCom, getppid());
-		qtyFiles += qtyFileCom;
-		if( (buildCircuitsTable()) != 0 )
-		{
-			perror("Error al construir la tabla de los circuitos\n");
-			freeCircuitsGates();
-			*(int*)ret = errno;
-			return (void*)ret;
-		}
-		if( flagFirst )
-		{
-			if( ( childPids = (int*)malloc( sizeof(pid_t) * qtyFiles) ) == NULL )
-			{
-				perror("Error en la alocacion del arreglo de pids\n");
-				freeCircuitsGates();
-				*(int*)ret = errno;
-				return (void*)ret;
-			}
-			memset(childPids, -1, qtyFiles);
-			maxLevel = malloc( sizeof(int) * qtyFiles);
-			for( i = 0 ; i < qtyFileCom ; ++i )
-				maxLevel[i] = table[i][0].totalLevels;
-			if( ( levels = (int*)malloc( sizeof(int) * qtyFiles) ) == NULL )
-			{
-				perror("Error en la alocacion del arreglo de niveles\n");
-				free(childPids);
-				free(maxLevel);
-				freeCircuitsGates();
-				*(int*)ret = errno;
-				return (void*)ret;
-			}
-			initLevels();
-		}else
-		{
-			if( ( childPids = (int*)realloc( childPids, sizeof(pid_t) * qtyFiles) ) == NULL )
-			{
-				perror("Error en la alocacion del arreglo de pids\n");
-				freeCircuitsGates();
-				*(int*)ret = errno;
-				return (void*)ret;
-			}
-			memset(childPids, -1, qtyFiles);
-			maxLevel = realloc( maxLevel, sizeof(int) * qtyFiles);
-			for( i = 0 ; i < qtyFileCom ; ++i )
-				maxLevel[i] = table[i][0].totalLevels;
-			if( ( levels = (int*)realloc( levels, sizeof(int) * qtyFiles) ) == NULL )
-			{
-				perror("Error en la alocacion del arreglo de niveles\n");
-				free(childPids);
-				free(maxLevel);
-				freeCircuitsGates();
-				*(int*)ret = errno;
-				return (void*)ret;
-			}
-			if( levels[qtyFiles - initTable + 1] > 0 )
-			{
-				for( i = 0 ; i < qtyFiles - initTable + 1 ; ++i )
-					levels[i] = cont++;
-			}else if( levels[qtyFiles - initTable + 1] == 0 )
-			{
-				cont = -1;
-				for( i = 0 ; i < qtyFiles - initTable + 1 ; ++i )
-					levels[i] = cont--; 
-			}else
-			{
-				cont =  levels[qtyFiles - initTable];
-				for( i = 0 ; i < qtyFiles - initTable + 1 ; ++i )
-					levels[i] = cont--;
-			}
-		}
-		for( i = 0 ; i < qtyFiles ; ++i )
-		{
-			printf("I: %d levels = %d maxLevel: %d childPids: %d\n", i, levels[i], maxLevel[i], childPids[i]);
-		}
-		pthread_mutex_unlock(&mutexIndex);
+		perror("Error en la lectura de GATES a PIPE en la cantidad de archivo\n");
+		return errno;
 	}
-	printf("Estoy terminando y estoy saliendo del thread\n");
-	flagFirst = FALSE;
-	return ret;
+	printf("Entre al thread y bloquee\n");
+	printf("qtyFileCom: %d ppid() = %d\n", qtyFileCom, getppid());
+	qtyFiles = qtyFileCom;
+	
+	if( (buildCircuitsTable()) != 0 )
+	{
+		perror("Error al construir la tabla de los circuitos\n");
+		freeCircuitsGates();
+		return errno;
+	}
+	if( ( childPids = (int*)malloc( sizeof(pid_t) * qtyFiles) ) == NULL )
+	{
+		perror("Error en la alocacion del arreglo de pids\n");
+		freeCircuitsGates();
+		return errno;
+	}
+	memset(childPids, 0, qtyFiles);
+	maxLevel = malloc( sizeof(int) * qtyFiles);
+	
+	for( i = 0 ; i < qtyFileCom ; ++i )
+		maxLevel[i] = table[i][0].totalLevels;
+	
+	if( ( levels = (int*)malloc( sizeof(int) * qtyFiles) ) == NULL )
+	{
+		perror("Error en la alocacion del arreglo de niveles\n");
+		free(childPids);
+		free(maxLevel);
+		freeCircuitsGates();
+		return errno;
+	}
+	initLevels();
+	return 0;
 }
 
 /*
@@ -191,53 +133,38 @@ int gateInitializer( void )
 {
 	int i,status;
 	
-	while( flagSignal )
+	while( !allFilesWasProccessed() && flagSignal )
 	{
-		if( !allFilesWasProccessed() )
+		if( (status = startCircuitsPipeline()) != 0)
 		{
-			pthread_mutex_lock(&mutexIndex);
-			printf("Estoy dentro del while que procesa los niveles\n");
-			getProccessAreRunning();
-			if( finishedAmm >= 5 )
-			{
-				printf("Tengo que reallocar todo\n");
-				reallocAllOfInfo();
-			}
-			finishedAmm = 0;
-			if( (status = startCircuitsPipeline()) != 0)
-			{
-				perror("Error en el startCircuitsPipeline:");
-				free(childPids);
-				free(maxLevel);
-				free(levels);
-				freeCircuitsGates();
-				return status;
-			}
-			if( (status = listenToMyChildren()) != 0 )
-			{
-				perror("Error en el listenToMyChildren:");
-				free(childPids);
-				free(maxLevel);
-				free(levels);
-				freeCircuitsGates();
-				return status;
-			}
-			fprintf(stderr, "Termine el listenToMyChildren status: %d\n", status);
-			for (i = 0 ; i < qtyFiles ; ++i)
-			{
-				if( levels[i] < maxLevel[i] && levels[i] >= 0 )
-				{
-					fprintf(stderr, "Haciendo el wait -- i = %d childPids: %d\n", i, childPids[i]);
-					wait(&(childPids[i]));
-				}
-			}
-			/*memset(childPids, -1, qtyFiles * sizeof(pid_t) );*/
-			incLevels();
-			finalizeIPC();
-			pthread_mutex_unlock(&mutexIndex);
+			perror("Error en el startCircuitsPipeline:");
+			free(childPids);
+			free(maxLevel);
+			free(levels);
+			freeCircuitsGates();
+			return status;
 		}
+		if( (status = listenToMyChildren()) != 0 )
+		{
+			perror("Error en el listenToMyChildren:");
+			free(childPids);
+			free(maxLevel);
+			free(levels);
+			freeCircuitsGates();
+			return status;
+		}
+		fprintf(stderr, "Termine el listenToMyChildren status: %d\n", status);
+		for (i = 0 ; i < qtyFiles ; ++i)
+		{
+			if( levels[i] < maxLevel[i] && levels[i] >= 0 )
+			{
+				fprintf(stderr, "Haciendo el wait -- i = %d childPids: %d\n", i, childPids[i]);
+				wait(&(childPids[i]));
+			}
+		}
+		incLevels();
+		finalizeIPC();
 	}
-	pthread_cancel(thread);
 	
 	for( i = 0 ; i < qtyFileCom ; ++i )
 		saveProccessFile(table[i], i);
@@ -306,10 +233,6 @@ int startCircuitsPipeline()
 			childPids[i] = -1;
 		}
 	}
-	for( i = 0 ; i < qtyFiles ; ++i )
-	{
-		fprintf(stderr, "%d startCircuitsPipeline -- pid creados: %d\n", i, childPids[i]);
-	}
 	
 	if( synchronize() == -1 )
 	{
@@ -322,17 +245,17 @@ int startCircuitsPipeline()
 		{
 			cur.curFile = i;
 			cur.curLevel = levels[i];
-			/*fprintf(stderr, "cur.curFile: %d cur.curLevel: %d\n", cur.curFile, cur.curLevel);
+			fprintf(stderr, "cur.curFile: %d cur.curLevel: %d\n", cur.curFile, cur.curLevel);
 			fprintf(stderr, "Sending Cur -- MyPID: %d childPID: %d\n", getpid(), childPids[i]);
-			*/
+			
 			if( writeIPC( childPids[i], &cur, sizeof(curCircuit) ) == -1 )
 			{
 				perror("Error en la escritura de cur hacia levels\n");
 				return errno;	
 			}
-			/*printf("Envie el Sending cur pid: %d\n", getpid());
+			printf("Envie el Sending cur pid: %d\n", getpid());
 			fprintf(stderr, "Sending the amount of currently gates -- MyPID: %d childPID: %d\n", getpid(), childPids[i]);
-			*/
+			
 			if( writeIPC( childPids[i], (void *)&(((table[i][levels[i]]).eachLevel)->qtyGates) , sizeof(int) ) == -1)
 			{
 				perror("Error en la escritura de la cantidad de gates de Currently\n");
@@ -383,7 +306,6 @@ int startCircuitsPipeline()
 			}
 		}
 	}
-
 	return 0;
 }
 
@@ -454,21 +376,10 @@ int buildCircuitsTable( void )
 {
 	int i,j,k, qtyGatesCom, qtyLevels;
 	
-	printf("Estoy adentro de buildCircuitsTable\n");
-	if( !flagFirst )
+	if( (table = (circuitTable**)realloc( NULL, sizeof(circuitTable*) * qtyFiles) ) == NULL )
 	{
-		if( (table = (circuitTable**)realloc( table, sizeof(circuitTable*) * qtyFiles) ) == NULL )
-		{
-			perror("Error en la alocacion de memoria\n");
-			return errno;
-		}
-	}else
-	{
-		if( (table = (circuitTable**)realloc( NULL, sizeof(circuitTable*) * qtyFiles) ) == NULL )
-		{
-			perror("Error en la alocacion de memoria\n");
-			return errno;
-		}
+		perror("Error en la alocacion de memoria\n");
+		return errno;
 	}
 	
 	for( i = initTable ; i < qtyFiles ; ++i )
@@ -645,75 +556,4 @@ int saveProccessFile( circuitTable *table, int pos )
 		}
 	}
 	return 0;
-}
-
-/*
- *	Funcion encargda de reallocar todos los arreglos cuando se llena 
- *	a un maximo de archivo finalizados
- */
-
-void reallocAllOfInfo( void )
-{
-	int i, k, *indexJustFinished, *auxLevel, *auxMaxLevel;
-	circuitTable **auxTable;
-	pid_t *auxChildPids;
-	
-	auxTable = (circuitTable**)malloc( sizeof(circuitTable*) * (qtyFiles - finishedAmm + 1));
-	auxLevel = (int*)malloc(sizeof(int) * (qtyFiles - finishedAmm + 1));
-	auxMaxLevel = (int*)malloc(sizeof(int) * (qtyFiles - finishedAmm + 1));
-	auxChildPids = (int*)malloc(sizeof(pid_t) * (qtyFiles - finishedAmm + 1));
-	k = 0;
-	indexJustFinished = getFinalizeFiles();
-	
-	for( i = 0 ; i < finishedAmm ; ++i )
-	{
-		auxTable[k] = table[i];
-		auxLevel[k] = levels[i];
-		auxMaxLevel[k] = maxLevel[i];
-		auxChildPids[k] = childPids[i];
-		k++;
-	}
-	freeCircuitsGates();
-	free(levels);
-	free(maxLevel);
-	free(childPids);
-	table = auxTable;
-	levels = auxLevel;
-	maxLevel = auxMaxLevel;
-	childPids = auxChildPids;
-}
-
-/*
- *	Funcion que me dice los indices de los archivos
- *	que no finalizaron aun.
- */
-
-int * getFinalizeFiles( void )
-{
-	int k = 0, i, * aux = malloc( sizeof(int) * qtyFiles );
-	
-	for( i = 0 ; i < qtyFiles ; ++i )
-	{
-		if( levels[i] >= 0 && levels[i] < maxLevel[i] )
-		{
-			aux[k++] = i;
-		}
-	}
-	
-	return aux;
-}
-
-/*
- *	Funcion que me dice la cantidad de procesos que ya terminaron
- */
-
-void getProccessAreRunning( void )
-{
-	int i;
-	
-	for( i = 0 ; i < qtyFiles ; ++i )
-	{
-		if( levels[i] > maxLevel[i] )
-			++finishedAmm;
-	}
 }

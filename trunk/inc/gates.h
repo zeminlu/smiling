@@ -21,7 +21,7 @@
 
 int gateInitializer( void );
 
-void * addMoreFiles( void * ret);
+int addMoreFiles( void );
 
 int buildCircuitsTable( void );
 
@@ -44,11 +44,5 @@ int saveProccessFile( circuitTable *table, int pos );
 int allFilesWasProccessed( void );
 
 void itoa(int n, char s[]);
-
-void reallocAllOfInfo( void );
-
-int * getFinalizeFiles( void );
-
-void getProccessAreRunning( void );
 
 #endif
