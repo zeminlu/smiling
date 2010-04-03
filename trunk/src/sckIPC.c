@@ -18,6 +18,25 @@ void sigHandler (int signum){
 	return;
 }
 
+int compareIPCIDs(void *elem1, void *elem2){
+	return (((int *)elem1)[0] == ((int *)elem2)[0]);
+}
+
+void * copyIPCID(void *elem){
+	int *id;
+	
+	id = malloc(sizeof(int));
+	id[0] = ((int *)elem)[0];
+	
+	return id;
+}
+void freeIPCID(void *elem){
+	close(((int *)elem)[0]);	
+	free(elem);
+	
+	return;
+}
+
 int setupIPC(int channels){
 	char pid[20], *socketNameStart = "./socket-";
 	
@@ -301,23 +320,4 @@ int finalizeIPC(){
 	unlink(socketFileName);
 	
 	return 0;
-}
-
-int compareIPCIDs(void *elem1, void *elem2){
-	return (((int *)elem1)[0] == ((int *)elem2)[0]);
-}
-
-void * copyIPCID(void *elem){
-	int *id;
-	
-	id = malloc(sizeof(int));
-	id[0] = ((int *)elem)[0];
-	
-	return id;
-}
-void freeIPCID(void *elem){
-	close(((int *)elem)[0]);	
-	free(elem);
-	
-	return;
 }

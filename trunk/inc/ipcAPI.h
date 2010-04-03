@@ -26,18 +26,41 @@
 /**
  * \fn int setupIPC(int channels)
  *
- * 		\brief
+ * 		\brief This function prepares channels comunication channels to be used between the calling process and channels direct child processes.
  *
- * 		\param
+ * 		\param channels The ammount of comunication channels needed.
  * 		
- * 		\return
+ * 		\return 0 on success, < 0 on error.
  *
  * 		Use:
  * 		\code
- * 		
+ *		int j, status
+ *
+ *		if ((status = setupIPC(childProcessesAmmount)) < 0){
+ *			return status;
+ *		}
+ *
+ * 		for (j = 0; j < childProcessesAmmount ; ++j){
+ *			switch((fork())){
+ *				case -1:
+ *					perror("Fork erro");
+ *					return errno;
+ *					break;
+ *				case 0:
+ *					addClient(j);
+ *					execv("./childProcess", NULL);
+ *					break;
+ *				default:					
+ *					break;
+ *			}
+ *		}
+ *		
+ *		if ((status = synchronize()) < 0){
+ * 			return status;
+ * 		}
  *		\endcode
  *
- * 		\sa
+ * 		\sa addClient() synchronize() loadIPC()
  *
  */
 int setupIPC(int channels);
@@ -45,18 +68,41 @@ int setupIPC(int channels);
 /**
  * \fn int addClient(int index)
  *
- * 		\brief
+ * 		\brief This function sets up needed stuff so that the calling process can later comunicate with it's parent. Must be called as the first instruction after the return of a fork in the child portion of the switch and before the execv() call.
  *
- * 		\param
+ * 		\param index The index, from 0 to the channels ammount passed to setupIPC. Only one call to addClient for a given index must be done. 
  * 		
- * 		\return
+ * 		\return 0 on success, < 0 on error.
  *
  * 		Use:
  * 		\code
- * 		
+ *		int j, status
+ *
+ *		if ((status = setupIPC(childProcessesAmmount)) < 0){
+ *			return status;
+ *		}
+ *
+ * 		for (j = 0; j < childProcessesAmmount ; ++j){
+ *			switch((fork())){
+ *				case -1:
+ *					perror("Fork erro");
+ *					return errno;
+ *					break;
+ *				case 0:
+ *					addClient(j);
+ *					execv("./childProcess", NULL);
+ *					break;
+ *				default:					
+ *					break;
+ *			}
+ *		}
+ *		
+ *		if ((status = synchronize()) < 0){
+ * 			return status;
+ * 		}
  *		\endcode
  *
- * 		\sa
+ * 		\sa setupIPC() synchronize() loadIPC()
  *
  */
 int addClient(int index);
@@ -64,18 +110,39 @@ int addClient(int index);
 /**
  * \fn int synchronize()
  *
- * 		\brief
- *
- * 		\param
+ * 		\brief This function completes the communication setup between the calling process and it's child processes. Must be called reight after the fork return of the parent.
  * 		
- * 		\return
+ * 		\return 0 on success, < 0 on error.
  *
  * 		Use:
  * 		\code
- * 		
+ *		int j, status
+ *
+ *		if ((status = setupIPC(childProcessesAmmount)) < 0){
+ *			return status;
+ *		}
+ *
+ * 		for (j = 0; j < childProcessesAmmount ; ++j){
+ *			switch((fork())){
+ *				case -1:
+ *					perror("Fork erro");
+ *					return errno;
+ *					break;
+ *				case 0:
+ *					addClient(j);
+ *					execv("./childProcess", NULL);
+ *					break;
+ *				default:					
+ *					break;
+ *			}
+ *		}
+ *		
+ *		if ((status = synchronize()) < 0){
+ * 			return status;
+ * 		}
  *		\endcode
  *
- * 		\sa
+ * 		\sa setupIPC() addClient() loadIPC()
  *
  */
 int synchronize();
@@ -83,18 +150,43 @@ int synchronize();
 /**
  * \fn int loadIPC()
  *
- * 		\brief
+ * 		\brief This function completes the communication setup between the calling process and it's parent process. Must be called as the first instruction of the process invocated with execv().
  *
- * 		\param
- * 		
- * 		\return
+ * 		\return 0 on success, < 0 on error.
  *
  * 		Use:
  * 		\code
- * 		
+ *		int j, status
+ *
+ *		if ((status = setupIPC(childProcessesAmmount)) < 0){
+ *			return status;
+ *		}
+ *
+ * 		for (j = 0; j < childProcessesAmmount ; ++j){
+ *			switch((fork())){
+ *				case -1:
+ *					perror("Fork erro");
+ *					return errno;
+ *					break;
+ *				case 0:
+ *					addClient(j);
+ *					execv("./childProcess", NULL);
+ *					break;
+ *				default:					
+ *					break;
+ *			}
+ *		}
+ *		
+ *		if ((status = synchronize()) < 0){
+ * 			return status;
+ * 		}
+ *
+ *		/////////////////////////////////////////////////////////////////////
+ *      //As first instruction of "childProcess", loadIPC() must be called.//
+ *		/////////////////////////////////////////////////////////////////////
  *		\endcode
  *
- * 		\sa
+ * 		\sa setupIPC() addClient() synchronize()
  *
  */
 int loadIPC();
@@ -102,18 +194,40 @@ int loadIPC();
 /**
  * \fn int readIPC(pid_t pid, void *buffer, int bufferSize)
  *
- * 		\brief
+ * 		\brief This function reads bufferSize bytes from the communication channel between the calling process and the pid process, and stores it in buffer, which has to have bufferSize memory allocated.
  *
- * 		\param
- * 		
- * 		\return
+ * 		\param pid The pid number of the process from who the calling process wants read data.
+ * 		\param buffer The buffer where to store the read bytes.
+ *		\param bufferSize The ammount of bytes to read.		
+ *
+ * 		\return 0 on success, < 0 on error.
  *
  * 		Use:
  * 		\code
- * 		
+ * 		void *buffer;
+ * 		pid_t pids[childProcessAmm];
+ * 		int j;
+ *	
+ *		if ((buffer = malloc(sizeof(int))) == NULL){
+ * 			perror("Malloc error");
+ *			return errno;
+ *		}
+ *
+ *		while(selectIPC(2) > 0 ){
+ *			for (j = 0 ; j < childProcessAmm ; ++j){
+ *				if (getIPCStatus(pids[j])){
+ *					if (readIPC(pids[j], &buffer, sizeof(int)) != 0){
+ *						return -1;
+ *					}
+ *					//Do something with buffer
+ *				}
+ *			}
+ *		}
+ *
+ *		free(buffer);
  *		\endcode
  *
- * 		\sa
+ * 		\sa writeIPC() selectIPC() getIPCStatus()
  *
  */
 int readIPC(pid_t pid, void *buffer, int bufferSize);
@@ -121,18 +235,40 @@ int readIPC(pid_t pid, void *buffer, int bufferSize);
 /**
  * \fn int writeIPC(pid_t pid, void *buffer, int bufferSize)
  *
- * 		\brief
+ * 		\brief This function writes bufferSize bytes to the communication channel between the calling process and the pid process, taken from the given buffer.
  *
- * 		\param
- * 		
- * 		\return
+ * 		\param pid The pid number of the process to who the calling process wants to write data.
+ *		\param buffer The buffer where from where the data will be taken to write.
+ * 		\param bufferSize The ammount of bytes to be written.
+ *
+ * 		\return 0 on success, < 0 on error.
  *
  * 		Use:
  * 		\code
- * 		
+ * 		void *buffer;
+ * 		pid_t pids[childProcessAmm];
+ * 		int j;
+ *	
+ *		if ((buffer = malloc(sizeof(int))) == NULL){
+ * 			perror("Malloc error");
+ *			return errno;
+ *		}
+ *
+ *		while(selectIPC(2) > 0 ){
+ *			for (j = 0 ; j < childProcessAmm ; ++j){
+ *				if (getIPCStatus(pids[j])){
+ *					if (readIPC(pids[j], &buffer, sizeof(int)) != 0){
+ *						return -1;
+ *					}
+ *					//Do something with buffer
+ *				}
+ *			}
+ *		}
+ *
+ *		free(buffer);
  *		\endcode
  *
- * 		\sa
+ * 		\sa readIPC() selectIPC() getIPCStatus()
  *
  */
 int writeIPC(pid_t pid, void *buffer, int bufferSize);
@@ -140,18 +276,38 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize);
 /**
  * \fn int selectIPC(int seconds)
  *
- * 		\brief
+ * 		\brief This blocking function checks if at least one child process of the calling process has written something to to him that hasn't been read yet.
  *
- * 		\param
+ * 		\param seconds The timeout for the selectIPC().
  * 		
- * 		\return
+ * 		\return 0 on success, < 0 on error.
  *
  * 		Use:
  * 		\code
- * 		
+ * 		void *buffer;
+ * 		pid_t pids[childProcessAmm];
+ * 		int j;
+ *	
+ *		if ((buffer = malloc(sizeof(int))) == NULL){
+ * 			perror("Malloc error");
+ *			return errno;
+ *		}
+ *
+ *		while(selectIPC(2) > 0 ){
+ *			for (j = 0 ; j < childProcessAmm ; ++j){
+ *				if (getIPCStatus(pids[j])){
+ *					if (readIPC(pids[j], &buffer, sizeof(int)) != 0){
+ *						return -1;
+ *					}
+ *					//Do something with buffer
+ *				}
+ *			}
+ *		}
+ *
+ *		free(buffer);
  *		\endcode
  *
- * 		\sa
+ * 		\sa readIPC() writeIPC() getIPCStatus()
  *
  */
 int selectIPC(int seconds);
@@ -159,18 +315,38 @@ int selectIPC(int seconds);
 /**
  * \fn int getIPCStatus(pid_t pid)
  *
- * 		\brief
+ * 		\brief This functions checks wether the given pid child process has written something to the calling process that hasn't been read yet.
  *
- * 		\param
+ * 		\param pid The pid number from the child process to be checked.
  * 		
- * 		\return
+ * 		\return TRUE if there's something to be read, FALSE if not.
  *
  * 		Use:
  * 		\code
- * 		
+ * 		void *buffer;
+ * 		pid_t pids[childProcessAmm];
+ * 		int j;
+ *	
+ *		if ((buffer = malloc(sizeof(int))) == NULL){
+ * 			perror("Malloc error");
+ *			return errno;
+ *		}
+ *
+ *		while(selectIPC(2) > 0 ){
+ *			for (j = 0 ; j < childProcessAmm ; ++j){
+ *				if (getIPCStatus(pids[j])){
+ *					if (readIPC(pids[j], &buffer, sizeof(int)) != 0){
+ *						return -1;
+ *					}
+ *					//Do something with buffer
+ *				}
+ *			}
+ *		}
+ *
+ *		free(buffer);
  *		\endcode
  *
- * 		\sa
+ * 		\sa readIPC() writeIPC() selectIPC()
  *
  */
 int getIPCStatus(pid_t pid);
@@ -178,18 +354,27 @@ int getIPCStatus(pid_t pid);
 /**
  * \fn int closeIPC()
  *
- * 		\brief
+ * 		\brief This function closes the communication between the calling process and it's parent process.
  *
- * 		\param
- * 		
- * 		\return
+ * 		\return 0 on success, < 0 on error.
  *
  * 		Use:
  * 		\code
- * 		
+ *		int status;
+ *
+ *		if ((status = loadIPC()) < 0){
+ *			return status;
+ *		}
+ *
+ *		///////////////////////////
+ *		//Communicate with parent// 		
+ *		///////////////////////////
+ *
+ *		closeIPC();
+ *
  *		\endcode
  *
- * 		\sa
+ * 		\sa loadIPC()
  *
  */
 int closeIPC();
@@ -197,77 +382,49 @@ int closeIPC();
 /**
  * \fn int finalizeIPC(void)
  *
- * 		\brief
- *
- * 		\param
+ * 		\brief This function finalizes all the communication channels between the calling process and it's child processes that were set up to communicate with him.
  * 		
- * 		\return
+ * 		\return 0 on success, < 0 on error.
  *
  * 		Use:
  * 		\code
- * 		
+ *		int j, status
+ *
+ *		if ((status = setupIPC(childProcessesAmmount)) < 0){
+ *			return status;
+ *		}
+ *
+ * 		for (j = 0; j < childProcessesAmmount ; ++j){
+ *			switch((fork())){
+ *				case -1:
+ *					perror("Fork erro");
+ *					return errno;
+ *					break;
+ *				case 0:
+ *					addClient(j);
+ *					execv("./childProcess", NULL);
+ *					break;
+ *				default:					
+ *					break;
+ *			}
+ *		}
+ *		
+ *		if ((status = synchronize()) < 0){
+ * 			return status;
+ * 		}
+ *
+ *		///////////////////////////////////
+ *		//Comunicate with child processes//
+ *		///////////////////////////////////
+ *
+ *		if ((status = finalizeIPC()) < 0){
+ *			return status;
+ *		}
  *		\endcode
  *
- * 		\sa
+ * 		\sa setupIPC() synchronize() addClient()
  *
  */
 int finalizeIPC(void);
-
-/**
- * \fn int compareIPCIDs(void *elem1, void *elem2)
- *
- * 		\brief
- *
- * 		\param
- * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
- *
- */
-int compareIPCIDs(void *elem1, void *elem2);
-
-/**
- * \fn void * copyIPCID(void *elem)
- *
- * 		\brief
- *
- * 		\param
- * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
- *
- */
-void * copyIPCID(void *elem);
-
-/**
- * \fn void freeIPCID(void *elem)
- *
- * 		\brief
- *
- * 		\param
- * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
- *
- */
-void freeIPCID(void *elem);
 
 #endif
