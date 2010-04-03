@@ -30,19 +30,19 @@
 
 /**
  * \def _SHM_SEG_SIZE_
- * 		\brief Description here
+ * 		\brief Definition of constant referencing the size of a child process shared memory buffer.
  */
 #define	_SHM_SEG_SIZE_ 4000
 
 /**
  * \def ERR
- * 		\brief Description here
+ * 		\brief Definition of error return in initalization of shared memory.
  */
 #define ERR ((struct databuf *) -1)
 
 /**
  * \struct shmHeader
- * 		\brief Description here
+ * 		\brief Struct containing the data of the header of a child process shared memory segment.
  */
 typedef struct{
 	pid_t pid;
@@ -54,7 +54,7 @@ typedef struct{
 
 /**
  * \struct shmStruct
- * 		\brief Description here
+ * 		\brief Struct containing the header, read and write buffers of a child process shared memory segment.
  */
 typedef struct{
 	shmHeader header;
@@ -64,7 +64,7 @@ typedef struct{
 
 /**
  * \struct shmElem
- * 		\brief Description here
+ * 		\brief Struct containing the data needed to be inserted in the shared memory IPC hash table.
  */
 typedef struct{
 	int index;

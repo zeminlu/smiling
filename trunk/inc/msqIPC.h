@@ -25,7 +25,7 @@
  * \struct msQ
  * 		\brief A struct representing the package being sent and recieved through the message queue.
  */
-typedef struct q_entry{
+typedef struct{
 	long mtype;
 	char mtext[200];
 	}msQ;
