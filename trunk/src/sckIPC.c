@@ -146,8 +146,6 @@ int loadIPC(){
 		return -1;
 	}
 	
-	printf("Recibi ownPort = %d\n", ownPort);
-	
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
 		perror("IPCAPI: Error en llamada a socket");
 		return errno;

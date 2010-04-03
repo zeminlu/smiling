@@ -9,7 +9,6 @@ int main (void){
 		return -1;
 	}
 	
-	printf("Pre loadcountriestable\n");
 	if ((countriesTableEntriesAmm = loadCountriesTable(&countriesTable)) < 0){
 		fprintf(stderr, "Error en loadCountriesTable\n");
 		if (writeIPC(getppid(), &countriesTableEntriesAmm, sizeof(int)) == -1){
@@ -44,7 +43,7 @@ int main (void){
 		
 		return errno;
 	}
-	printf("Pre startChildProcesses\n");
+
 	if ((status = startChildProcesses(countriesTable, countriesTableEntriesAmm, &fixture, &pids)) != 0){
 		fprintf(stderr, "Error en startChildprocesses\n");
 		/*for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
@@ -54,7 +53,7 @@ int main (void){
 		
 		return status;
 	}
-	printf("Pre childsListener\n");	
+
 	if ((status = childsListener(pids, countriesTable, countriesTableEntriesAmm, fixture)) != 0){
 		if (status == -2){
 			printf("No se encontro una solucion al problema planteado en esta ocasión, por favor intente nuevamente\n");
