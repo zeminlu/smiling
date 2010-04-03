@@ -64,7 +64,8 @@ typedef struct{
 	
 /**
  * \struct gate
- * 		\brief Description here
+ * 		\brief A struct contain the name of the gate, the type (AND, OR, XNOR, NAND, NOR, XNOR),
+ *		the name of his fathers, the output of this gate and his two inputs
  */
 typedef struct{
 	char name[30];
@@ -104,7 +105,8 @@ typedef struct{
 
 /**
  * \struct curCircuit
- * 		\brief Description here
+ * 		\brief This struct is sending between gates and levels. It indicate the current file and
+ *		the current level that it is proccessing.
  */
 typedef struct{
 	int curFile;
