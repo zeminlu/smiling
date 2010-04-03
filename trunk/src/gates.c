@@ -336,7 +336,7 @@ int listenToMyChildren( void )
 		printf("Entre al WHILE y qtyFiles: %d y levelsAmm: %d\n", qtyFiles, levelsAmm);
 		for( i = 0 ; i < qtyFiles ; ++i )
 		{
-			/*fprintf(stderr, "childPids[%d] = %d\n", i, childPids[i]);*/
+			fprintf(stderr, "childPids[%d] = %d\n", i, childPids[i]);
 			if( childPids[i] != -1 && (auxGet = getIPCStatus(childPids[i])) )
 			{
 				fprintf(stderr, "listenToMyChildren -- I = %d -- READING -- MyPID: %d childPID:%d\n", i, getpid(), (childPids)[i]);
