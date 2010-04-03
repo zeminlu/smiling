@@ -333,7 +333,8 @@ int listenToMyChildren( void )
 	
 	while( levelsAmm > 0 && (auxSelect = selectIPC(2)) > 0 )
 	{
-		printf("Entre al WHILE y qtyFiles: %d y levelsAmm: %d\n", qtyFiles, levelsAmm);
+		if( levelsAmm == 0 )
+			break;
 		for( i = 0 ; i < qtyFiles ; ++i )
 		{
 			fprintf(stderr, "childPids[%d] = %d qtyFiles: %d\n", i, childPids[i],  qtyFiles);
@@ -345,8 +346,6 @@ int listenToMyChildren( void )
 					perror("Error en la lectura de LEVELS a GATE, cur\n");
 					return errno;
 				}
-				
-				fprintf(stderr, "childPids: %d File: %d Level: %d\n", childPids[i], cur.curFile, cur.curLevel);
 				
 				for( j = 0 ; j < ((table[cur.curFile][cur.curLevel]).eachLevel)->qtyGates ; ++j )
 				{
@@ -364,7 +363,7 @@ int listenToMyChildren( void )
 																								auxGate.output );
 					memcpy( &(((table[cur.curFile][cur.curLevel]).eachLevel)->gates)[j], &auxGate, sizeof(gate));
 				}
-				if (--levelsAmm == 0)
+				if (--levelsAmm == 0 )
 				{
 					printf("Acabo de HACER EL BREAK\n");
 					break;
