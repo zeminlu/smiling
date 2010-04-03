@@ -227,6 +227,8 @@ int finalizeIPC(){
 	if (hashTable != NULL){
 		hashFreeTable(hashTable);
 	}
+	msLastRead = NULL;
+	
 	return 0;
 }
 
