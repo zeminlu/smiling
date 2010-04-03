@@ -11,7 +11,7 @@ void sigHandler (int signum){
 }
 
 int setupIPC(int channels){
-	int i, aux[2];
+	int i;
 	
 	if ((master = malloc(sizeof(fd_set))) == NULL || (slave = malloc(sizeof(fd_set))) == NULL || (ipcIDs = malloc (sizeof(void *) * channels)) == NULL){
 		perror("IPCAPI: Error de memoria en setupIPC\n");
@@ -21,10 +21,7 @@ int setupIPC(int channels){
 	}
 	
 	FD_ZERO(master);
-	/*
-	pipe(aux);
-	pipe(aux);
-	*/	
+	
 	for (i = 0 ; i < channels ; ++i){
 		ipcIDs[i] = malloc(sizeof(void *) * 2);
 		ipcIDs[i][0] = malloc(sizeof(int) * 2);
