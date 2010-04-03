@@ -60,7 +60,7 @@ int main(void)
 
 	int status;
 		
-	signal(SIGINT, ctrlC );	
+	/*signal(SIGINT, ctrlC );*/	
 	
 	if( (status = loadIPC()) < 0 )
 	{
@@ -162,13 +162,15 @@ int gateInitializer( void )
 		incLevels();
 		finalizeIPC();
 	}
-	
-	for( i = 0 ; i < qtyFileCom ; ++i )
-		saveProccessFile(table[i], i);
-	
-	for( i = 0 ; i < qtyFileCom ; ++i )
+	if( allFilesWasProccessed() )
 	{
-		printCircuitTable(table[i]);
+		for( i = 0 ; i < qtyFileCom ; ++i )
+			saveProccessFile(table[i], i);
+
+		for( i = 0 ; i < qtyFileCom ; ++i )
+		{
+			printCircuitTable(table[i]);
+		}
 	}
 	
 	freeCircuitsGates();

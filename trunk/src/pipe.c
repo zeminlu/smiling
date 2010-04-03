@@ -14,13 +14,15 @@ pid_t pid;
 void handlerCtrlC(int sig)
 {
 	signalFlag = FALSE;
-	printf("EStoy en el handler de pipe %d\n", pid);
-	kill(pid, SIGINT);
+	wait(&pid);
+	finalizeIPC();
+	printf("Se procesaron %d archivos\n", totalProccessFiles);
+	exit(0);
+	/*kill(pid, SIGINT);*/
 }
 
 int main (int argc, char const *argv[])
 {
-	
 	signal(SIGINT, handlerCtrlC);
 
 	if( createTable() == -1 )
@@ -64,7 +66,7 @@ int createTable( void )
 int createsGates(void)
 {
 	int procStatus = 0, i;
-	
+		
 	while( signalFlag )
 	{
 		setupIPC(1);
