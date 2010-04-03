@@ -227,10 +227,12 @@ int startCircuitsPipeline()
 					return errno;
 					break;
 				case 0:
-					addClient(j++);
+					
+					addClient(j);
 					execv("./levels.bin", NULL);
 					break;
-				default:					
+				default:
+					j++;
 					break;
 			}
 			fprintf(stderr, "childPids = %d\n", childPids[i]);
