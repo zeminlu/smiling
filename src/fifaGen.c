@@ -28,8 +28,8 @@ int main (void){
 	}
 	
 	printf("Ingrese cantidad de paises\n");
-	while (scanf("%d", &amm) != 1){
-		printf("Ingrese un numero ENTERO\n");
+	while (scanf("%d", &amm) != 1 || amm % 8 != 0 || amm <= 0){
+		printf("Ingrese un numero ENTERO multiplo de 8 y mayor a 0\n");
 		while(getchar() != '\n');
 	}	
 	
@@ -47,22 +47,22 @@ int main (void){
 		}
 		printf("Ingrese el ID del continente\n");
 		while (scanf("%d", &(countries->continent)) != 1){
-			printf("Ingrese SOLO el ID del continente\n");
+			printf("Ingrese SOLO el ID del continente (ENTERO)\n");
 			while(getchar() != '\n');
 		}
 		printf("Ingrese 1 si el pais fue campeón, 0 de lo contrario\n");
-		while (scanf("%d", &(countries->champ)) != 1){
+		while (scanf("%d", &(countries->champ)) != 1 || (countries->champ != 0 && countries->champ != 1)){
 			printf("Ingrese SOLO 1 o 0\n");
 			while(getchar() != '\n');
 		}
 		printf("Ingrese el peso del pais\n");
-		while (scanf("%d", &(countries->weight)) != 1){
-			printf("Ingrese un numero ENTERO\n");
+		while (scanf("%d", &(countries->weight)) != 1 && countries->weight <= 0){
+			printf("Ingrese un numero ENTERO mayor a 0\n");
 			while(getchar() != '\n');
 		}
 		if (headsAmm < amm / 4){
 			printf("Debe ser Cabeza de Serie? Restan %d\n", amm/4 - headsAmm);
-			while (scanf("%d", &head) != 1){
+			while (scanf("%d", &head) != 1 || (head != 0 && head != 1)){
 				printf("Ingrese SOLO 1 o 0");
 				while(getchar() != '\n');
 			}
@@ -73,7 +73,7 @@ int main (void){
 				
 				if (death == FALSE){
 					printf("Debe ser el grupo de la muerte?\n");
-					while (scanf("%d", &death) != 1){
+					while (scanf("%d", &death) != 1 || (death != 0 && death != 1)){
 						printf("Ingrese SOLO 1 o 0\n");
 						while(getchar() != '\n');
 					}
@@ -84,7 +84,7 @@ int main (void){
 				
 				printf("Puede aceptar paises del mismo continente?\n");
 
-				while (scanf("%d", &c1) != 1){
+				while (scanf("%d", &c1) != 1 || (c1 != 0 && c1 != 1)){
 					printf("Ingrese SOLO 1 o 0\n");
 					while(getchar() != '\n');
 				}
@@ -94,14 +94,14 @@ int main (void){
 
 				if (!countries->deathGroup){
 					printf("Debe ser grupo debil?\n");
-					while (scanf("%d", &c2) != 1){
+					while (scanf("%d", &c2) != 1 || (c2 != 0 && c2 != 1)){
 						printf("Ingrese SOLO 1 o 0\n");
 						while(getchar() != '\n');
 					}
 
 					if(c2 == FALSE){
 						printf("Debe intentar incluir campeones?\n");
-						while (scanf("%d", &c3) != 1){
+						while (scanf("%d", &c3) != 1 || (c3 != 0 && c3 != 1)){
 							printf("Ingrese SOLO 1 o 0\n");
 							while(getchar() != '\n');
 						}
