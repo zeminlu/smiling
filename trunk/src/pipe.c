@@ -7,7 +7,7 @@
 
 #include "../inc/pipe.h"
 
-int signalFlag = TRUE, qtyFiles = 0, pos = 0;
+int totalProccessFiles = 0, signalFlag = TRUE, qtyFiles = 0, pos = 0;
 circuitTable **table = NULL;
 pid_t pid;
 
@@ -15,7 +15,8 @@ void handlerCtrlC(int sig)
 {
 	signalFlag = FALSE;
 	printf("EStoy en el handler de pipe %d\n", pid);
-	kill(pid, SIGINT);
+	if( pid > 0 )
+		kill(pid, SIGINT);
 }
 
 int main (int argc, char const *argv[])
@@ -65,34 +66,35 @@ int createsGates(void)
 {
 	int procStatus = 0, i;
 	
-	setupIPC(1);
-
-	switch((pid = fork()))
-	{
-		case -1:
-			perror("Error de fork");
-			return errno;
-			break;
-		case 0:
-			addClient(0);
-			execv("./gates.bin", NULL);
-			break;
-		default:
-			break;
-	}	
-	
-	if( synchronize() != 0)
-	{
-		kill(pid, SIGINT);
-		for( i = 0 ; i < qtyFiles ; ++i )
-		{
-			free(table[i]);
-		}
-		free(table);
-		return errno;
-	}
 	while( signalFlag )
 	{
+		setupIPC(1);
+
+		switch((pid = fork()))
+		{
+			case -1:
+				perror("Error de fork");
+				return errno;
+				break;
+			case 0:
+				addClient(0);
+				execv("./gates.bin", NULL);
+				break;
+			default:
+				break;
+		}	
+
+		if( synchronize() != 0)
+		{
+			kill(pid, SIGINT);
+			for( i = 0 ; i < qtyFiles ; ++i )
+			{
+				free(table[i]);
+			}
+			free(table);
+			return errno;
+		}
+		
 		if( (procStatus = fileListener()) == -1)
 		{
 			perror("Error no se pudo escuchar el archivo");
@@ -110,11 +112,12 @@ int createsGates(void)
 			perror("Error en la creacion de la tabla");
 			return errno;
 		}
+		totalProccessFiles += pos;
 		pos = 0;
 		qtyFiles = 0;
 		wait(&pid);
 	}
-	wait(&pid);
+	/*wait(&pid);*/
 	finalizeIPC();	
 	return procStatus;
 }
