@@ -39,6 +39,8 @@ int checkAvailableFiles( void );
 
 int getCurrentPipeFiles( void );
 
+int saveProccessFile( circuitTable *table, int pos );
+
 int allFilesWasProccessed( void );
 
 void itoa(int n, char s[]);

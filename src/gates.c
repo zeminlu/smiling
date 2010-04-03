@@ -141,6 +141,14 @@ int gateInitializer( void )
 		finalizeIPC();
 	}
 	
+	for( i = 0 ; i < qtyFileCom ; ++i )
+		saveProccessFile(table[i], i);
+	
+	for( i = 0 ; i < qtyFileCom ; ++i )
+	{
+		printCircuitTable(table[i]);
+	}
+	
 	freeCircuitsGates();
 	free(childPids);
 	free(maxLevel);
@@ -460,4 +468,41 @@ int getCurrentPipeFiles( void )
 			flag++;
 	}
 	return flag;
+}
+
+/*
+ *	Carga en el directorio los archivos ya procesados. EL nombre va a estar conformado por
+ *	circuit + pos en la tabla.txt
+ */
+
+int saveProccessFile( circuitTable *table, int pos )
+{
+	int i,j;
+	char *nameStart = "./results/finalCircuit", *endFile = ".txt", fileName[30], posi[10];
+	FILE *proFile;
+	
+	itoa(pos, posi);
+	strcpy( fileName, nameStart);
+	strcat(fileName, posi);
+	strcat(fileName, endFile);
+	
+	if( (proFile = fopen(fileName, "w")) == NULL )
+	{
+		perror("Error al abrir el archivo procesado");
+		return errno;
+	}
+	for( i = 0 ; i < table[0].totalLevels ; ++i )
+	{
+		for( j = 0 ; j < (table[i].eachLevel)->qtyGates ; ++j )
+		{
+			fprintf(proFile, "Level: %d -- Name of the Gate: %s, Type of gate: %d, Input: (1)->%d (2)->%d, Output: %d\n\n",
+			 										i,
+													(table[i].eachLevel)->gates[j].name,
+			 										(table[i].eachLevel)->gates[j].type,
+													(table[i].eachLevel)->gates[j].input[0],
+													(table[i].eachLevel)->gates[j].input[1],
+													(table[i].eachLevel)->gates[j].output);
+		}
+	}
+	return 0;
 }
