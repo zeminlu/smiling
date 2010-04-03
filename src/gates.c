@@ -31,7 +31,7 @@ void printLevel( int *level, int qty )
 {
 	int i;
 	for( i = 0 ; i < qty ; ++i )
-		fprintf(stderr, "Level[%d]: %d\n", i, level[i]);
+		fprintf(stderr, "Level[%d]: %d    MaxLevel[%d] = %d\n", i, level[i], i, maxLevel[i]);
 }
 
 void printCircuitTable( circuitTable * circuit)
@@ -99,6 +99,7 @@ int addMoreFiles( void)
 		freeCircuitsGates();
 		return errno;
 	}
+	fprintf(stderr, "TERMINE DE CARGAR TODA LA TABLA\n");
 	if( ( childPids = (int*)malloc( sizeof(pid_t) * qtyFiles) ) == NULL )
 	{
 		perror("Error en la alocacion del arreglo de pids\n");
@@ -166,6 +167,7 @@ int gateInitializer( void )
 				wait(&(childPids[i]));
 			}
 		}
+		memset( childPids, -1, sizeof(pid_t) * qtyFiles);
 		incLevels();
 		finalizeIPC();
 	}

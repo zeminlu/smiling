@@ -8,8 +8,14 @@
 
 int main ( void )
 {
-	fprintf(stderr, "Antes del Load, PPID: %d\n", getppid());
-	loadIPC();
+	int status;
+	
+	fprintf(stderr, "Antes del Load, PPID: %d, PID: %d\n", getppid(), getpid());
+	if( (status = loadIPC()) < 0 )
+	{
+		perror("Error en el LOAD de Gates");
+		return status;
+	}
 	fprintf(stderr, "ParentPID: %d Acabo de salir del load\n", getppid());
 	return proccessLevel();
 }
