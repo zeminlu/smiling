@@ -333,7 +333,7 @@ int listenToMyChildren( void )
 	
 	while( levelsAmm > 0 && (auxSelect = selectIPC(2)) > 0 )
 	{
-		printf("Entre al WHILE y qtyFiles: %d\n", qtyFiles);
+		printf("Entre al WHILE y qtyFiles: %d y levelsAmm: %d\n", qtyFiles, levelsAmm);
 		for( i = 0 ; i < qtyFiles ; ++i )
 		{
 			/*fprintf(stderr, "childPids[%d] = %d\n", i, childPids[i]);*/
@@ -366,6 +366,7 @@ int listenToMyChildren( void )
 				}
 				if (--levelsAmm == 0)
 				{
+					printf("Acabo de HACER EL BREAK\n");
 					break;
 				}
 			}
