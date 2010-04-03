@@ -17,7 +17,7 @@ int main (void){
 	condPack *condArgs;
 	subFixture *group = NULL;
 	void *(**conditions)(void *condArgs) = NULL;
-	int i = 0, index = 0, countriesTableEntriesAmm, status, condAmm;
+	int i = 0, countriesTableEntriesAmm, status, condAmm;
 
 	if ((status = loadIPC()) == -1){
 		fprintf(stderr, "Error en loadIPC\n");
@@ -43,7 +43,7 @@ int main (void){
 		return condAmm;
 	}
 	
-	if ((status = buildCondArgs(&condArgs, countriesTable, countriesTableEntriesAmm, data, condAmm, &index)) != 0){
+	if ((status = buildCondArgs(&condArgs, countriesTable, countriesTableEntriesAmm, data)) != 0){
 		fprintf(stderr, "Error en buildcondargs\n");
 		/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
 			free(countriesTable[i]);
