@@ -1,4 +1,4 @@
-\documentclass[10pt,a4paper]{report}
+\documentclass[10pt,a4paper]{article}
 \usepackage[latin1]{inputenc}
 \usepackage{amsmath}
 \usepackage{amsfonts}
@@ -14,7 +14,7 @@
 \section{Introducci\'on}
 \section{Objetivos}
 \subsection{Objetivos del Trabajo}
-El objetivo de este trabajo es familiarizarse con el uso de sistemas cliente- servidor concurrentes, implementando el servidor mediante la creac\'ion de procesos hijos utilizando fork() y mediante la creac\'ion de threads. Al mismo tiempo, ejercitar el uso de los distintos tipos de primitivas de sincronizai\'on y comunicaci\'on de procesos (IPC) y manejar con autoridad el filesystem de Linux desde el lado usuario.
+El objetivo de este trabajo es familiarizarse con el uso de sistemas cliente- servidor concurrentes, implementando el servidor mediante la creac\'ion de procesos hijos utilizando fork() y mediante la creac\'ion de threads. Al mismo tiempo, ejercitar el uso de los distintos tipos de primitivas de sincronizai\'on y comunicaci\'on de procesos \footnote{IPC} y manejar con autoridad el filesystem de Linux desde el lado usuario.
 \subsection{Objetivos Personales}
 \section{Enunciado}
 Se desea implementar un servicio de resoluci\'on general de problemas. La idea consiste en tener un servidor dedicado a resolver dos tipos de problemas: un problema paralelizable y un problema que soporte pipelining. Este servidor estar\'a escuchando dos directorios, en donde esperar\'a a que alguien ingrese archivos de entrada con informaci\'on sobre los problemas. Cada directorio recibir\'a archivos de entrada de uno de los dos tipos de problema.
@@ -23,19 +23,37 @@ La c\'atedra no obliga a implementar ning\'un problema ni algoritmo en particula
 \section{Desarollo}
 En esta secci\'on, se detallara todo lo relacionado al desarrollo del trabajo practico.
 \subsection{Paralleling}
-La computaci\'on paralela es una t\'ecnica de programaci\'on en la que muchas instrucciones se ejecutan simult\'aneamente. Se basa en el principio de que los problemas grandes se pueden dividir en partes m\'as peque\~nas que pueden resolverse de forma concurrente. Existen varios tipos de computaci\'on paralela: paralelismo a nivel de bit, paralelismo a nivel de instrucci\'on, paralelismo de datos y paralelismo de tareas. Durante muchos a\~nos, la computaci\'on paralela se ha aplicado en la computaci\'on de altas prestaciones, pero el inter\'es en ella ha aumentado en los \'ultimos anios debido a las restricci\'ones f\'isicas que impiden el escalado en frecuencia. La computaci\'on paralela se ha convertido en el paradigma dominante en la aquitectura de computadores, principalmente en los procesadores multin\'ucleo. Sin embargo, recientemente, el consumo de energ\'ia de los ordenadores paralelos se ha convertido en una preocupaci\'on.\\
+La computaci\'on paralela es una t\'ecnica de programaci\'on en la que muchas instrucciones se ejecutan simult\'aneamente. Se basa en el principio de que los problemas grandes se pueden dividir en partes m\'as peque\~nas que pueden resolverse de forma concurrente. Existen varios tipos de computaci\'on paralela: paralelismo a nivel de bit, paralelismo a nivel de instrucci\'on, paralelismo de datos y paralelismo de tareas. Durante muchos a\~nos, la computaci\'on paralela se ha aplicado en la computaci\'on de altas prestaciones, pero el inter\'es en ella ha aumentado en los \'ultimos a\~nos debido a las restricci\'ones f\'isicas que impiden el escalado en frecuencia. La computaci\'on paralela se ha convertido en el paradigma dominante en la aquitectura de computadores, principalmente en los procesadores multin\'ucleo. Sin embargo, recientemente, el consumo de energ\'ia de los ordenadores paralelos se ha convertido en una preocupaci\'on. 
 
-\textbf{Paralelismo de tareas} es un paradigma de la programaci\'on concurrente que consiste en asignar distintas tareas a cada uno de los procesadores de un sistema de c\'omputo. En consecuencia, cada procesador efectuar\'a su propia secuencia de operaciones.
+\subsubsection{Problema a Resolver}
+Tomando como referencia, los conceptos de paralelismo de tareas y datos, se decidio resolver un fixture de futbol. En este se simula un mundial,  donde cada grupo tiene cuatro equipos. A cada grupo se le puede establecer condiciones, tales como : No poder aceptar paises del mismo continente, Intentar agregar campeones, Grupo de la muerte y Grupo debil. Si no se elije ninguna el grupo queda sin condicion. Estas mismas se evaluan en base al cabeza de serie.\\
+Para poder generar archivos de prueba, en forma rapida y segura, se dise\~no un programa que genera archivos , que pueden ser interpretados por nuestro programa. \\
+\textbf{Paralelismo de tareas} es un paradigma de la programaci\'on concurrente que consiste en asignar distintas tareas a cada uno de los procesadores de un sistema de c\'omputo. En consecuencia, cada procesador efectuar\'a su propia secuencia de operaciones.\\ \textbf{Paralelismo de datos} es un paradigma de la programaci\'on concurrente que consiste en subdividir el conjunto de datos de entrada a un programa, de manera que a cada procesador le corresponda un subconjunto de esos datos. Cada procesador efectuar\'a la misma secuencia de operaciones que los otros procesadores sobre su subconjunto de datos asignado. En resumen: se distribuyen los datos y se replican las tareas.\\
+\subsubsection{Estructura General}
+El proceso \textit{parallel}, es el encargado de escuchar la carpeta \textit{parallelDir} . Por cada archivo nuevo encontrado en dicha carpeta, se crea un proceso \textit{fifa}, luego \textit{parallel} es el encargado de comunicarle la tabla con todos los paises, y los cabeza de serie. Una vez que  \textit{fifa} termino de recibir todos los datos, crea tantos  \textit{grouph} como cabeza de serie alla, y le asigna un cabeza de serie.\\
+Una vez terminada la etapa de sincronizaci\'on, cada  \textit{grouph} comienza a resolver las condiciones que tenga asignado, esto lo hace creando un thread por cada condici\'on. Al terminar todas las condiciones se lleva a cabo una intersecci\'on entre todos los conjuntos obtenidos de las condiciones. Terminada la interseccion se utiliza un numero aleatorio para elejir un pais al azar, este numero se construye en base a la hora en que se este ejecutando el proceso, el pid \footnote{proces identificator} y el modulo del tama\~no del vector. Para finalizar el ciclo, se le envia  a  \textit{fifa} el pais, y el es el encargado de decidir si el pais esta libre o no. Repitiendo este ciclo cada  \textit{grouph} construye su subfixture. Pueden ocurrir dos cosas en este punto, que el  \textit{grouph} no tenga mas paises que cumplan con su condici\'on, si esto es asi retorna a  \textit{fifa} diciendole que no encontro solucion. La segunda opcion es que encuntre soluci\'on, de esa forma envia el subfixture terminado.
+Para finalizar,  \textit{fifa} imprime si pudo o no obtener una soluci\'on valida, para que esto suceda, es necesario que todos los  \textit{grouph} retornen un subfixture.\\
+Cualquier error ocurrido durante la ejecuci\'on del mismo se podra ver en la salida de error \footnote{ file descriptor 2}.
 
-\textbf{Paralelismo de datos} es un paradigma de la programación concurrente que consiste en subdividir el conjunto de datos de entrada a un programa, de manera que a cada procesador le corresponda un subconjunto de esos datos. Cada procesador efectuará la misma secuencia de operaciones que los otros procesadores sobre su subconjunto de datos asignado. En resumen: se distribuyen los datos y se replican las tareas.
-
-\subsubsection{Algoritmo}
-\subsection{Consideraciones Tomadas}
-\subsection{Problemas Encontrados}
+\subsubsection{Consideraciones Tomadas}
+Para la transmici\'on de datos, se utilizo un protocolo de mandar el tama\~no de lo que se iva a leer, y luego los datos. Salvo para los numeros enteros, que se enviaban directamente.\\
+El algoritmo que utilizamos para resolver el fixture es greedy \footnote{Se aplican a problemas de optimizacio\'on. Un algoritmo greedy toma las decisiones en funci\'on de la informaci\'on que est\'a disponible en cada momento. Una vez tomada la decisi\'on no vuelve a replantearse en el futuro. Suelen ser r\'apidos y f\'aciles de implementar. No garantizan alcanzar la soluci\'on o\'ptima.}, esto implica que aunque exista una soluci\'on posible, no la encuentre. Pero si ejecutamos repetidas veces el mismo archivo, es posible que se encuentre una soluci\'on. Esto se debe a que en el momento de elejir un pais en \textit{grouph}, se aplica un numero random. Como la esencia del trabajo practico no es implementar un algoritmo determinista, decimimos hacerlo de esa manera. 
+\subsubsection{Problemas Encontrados}
+Los mas comunes que tuvimos que resolver fueron, todos lo que respecta al multi proceso, ya que no estabamos acostumbrados a este tipo de programaci\'on. Como por ejemplo, cuando los threads de \textit{grouph} procesaban las condiciones, nosotros almacenabamos en un vector las soluciones, el problema, era que se le asignaba en runtime el indice, en el cual ivan a almacenar la respuesta, entonces existian casos en los cuales se pizaban las respuestas por que ambos threads escribian en el mismo lugar.\\
+A nivel dise\~no, la correcta modularizaci\'on para que el programa no sea dependiente del IPC\footnote{Inter proces comunication}. Al momento de implementar la API, existieron dos formas, la primera era utilizar solo para la sincronizaci\'on de los procesos que queriamos que se comuniquen, un mismo IPC siempre, y luego el IPC con el que se compilo la aplicacion. La segunda opci\'on utiliza solo el IPC con el que se compilo la aplicacion, la unica limitaci\'on que esta tiene es que sirve solo para comunicar padre e hijo.\\
+Decidimos que la segunda opci\'on es la mas viable , por que utilizan un colo IPC, lo bueno de esto es que si tu sistema no acepta un un IPC en particular, o tiene problemas \footnote{Mac OS, no funciona con aproximadamente mas de 10 segmentos de memorias compartidas} con alguno , podes utilizar nuestra aplicacion por que solo usa un tipo de IPC.
 \subsection{Pipelining}
-\subsubsection{Algoritmo}
-\subsection{Consideraciones Tomadas}
-\subsection{Problemas Encontrados}
+\subsubsection{Estructura General}
+\subsubsection{Consideraciones Tomadas}
+\subsubsection{Problemas Encontrados}
+\section{API de Inter Proces Comunication}
+
 \section{Librerias adicionales}
+Las librerias adicionales utilizadas en el trabajo practico son:
+\begin{itemize}
+\item TPL: utilizada para serializar los datos enviados entre los procesos, lo unico que no se serializo fueron los numero enteros, ya que no tenia sentido.
+\item Libxml2: utilizada para poder levantar y parsear , el archivo de circuitos 
+\item LinearHashADT: Implementada por uno de los integrantes \footnote{Zemin Luciano R.}, utilizada en la API de los  IPC's, para almacenar los datos para poder realizar la comunicaci\'on.
+\end{itemize}
 \section{Conclusi\'on}
 \end{document}
