@@ -19,8 +19,9 @@ void ctrlC( int sig )
 {
 	int i;
 	
-	printf("Estoy en el handler de gates\n");
+	printf("Estoy en el handler de GATES\n");
 	flagSignal = FALSE;
+	
 	for( i = 0 ; i < qtyFiles ; ++i )
 	{
 		if( childPids[i] != -1 )
@@ -65,7 +66,7 @@ int main(void)
 
 	int *aux = 0, status;
 		
-	signal(SIGINT, ctrlC);	
+	signal(SIGINT, ctrlC );	
 	
 	if( (status = loadIPC()) < 0 )
 	{
@@ -87,7 +88,7 @@ void * addMoreFiles( void * ret)
 {
 	int i, cont = 0;
 		
-	fprintf(stderr, "GATE -- READ -- ParentPID: %d myPid: %d \n", getppid(), getpid() );
+	fprintf(stderr, "Thread, GATE -- READ -- ParentPID: %d myPid: %d \n", getppid(), getpid() );
 		
 	while( flagSignal )
 	{
@@ -106,12 +107,6 @@ void * addMoreFiles( void * ret)
 			freeCircuitsGates();
 			*(int*)ret = errno;
 			return (void*)ret;
-		}
-		printf("Sali del buildCircuitsTable\n");
-		for( i = 0 ; i < qtyFiles ; ++i )
-		{
-			fprintf(stderr, "I: %d ----------------------------- \n", i);
-			printCircuitTable(table[i]);
 		}
 		if( flagFirst )
 		{
@@ -217,8 +212,6 @@ int gateInitializer( void )
 				freeCircuitsGates();
 				return status;
 			}
-			printf("Acabo de salir del startCircuitsPipeline\n");
-			fprintf(stderr, "Acabo de salir del startCircuitsPipeline con status: %d Voy a entrar a listenToMyChildren\n", status);
 			if( (status = listenToMyChildren()) != 0 )
 			{
 				perror("Error en el listenToMyChildren:");
@@ -229,7 +222,7 @@ int gateInitializer( void )
 				return status;
 			}
 			fprintf(stderr, "Termine el listenToMyChildren status: %d\n", status);
-			for (i = 0 ; i < qtyFileCom ; ++i)
+			for (i = 0 ; i < qtyFiles ; ++i)
 			{
 				if( levels[i] < maxLevel[i] && levels[i] >= 0 )
 				{
@@ -237,7 +230,7 @@ int gateInitializer( void )
 					wait(&(childPids[i]));
 				}
 			}
-			memset(childPids, -1, qtyFileCom * sizeof(pid_t) );
+			/*memset(childPids, -1, qtyFiles * sizeof(pid_t) );*/
 			incLevels();
 			finalizeIPC();
 			pthread_mutex_unlock(&mutexIndex);
@@ -311,6 +304,7 @@ int startCircuitsPipeline()
 				default:					
 					break;
 			}
+			fprintf(stderr, "childPids = %d\n", childPids[i]);
 		}else
 		{
 			childPids[i] = -1;
@@ -411,13 +405,16 @@ int listenToMyChildren( void )
 	levelsAmm = getCurrentPipeFiles();
 	
 	fprintf(stderr, "levelsAmm: %d \n", levelsAmm);
-	while( (auxSelect = selectIPC(2)) > 0 )
+	
+	while( levelsAmm > 0 && (auxSelect = selectIPC(2)) > 0 )
 	{
+		printf("Entre al WHILE y qtyFiles: %d\n", qtyFiles);
 		for( i = 0 ; i < qtyFiles ; ++i )
 		{
+			fprintf(stderr, "childPids[%d] = %d\n", i, childPids[i]);
 			if( childPids[i] != -1 && (auxGet = getIPCStatus(childPids[i])) )
 			{
-				fprintf(stderr, "listenToMyChildren -- READING -- MyPID: %d childPID:%d\n", getpid(), (childPids)[i]);
+				fprintf(stderr, "listenToMyChildren -- I = %d -- READING -- MyPID: %d childPID:%d\n", i, getpid(), (childPids)[i]);
 				if( readIPC( childPids[i], &cur, sizeof(curCircuit)) == -1 )
 				{
 					perror("Error en la lectura de LEVELS a GATE, cur\n");
@@ -428,7 +425,7 @@ int listenToMyChildren( void )
 				
 				for( j = 0 ; j < ((table[cur.curFile][cur.curLevel]).eachLevel)->qtyGates ; ++j )
 				{
-					fprintf(stderr, "listenToMyChildren -- READING -- MyPID: %d childPID:%d\n", getpid(), (childPids)[i]);
+					fprintf(stderr, "listenToMyChildren 2-- READING -- MyPID: %d childPID:%d\n", getpid(), (childPids)[i]);
 					if( readIPC(childPids[i], &auxGate, sizeof(gate)) == -1)
 					{
 						perror("Error en la lectura de las compuertas desde Levels\n");
@@ -442,15 +439,13 @@ int listenToMyChildren( void )
 																								auxGate.output );
 					memcpy( &(((table[cur.curFile][cur.curLevel]).eachLevel)->gates)[j], &auxGate, sizeof(gate));
 				}
-				if (--levelsAmm == 0){
+				if (--levelsAmm == 0)
+				{
 					break;
 				}
-				fprintf(stderr, "listenToMyChildren -- Estoy adentro del IF de getIPCStatus, auxGet: %d\n", auxGet);
 			}
-			fprintf(stderr, "Return del getIPCStatus: %d\n", auxGet );
 		}
 	}
-	fprintf(stderr, "Devolucion del selectIPC: %d\n", auxSelect);
 	printf("------ Fin de la lectura --------\n");
 	return 0;
 }
@@ -489,7 +484,6 @@ circuitTable ** buildCircuitsTable( void )
 			return NULL;
 		}
 		fprintf(stderr, "File: %d Cantidad de niveles: %d \n", i, qtyLevels);
-		printf("Estoy en buildCircuitsTable donde es la primera vez\n");
 		if( (table[i] = (circuitTable*)malloc( sizeof(circuitTable) * qtyLevels)) == NULL )
 		{
 			perror("Error en la alocacion de memoria de table[i]\n");
