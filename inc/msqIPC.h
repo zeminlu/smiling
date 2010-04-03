@@ -16,20 +16,14 @@
 #include "../inc/linearHashADT.h"
 
 /**
- * \def QKEY
- * 		\brief Description here
- */
-#define QKEY	(key_t)0105
-
-/**
  * \def QPERM
- * 		\brief Description here
+ * 		\brief Definition of the permissions of the message queue.
  */
 #define QPERM	0666
 
 /**
  * \struct msQ
- * 		\brief Description here
+ * 		\brief A struct representing the package being sent and recieved through the message queue.
  */
 typedef struct q_entry{
 	long mtype;
@@ -39,18 +33,11 @@ typedef struct q_entry{
 /**
  * \fn int init_queue(int newKey)
  *
- * 		\brief
+ * 		\brief Creates a message queue based on the given key.
  *
- * 		\param
+ * 		\param newKey The key to initialize the message queue.
  * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
+ * 		\return 0 on succes, < 0 on error.
  *
  */
 int init_queue(int newKey);

@@ -28,18 +28,9 @@
 /**
  * \fn void sendErrorToParent(int error)
  *
- * 		\brief
+ * 		\brief This function sends the given error to the calling proccess' parent through the ipcAPI
  *
- * 		\param
- * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
+ * 		\param error The error number to be sent.
  *
  */
 void sendErrorToParent(int error);
@@ -47,18 +38,12 @@ void sendErrorToParent(int error);
 /**
  * \fn int loadHeadAndCountriesTable(country ***countriesTable, country **head)
  *
- * 		\brief
+ * 		\brief This function loads the countries table and the head country struct being recieved by the calling process' parent.
  *
- * 		\param
+ * 		\param countriesTable A pointer to the country ** where the table will be stored.
+ *		\param head A pointer to a country * where the head country struct will be stored.
  * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
+ * 		\return 0 on success, < 0 on error.
  *
  */
 int loadHeadAndCountriesTable(country ***countriesTable, country **head);
@@ -66,56 +51,40 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head);
 /**
  * \fn int checkConditions(country *data, void *(***conditions)(void *condArgs))
  *
- * 		\brief
+ * 		\brief This function checks the conditions set in the given data country struct and assigns the corresponding function pointers in the given conditions argument.
  *
- * 		\param
+ * 		\param data The address of the country struct to be checked.
+ *		\param conditions The address of a condition functions array to be filled.
  * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
+ * 		\return 0 on success, < 0 on error.
  *
  */
 int checkConditions(country *data, void *(***conditions)(void *condArgs));
 
 /**
- * \fn int buildCondArgs(condPack **condArgs, country **countriesTable, int countriesTableEntriesAmm, country *data, int condAmm, int *index)
+ * \fn int buildCondArgs(condPack **condArgs, country **countriesTable, int countriesTableEntriesAmm, country *data)
  *
- * 		\brief
+ * 		\brief This function builds the given condPack parameter from the remaining parameters. 
  *
- * 		\param
- * 		
- * 		\return
+ * 		\param condArgs The address of the condPack's array.
+ *		\param countriesTable The address countries table.
+ *		\param countriesTableEntriesAmm The ammount of countries in the countries table.
+ * 		\param data The address of the country head struct.
  *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
+ * 		\return 0 on success, < 0 on error.
  *
  */
-int buildCondArgs(condPack **condArgs, country **countriesTable, int countriesTableEntriesAmm, country *data, int condAmm, int *index);
+int buildCondArgs(condPack **condArgs, country **countriesTable, int countriesTableEntriesAmm, country *data);
 
 /**
  * \fn int prepareGroup(subFixture **group, country *data)
  *
- * 		\brief
+ * 		\brief This function prepares a subFixture array where the data country head and the 3 remaining countries will be stored.
  *
- * 		\param
+ * 		\param group The address of the subFixture array.
+ *		\param data The address of the country head struct.
  * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
+ * 		\return 0 on success, < 0 on error.
  *
  */
 int prepareGroup(subFixture **group, country *data);
@@ -123,18 +92,18 @@ int prepareGroup(subFixture **group, country *data);
 /**
  * \fn int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country *data, country **countriesTable, void *(**conditions)(void *condArgs))
  *
- * 		\brief
+ * 		\brief This function builds the subFixture that will be sent later to the calling process' parent.
  *
- * 		\param
- * 		
- * 		\return
+ * 		\param group The address of the subFixture array that this function will build.
+ *		\param condAmm The ammount of conditions to be processed for data.
+ *		\param condArgs The address of the condPack that the condition functions will recieve.
+ *		\param data The country head struct.
+ *		\param countriesTable The countries table.
+ *		\param conditions The address of the condition functions array.
  *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
+ * 		\return 0 on success, < 0 on error.
  *
- * 		\sa
+ * 		\sa intersect() sortPointers()
  *
  */
 int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country *data, country **countriesTable, void *(**conditions)(void *condArgs));
@@ -142,18 +111,15 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 /**
  * \fn int intersect(int condAmm, condPack *condArgs, set **intersection)
  *
- * 		\brief
+ * 		\brief This function intersects the different country structs stored in the condPack * parameter and stores in the set ** parameter.
  *
- * 		\param
+ * 		\param condAmm The ammount of conditions that where processed.
+ *		\param condArgs The address of the condPack struct where the different country structs are stored.
+ *		\param intersection The address of the set array where the intersection will be stored.
  * 		
- * 		\return
+ * 		\return 0 on success, < 0 on error.
  *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
+ * 		\sa buildSubfixture()
  *
  */
 int intersect(int condAmm, condPack *condArgs, set **intersection);
@@ -161,18 +127,11 @@ int intersect(int condAmm, condPack *condArgs, set **intersection);
 /**
  * \fn int sendSubfixture(subFixture *group)
  *
- * 		\brief
+ * 		\brief This function sends the given subFixture to the calling process' parent.
  *
- * 		\param
+ * 		\param group The address of the subFixture struct to be sent.
  * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
+ * 		\return 0 on success, < 0 on error.
  *
  */
 int sendSubfixture(subFixture *group);
@@ -180,18 +139,11 @@ int sendSubfixture(subFixture *group);
 /**
  * \fn void sortPointers(set **sets)
  *
- * 		\brief
+ * 		\brief This function sorts the set pointers stored in sets no to have NULL pointers between them.
  *
- * 		\param
+ * 		\param sets The adrees of the set array.
  * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
+ * 		\sa buildSubfixture()
  *
  */
 void sortPointers(set **sets);

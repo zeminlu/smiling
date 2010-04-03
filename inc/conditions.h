@@ -21,98 +21,53 @@
 #include "../inc/definitions.h"
 
 /**
- * \fn
+ * \fn void * sameContinent(void * condi)
  *
- * 		\brief
+ * 		\brief This function builds an array of indexes referencing the position of the avilable countries in the countries table that satisfy the same continent condition and stores it in the appropiate global variable. It runs as a thread using mutexes.
  *
- * 		\param
+ * 		\param condi The address to the condPack struct where the array will be stored.
  * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
- *
  */
-void * sameContinent(void * cond);
+void * sameContinent(void * condi);
 
 /**
- * \fn
+ * \fn void * deathGroup(void * condi)
  *
- * 		\brief
+ * 		\brief This function builds an array of indexes referencing the position of the available countries in the countries table that satisfy the death group condition and stores it in the appropiate global variable. It runs as a thread using mutexes.
  *
- * 		\param
+ * 		\param condi The address to the condPack struct where the array will be stored.
  * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
- *
  */
-void * deathGroup(void * cond);
+void * deathGroup(void * condi);
 
 /**
- * \fn
+ * \fn void * champGroup(void * condi)
  *
- * 		\brief
+ * 		\brief This function builds an array of indexes referencing the position of the available countries in the countries table that satisfy the champion group condition and stores it in the appropiate global variable. It runs as a thread using mutexes.
  *
- * 		\param
+ * 		\param condi The address to the condPack struct where the array will be stored.
  * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
- *
  */
-void * champGroup(void * cond);
+void * champGroup(void * condi);
 
 /**
- * \fn
+ * \fn void * weakGroup(void * condi)
  *
- * 		\brief
+ * 		\brief This function builds an array of indexes referencing the position of the available countries in the countries table that satisfy the weak group condition and stores it in the appropiate global variable. It runs as a thread using mutexes.
  *
- * 		\param
+ * 		\param condi The address to the condPack struct where the array will be stored.
  * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
- *
  */
-void * weakGroup(void * cond);
+void * weakGroup(void * condi);
 
 /**
- * \fn
+ * \fn void * noCondition(void * condi)
  *
- * 		\brief
+ * 		\brief This function builds an array of indexes referencing the position of all the countries in the countries table that are avaiable and stores it in the appropiate global variable. It runs as a thread using mutexes.
  *
- * 		\param
+ * 		\param condi The address to the condPack struct where the array will be stored.
  * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
- *
  */
-void * noCondition(void * cond);
+void * noCondition(void * condi);
 
 #endif

@@ -51,6 +51,8 @@ int serializeCountryStruct(void **buffer, int *bufferSize, country *country);
  * 		\brief This function unserializes (using the TPL library) a previously serialized country struct on the buffer parameter, and stores it in the given country struct. 
  *
  * 		\param buffer The buffer where the serialized country struct is stored.
+ *		\param bufferSize The size of the serializated country struct.
+ *		\param country The address of the country struct where to store the unserialization.
  * 		
  * 		\return 0 on success, < 0 on error.
  *
