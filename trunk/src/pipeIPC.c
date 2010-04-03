@@ -157,7 +157,6 @@ int loadIPC(){
 	strcpy(fileName, nameStart);
 	strcat(fileName, pidString);
 	unlink(fileName);
-		printf("LoadIPC SAli delload \n");
 	return 0;
 }
 
