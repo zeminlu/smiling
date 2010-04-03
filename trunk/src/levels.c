@@ -32,13 +32,11 @@ int proccessLevel( void )
 	gate *prevLevel = NULL, *curLevelTable;
 	curCircuit cur;
 	
-	fprintf(stderr, "proccessLevel -- READING -- MyPID: %d ParentPID:%d\n", getpid(), getppid());
 	if( readIPC( getppid(), &cur, sizeof(curCircuit)) == -1 )
 	{
 		perror("Error en la lectura de LEVELS a GATE, cur\n");
 		return errno;
 	}
-	fprintf(stderr, "Levels --- curCircuit, My pid: %d Parent pid: %d File: %d Level: %d\n", getpid(), getppid(), cur.curFile, cur.curLevel);
 	if( readIPC( getppid(), &qtyGatesCur, sizeof(int)) == -1 )
 	{
 		perror("Error en la lectura de GATES a LEVELS #qtyGatesCur\n");

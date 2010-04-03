@@ -7,7 +7,7 @@
 
 #include "../inc/pipe.h"
 
-int totalProccessFiles = 0, signalFlag = TRUE, qtyFiles = 0, pos = 0;
+int totalProccessFiles = 0, signalFlag = TRUE, qtyFiles = 0, pos = 0, count = 0;
 circuitTable **table = NULL;
 pid_t pid;
 
@@ -15,8 +15,7 @@ void handlerCtrlC(int sig)
 {
 	signalFlag = FALSE;
 	printf("EStoy en el handler de pipe %d\n", pid);
-	if( pid > 0 )
-		kill(pid, SIGINT);
+	kill(pid, SIGINT);
 }
 
 int main (int argc, char const *argv[])
@@ -100,6 +99,13 @@ int createsGates(void)
 			printCircuitTable(table[i]);
 		}
 		sendTableToGates(pid);
+		for( i = 0 ; i < qtyFiles ; ++i )
+			saveProccessFile(table[i]);
+
+		for( i = 0 ; i < qtyFiles ; ++i )
+		{
+			printCircuitTable(table[i]);
+		}
 		freeCircuits(table,pos);
 		if( createTable() == -1 )
 		{
@@ -111,7 +117,6 @@ int createsGates(void)
 		qtyFiles = 0;
 		wait(&pid);
 	}
-	wait(&pid);
 	finalizeIPC();
 	printf("Se procesaron %d archivos\n", totalProccessFiles);	
 	return procStatus;
@@ -528,15 +533,12 @@ int checkGateIsLoaded( circuitTable *circuit, char *name, int curLevel)
 void printCircuitTable( circuitTable * circuit)
 {
 	int i,j;
-	
-	fprintf(stderr, "PIPE - Cantidad de niveles: %d\n", circuit[0].totalLevels);
-	fprintf(stderr, "--------------------------------------------------\n");
+
 	for( i = 0; i < circuit[0].totalLevels ; ++i)
 	{
-		fprintf(stderr, "Cantidad de compuertas: %d\n", (circuit[i].eachLevel)->qtyGates);
 		for( j = 0; j < (circuit[i].eachLevel)->qtyGates ; ++j)
 		{
-			fprintf(stderr, "LEVEL: %d Name: %s, Father[0]: %s, Father[1]: %s, Type: %d, Input[0]: %d, Input[1]: %d, Output: %d\n", 
+			printf( "LEVEL: %d Name: %s, Father[0]: %s, Father[1]: %s, Type: %d, Input[0]: %d, Input[1]: %d, Output: %d\n", 
 						i,
 						(circuit[i].eachLevel)->gates[j].name,
 						(circuit[i].eachLevel)->gates[j].fathers[0],
@@ -547,5 +549,44 @@ void printCircuitTable( circuitTable * circuit)
 						(circuit[i].eachLevel)->gates[j].output);
 		}
 	}
-	fprintf(stderr, "--------------------------------------------------\n");
+	printf("\n\n\n");
+}
+
+
+/*
+ *	Carga en el directorio los archivos ya procesados. EL nombre va a estar conformado por
+ *	circuit + pos en la tabla.txt
+ */
+
+int saveProccessFile( circuitTable *table)
+{
+	int i,j;
+	char *nameStart = "./results/finalCircuit", *endFile = ".txt", fileName[30], posi[10];
+	FILE *proFile;
+	
+	itoa(count, posi);
+	++count;
+	strcpy( fileName, nameStart);
+	strcat(fileName, posi);
+	strcat(fileName, endFile);
+	
+	if( (proFile = fopen(fileName, "w")) == NULL )
+	{
+		perror("Error al abrir el archivo procesado");
+		return errno;
+	}
+	for( i = 0 ; i < table[0].totalLevels ; ++i )
+	{
+		for( j = 0 ; j < (table[i].eachLevel)->qtyGates ; ++j )
+		{
+			fprintf(proFile, "Level: %d -- Name of the Gate: %s, Type of gate: %d, Input: (1)->%d (2)->%d, Output: %d\n\n",
+			 										i,
+													(table[i].eachLevel)->gates[j].name,
+			 										(table[i].eachLevel)->gates[j].type,
+													(table[i].eachLevel)->gates[j].input[0],
+													(table[i].eachLevel)->gates[j].input[1],
+													(table[i].eachLevel)->gates[j].output);
+		}
+	}
+	return 0;
 }
