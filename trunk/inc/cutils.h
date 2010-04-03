@@ -9,39 +9,40 @@
 #define _CUTILS_ 
 
 /**
- * \fn
+ * \fn void reverse(char s[])
  *
- * 		\brief
+ * 		\brief This function reverses the content of it's string parameter.
  *
- * 		\param
- * 		
- * 		\return
+ * 		\param s The string to reverse
  *
  * 		Use:
  * 		\code
- * 		
+ * 			char *aux = "Reverse";
+ *			reverse(aux);
  *		\endcode
  *
- * 		\sa
+ * 		\sa itoa()
  *
  */
 void reverse(char s[]);
 
 /**
- * \fn
+ * \fn void itoa(int n, char s[])
  *
- * 		\brief
+ * 		\brief This function takes it's int n parameter and converts it to a char * storing it in the char s[] parameter.
  *
- * 		\param
- * 		
- * 		\return
+ * 		\param n The int to convert
+ *		\param s The char[] where to store the conversion
  *
  * 		Use:
  * 		\code
- * 		
+ * 			int n = 10;
+ *			char conv[3];
+ *			
+ *			itoa(n, conv);
  *		\endcode
  *
- * 		\sa
+ * 		\sa reverse()
  *
  */
 void itoa(int n, char s[]);

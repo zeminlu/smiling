@@ -12,13 +12,13 @@
 
 /**
  * \def _MAX_FATHER_
- *		A gate father's name max length
+ *		\brief A gate father's name max length
  */
 #define		_MAX_FATHER_		15
 
 /**
  * \struct set
- * 		A struct used to store posible countries petitions.
+ * 		\brief A struct used to store posible countries petitions.
  */
 typedef struct{
 	int countriesAmm;
@@ -27,7 +27,7 @@ typedef struct{
 
 /**
  * \struct country
- * 		The struct of a country, containing all it's data.
+ * 		\brief The struct of a country, containing all it's data.
  */
 typedef struct{
 	char name[45];
@@ -44,7 +44,7 @@ typedef struct{
 
 /**
  * \struct package
- * 		The struct of a package used to pass info between fixture builders.
+ * 		\brief The struct of a package used to pass info between fixture builders.
  */
 typedef struct{
 	void **genStruct;
@@ -53,7 +53,7 @@ typedef struct{
 
 /**
  * \struct condPack
- * 		A struct containing the data passed to the condition thread's.
+ * 		\brief A struct containing the data passed to the condition thread's.
  */
 typedef struct{
 	country **countries;
@@ -64,7 +64,7 @@ typedef struct{
 	
 /**
  * \struct gate
- * 		Description here
+ * 		\brief Description here
  */
 typedef struct{
 	char name[30];
@@ -76,7 +76,7 @@ typedef struct{
 
 /**
  * \struct subFixture
- * 		A struct containing 4 countries, representing a subFixture built by a grouph process.
+ * 		\brief A struct containing 4 countries, representing a subFixture built by a grouph process.
  */
 typedef struct{
 	int countriesAmm;
@@ -85,7 +85,7 @@ typedef struct{
 
 /**
  * \struct threadsStruct
- * 		A struct containing the data of a thread
+ * 		\brief A struct containing the data of a thread
  */
 typedef struct{
 	pthread_t index;
@@ -95,7 +95,7 @@ typedef struct{
 	
 /**
  * \struct conditions
- * 		A struct containing the data of all the conditions for a given grouph process.
+ * 		\brief A struct containing the data of all the conditions for a given grouph process.
  */
 typedef struct{
 	threadsStruct * threadsTable;
@@ -104,7 +104,7 @@ typedef struct{
 
 /**
  * \struct curCircuit
- * 		Description here
+ * 		\brief Description here
  */
 typedef struct{
 	int curFile;

@@ -17,79 +17,53 @@
 #include "../inc/tpl.h"
 
 /**
- * \fn
+ * \fn int serializeCountryStruct(void **buffer, int *bufferSize, country *country)
  *
- * 		\brief
+ * 		\brief This function serializes (using the TPL library) the given country into the given buffer, allocating the needed memory in it, and setting that ammount of bytes in bufferSize
  *
- * 		\param
+ * 		\param buffer The buffer where to store the serialization.
+ *		\param bufferSize The int * where to store the serialization size.
+ *		\param country A pointer to the country struct to be serialized.
  * 		
- * 		\return
+ * 		\return 0 on success, < 0 on error.
  *
  * 		Use:
  * 		\code
- * 		
+ * 			country data;
+ *			int bufferSize;
+ *			void *buffer;
+ *
+ *					...
+ *			data inizialization
+ * 					...
+ *
+ *			serializeCountryStruct(&buffer, &bufferSize, &data);
  *		\endcode
  *
- * 		\sa
+ * 		\sa unserializeCountryStruct()
  *
  */
 int serializeCountryStruct(void **buffer, int *bufferSize, country *country);
 
 /**
- * \fn
+ * \fn int unserializeCountryStruct(void *buffer, int bufferSize, country *country)
  *
- * 		\brief
+ * 		\brief This function unserializes (using the TPL library) a previously serialized country struct on the buffer parameter, and stores it in the given country struct. 
  *
- * 		\param
+ * 		\param buffer The buffer where the serialized country struct is stored.
  * 		
- * 		\return
+ * 		\return 0 on success, < 0 on error.
  *
  * 		Use:
  * 		\code
- * 		
+ * 		country data;
+ *		
+ *		unserializeCountryStruct(buffer, bufferSize, &country);
  *		\endcode
  *
- * 		\sa
+ * 		\sa serializeCountryStruct()
  *
  */
 int unserializeCountryStruct(void *buffer, int bufferSize, country *country);
-
-/**
- * \fn
- *
- * 		\brief
- *
- * 		\param
- * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
- *
- */
-int serializeInteger(void **buffer, int *bufferSize, int number);
-
-/**
- * \fn
- *
- * 		\brief
- *
- * 		\param
- * 		
- * 		\return
- *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
- *
- */
-int unserializeInteger(void *buffer, int bufferSize);
 
 #endif

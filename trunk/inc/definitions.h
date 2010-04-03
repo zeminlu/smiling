@@ -15,165 +15,111 @@
 #include "../inc/types.h"
 
 /**
- * \def
- *		Description here
- */
-#define		_MAX_FATHER_		15
-
-/**
- * \def
- *		Description here
+ * \def TRUE
+ *		\brief TRUE define
  */
 #define		TRUE		1
 
 /**
- * \def
- *		Description here
+ * \def FALSE
+ *		\brief FALSE define
  */
 #define		FALSE		!TRUE
 
 /**
- * \def
- *		Description here
+ * \def _stdout_
+ *		\brief Define of the standard output descriptor
  */
 #define		_stdout_	1
 
 /**
- * \def
- *		Description here
+ * \def _stdin_
+ *		\brief Define of the standard input descriptor
  */
 #define		_stdin_		0
 
 /**
- * \def
- *		Description here
+ * \def _FORK_ERROR_
+ *		\brief Fork error return define
  */
 #define		_FORK_ERROR_	-1
 
 /**
- * \def
- *		Description here
+ * \def _FORK_SON_
+ *		\brief Fork child return define
  */
 #define		_FORK_SON_		0
 
 /* Gates */
 
 /**
- * \enum
- *		Description here
+ * \enum logicGates
+ *		\brief Description here
  */
 enum 	logicGates { AND = 0, OR, XOR, NAND, NOR, XNOR };
 
 /**
- * \def
- *		Description here
+ * \def _INVALID_OUTPUT_
+ *		\brief Description here
  */
 #define		_INVALID_OUTPUT_		-1
 
 /**
- * \def
- *		Description here
+ * \def _INVALID_INPUT_
+ *		\brief Description here
  */
 #define		_INVALID_INPUT_			-1
-
-/**
- * \def
- *		Description here
- */
-#define		_MAX_FATHER_			15
-
-/**
- * \def
- *		Description here
- */
-#define		_WEAK_GROUP_TYPE_		10
-
-/**
- * \def
- *		Description here
- */
-#define		_DEATH_GROUP_TYPE_		11
-
-/**
- * \def
- *		Description here
- */
-#define		_SAME_CONTINENT_TYPE_	12
-
-/**
- * \def
- *		Description here
- */
-#define		_CHAMP_GROUP_TYPE_		13
-
-/**
- * \def
- *		Description here
- */
-#define		_NO_CONDITIONS_TYPE_	14
 	
 /**
- * \def
- *		Description here
+ * \def _WEAK_GROUP_
+ *		\brief Constant that defines the maximum weight of a weak country.
  */
 #define 	_WEAK_GROUP_			4
 
 /**
- * \def
- *		Description here
+ * \def _MAX_COUNTRIES_
+ *		\brief Max countries ammount define
  */
 #define 	_MAX_COUNTRIES_			32
 
 /**
- * \def
- *		Description here
+ * \def _START_HASH_
+ *		\brief Define of the multiplier for the initial buckets in the hashTable.
  */
 #define		_START_HASH_			50
 
 /**
- * \def
- *		Description here
- */
-#define		_HALF_DUPLEX_			0
-
-/**
- * \def
- *		Description here
- */
-#define		_FULL_DUPLEX_			1
-
-/**
- * \def
- *		Description here
+ * \def _MAX_GATES_LEVELS_
+ *		\brief Description here
  */
 #define		_MAX_GATES_LEVELS_		30
 
 /**
- * \def
- *		Description here
+ * \def _MAX_CIRCUITS_
+ *		\brief Description here
  */
 #define		_MAX_CIRCUITS_			5
 
 /**
- * \def
- *		Description here
+ * \def _MAX_LEVELS_
+ *		\brief Description here
  */
 #define 	_MAX_LEVELS_			50
 
 /*	Types of Connection */
 	
 /**
- * \enum
- *		Description here
+ * \enum typeOfConnection
+ *		\brief Description here
  */	
 enum	typeOfConnection	{ FIFO, SH_MEM, MSG_QUEUE, SOCKET };
 
 /**
- * \fn
+ * \fn void varFree(int amm, ...)
  *
- * 		\brief
+ * 		\brief This function frees up the variable pointers given as arguments
  *
- * 		\param
+ * 		\param amm The ammount of pointers being passed to this function
  * 		
  * 		\return
  *

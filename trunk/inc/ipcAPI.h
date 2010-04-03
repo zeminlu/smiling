@@ -24,7 +24,7 @@
 #include "../inc/types.h"
 
 /**
- * \fn
+ * \fn int setupIPC(int channels)
  *
  * 		\brief
  *
@@ -43,7 +43,7 @@
 int setupIPC(int channels);
 
 /**
- * \fn
+ * \fn int addClient(int index)
  *
  * 		\brief
  *
@@ -62,7 +62,7 @@ int setupIPC(int channels);
 int addClient(int index);
 
 /**
- * \fn
+ * \fn int synchronize()
  *
  * 		\brief
  *
@@ -81,7 +81,7 @@ int addClient(int index);
 int synchronize();
 
 /**
- * \fn
+ * \fn int loadIPC()
  *
  * 		\brief
  *
@@ -100,7 +100,7 @@ int synchronize();
 int loadIPC();
 
 /**
- * \fn
+ * \fn int readIPC(pid_t pid, void *buffer, int bufferSize)
  *
  * 		\brief
  *
@@ -119,7 +119,7 @@ int loadIPC();
 int readIPC(pid_t pid, void *buffer, int bufferSize);
 
 /**
- * \fn
+ * \fn int writeIPC(pid_t pid, void *buffer, int bufferSize)
  *
  * 		\brief
  *
@@ -138,7 +138,7 @@ int readIPC(pid_t pid, void *buffer, int bufferSize);
 int writeIPC(pid_t pid, void *buffer, int bufferSize);
 
 /**
- * \fn
+ * \fn int selectIPC(int seconds)
  *
  * 		\brief
  *
@@ -157,7 +157,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize);
 int selectIPC(int seconds);
 
 /**
- * \fn
+ * \fn int getIPCStatus(pid_t pid)
  *
  * 		\brief
  *
@@ -176,7 +176,7 @@ int selectIPC(int seconds);
 int getIPCStatus(pid_t pid);
 
 /**
- * \fn
+ * \fn int closeIPC()
  *
  * 		\brief
  *
@@ -195,7 +195,7 @@ int getIPCStatus(pid_t pid);
 int closeIPC();
 
 /**
- * \fn
+ * \fn int finalizeIPC(void)
  *
  * 		\brief
  *
@@ -214,7 +214,7 @@ int closeIPC();
 int finalizeIPC(void);
 
 /**
- * \fn
+ * \fn int compareIPCIDs(void *elem1, void *elem2)
  *
  * 		\brief
  *
@@ -233,7 +233,7 @@ int finalizeIPC(void);
 int compareIPCIDs(void *elem1, void *elem2);
 
 /**
- * \fn
+ * \fn void * copyIPCID(void *elem)
  *
  * 		\brief
  *
@@ -252,7 +252,7 @@ int compareIPCIDs(void *elem1, void *elem2);
 void * copyIPCID(void *elem);
 
 /**
- * \fn
+ * \fn void freeIPCID(void *elem)
  *
  * 		\brief
  *

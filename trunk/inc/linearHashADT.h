@@ -105,13 +105,13 @@ hashTableElement hashGetNext(hashTableADT table);
 unsigned int hash(const char *key, int nbuckets);
 
 /**
- * \fn hashTableADT hashCreateTable(int nbuckets, freeFuncT freeElemenT, compFuncT compareElement, copyFuncT copyElement)
+ * \fn hashTableADT hashCreateTable(int nbuckets, freeFuncT freeElement, compFuncT compElement, copyFuncT copyElement)
  *
  * 		\brief This function creates a new instance of hashTableADT.
  *
  * 		\param nbuckets Initial size of table.
- * 		\param freeElemenT Function to free allocated memory of a hashTableElement.
- * 		\param compareElement Function to compare two instances hashTableElement.
+ * 		\param freeElement Function to free allocated memory of a hashTableElement.
+ * 		\param compElement Function to compare two instances hashTableElement.
  * 		\param copyElement Function to copy a hashTableElement.
  *
  * 		\return An instance of hashTableADT, NULL if there was an error.
@@ -125,7 +125,7 @@ unsigned int hash(const char *key, int nbuckets);
  * 		\endcode
  *
  */
-hashTableADT hashCreateTable(int nbuckets, freeFuncT freeElemenT, compFuncT compareElement, copyFuncT copyElement);
+hashTableADT hashCreateTable(int nbuckets, freeFuncT freeElement, compFuncT compElement, copyFuncT copyElement);
 
 /**
  * \fn void hashFreeTable(hashTableADT table)

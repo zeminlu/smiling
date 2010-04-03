@@ -26,7 +26,7 @@
 #include "../inc/ipcAPI.h"
 
 /**
- * \fn
+ * \fn void sendErrorToParent(int error)
  *
  * 		\brief
  *
@@ -45,7 +45,7 @@
 void sendErrorToParent(int error);
 
 /**
- * \fn
+ * \fn int loadHeadAndCountriesTable(country ***countriesTable, country **head)
  *
  * 		\brief
  *
@@ -64,7 +64,7 @@ void sendErrorToParent(int error);
 int loadHeadAndCountriesTable(country ***countriesTable, country **head);
 
 /**
- * \fn
+ * \fn int checkConditions(country *data, void *(***conditions)(void *condArgs))
  *
  * 		\brief
  *
@@ -83,7 +83,7 @@ int loadHeadAndCountriesTable(country ***countriesTable, country **head);
 int checkConditions(country *data, void *(***conditions)(void *condArgs));
 
 /**
- * \fn
+ * \fn int buildCondArgs(condPack **condArgs, country **countriesTable, int countriesTableEntriesAmm, country *data, int condAmm, int *index)
  *
  * 		\brief
  *
@@ -102,7 +102,7 @@ int checkConditions(country *data, void *(***conditions)(void *condArgs));
 int buildCondArgs(condPack **condArgs, country **countriesTable, int countriesTableEntriesAmm, country *data, int condAmm, int *index);
 
 /**
- * \fn
+ * \fn int prepareGroup(subFixture **group, country *data)
  *
  * 		\brief
  *
@@ -121,7 +121,7 @@ int buildCondArgs(condPack **condArgs, country **countriesTable, int countriesTa
 int prepareGroup(subFixture **group, country *data);
 
 /**
- * \fn
+ * \fn int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country *data, country **countriesTable, void *(**conditions)(void *condArgs))
  *
  * 		\brief
  *
@@ -140,7 +140,7 @@ int prepareGroup(subFixture **group, country *data);
 int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country *data, country **countriesTable, void *(**conditions)(void *condArgs));
 
 /**
- * \fn
+ * \fn int intersect(int condAmm, condPack *condArgs, set **intersection)
  *
  * 		\brief
  *
@@ -159,7 +159,7 @@ int buildSubfixture(subFixture **group, int condAmm, condPack *condArgs, country
 int intersect(int condAmm, condPack *condArgs, set **intersection);
 
 /**
- * \fn
+ * \fn int sendSubfixture(subFixture *group)
  *
  * 		\brief
  *
@@ -178,7 +178,7 @@ int intersect(int condAmm, condPack *condArgs, set **intersection);
 int sendSubfixture(subFixture *group);
 
 /**
- * \fn
+ * \fn void sortPointers(set **sets)
  *
  * 		\brief
  *

@@ -26,58 +26,55 @@
 #include "../inc/linearHashADT.h"
 
 /**
- * \fn
+ * \fn int filesListener()
  *
- * 		\brief
- *
- * 		\param
+ * 		\brief This function stays in a loop listening for incoming files in the parallel directory, starts a fifa process for each one and passes the file data to it.
  * 		
- * 		\return
+ * 		\return 0 if everything went ok, < 0 if not.
  *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
+ * 		\sa processFile() getFilesAmm()
  *
  */
 int filesListener();
 
 /**
- * \fn
+ * \fn int processFile(DIR *dp, country ***countriesTable)
  *
- * 		\brief
+ * 		\brief This function processes the first valid .paises file in the DIR directory and builds the needed struct with the file data.
  *
- * 		\param
+ * 		\param dp The directory where to search for a file.
+ *		\param countriesTable A pointer to a country **countriesTable to be filled with the file data. 	
  * 		
- * 		\return
+ * 		\return 0 on success, < 0 on error.
  *
- * 		Use:
- * 		\code
- * 		
- *		\endcode
- *
- * 		\sa
+ * 		\sa filesListener()
  *
  */
 int processFile(DIR *dp, country ***countriesTable);
 
 /**
- * \fn
+ * \fn int getFilesAmm (DIR *dp)
  *
- * 		\brief
+ * 		\brief This function checks the ammount of files in the given DIR directory.
  *
- * 		\param
+ * 		\param dp A pointer to a DIR directory
  * 		
- * 		\return
+ * 		\return The ammount of files in the given directory.
  *
  * 		Use:
  * 		\code
- * 		
+ * 			DIR *dp;
+ *			int filesAmm;
+ *			
+ *					...
+ *			dp initialization
+ *					...
+ *
+ *			filesAmm = getFilesAmm(dp);
+ *
  *		\endcode
  *
- * 		\sa
+ * 		\sa filesListener()
  *
  */
 int getFilesAmm (DIR *dp);
