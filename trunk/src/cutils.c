@@ -1,4 +1,4 @@
-/*
+/**
  * \file cutils.c
  *
  *  \date Created on: 3-apr-2010

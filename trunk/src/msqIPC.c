@@ -1,4 +1,4 @@
-/*
+/**
  * \file msqIPC.c
  *
  *  \date Created on: 3-apr-2010
@@ -43,7 +43,7 @@ int setupIPC(int channels){
     key = getpid();
 		
     if((queue_id = init_queue(key)) == -1){
-		perror("msgget Fallo");
+		perror("IPCAPI: Error en msgget");
         return errno;
     }
      
@@ -62,14 +62,14 @@ int addClient(int index){
     strcat(fileName, pid);
 	
 	if((data = open(fileName, O_WRONLY | O_CREAT, 0644)) == -1){
-		perror("Error al intentar de crear el archivo en setupIPC");
+		perror("IPCAPI: Error al intentar de crear el archivo en setupIPC");
 		return errno;
 	}
 	
 	id = (2 * index) + 1;
 	
 	if (write(data, &id, sizeof(int)) != sizeof(int)){
-		perror("Error en la primitiva write en addClient");
+		perror("IPCAPI: Error en la primitiva write en addClient");
 		return errno;
 	}
 	
@@ -88,14 +88,14 @@ int synchronize(){
     msQ entry;
        
     if ((hashTable = hashCreateTable(clientsAmm * _START_HASH_, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
-	fprintf(stderr, "Error al crear la tabla de hash\n");
+	fprintf(stderr, "IPCAPI: Error al crear la tabla de hash\n");
         return -1;
     }
     pid = malloc(sizeof(pid_t) * clientsAmm);
        
     for (i = 0, j = 1 ; i < clientsAmm ; ++i, j +=2){              
 		if((mlen = msgrcv(queue_id ,&entry, sizeof(pid_t), j, MSG_NOERROR)) == -1){
-			perror("msgrcv fallo");
+			perror("IPCAPI: Error en msgrcv");
 			return errno;
 		}      
 		memcpy(&pid[i], entry.mtext, sizeof(pid_t));          
@@ -104,7 +104,7 @@ int synchronize(){
                
 		itoa(pid[i], pidString);
 		if(hashInsert(&hashTable, ids, pidString, 0) == NULL){
-			fprintf(stderr,"Error en insertar una entry en la tabla de hash en synchronize con pidString = %s\n", pidString);
+			fprintf(stderr,"IPCAPI: Error en insertar una entry en la tabla de hash en synchronize con pidString = %s\n", pidString);
 			return -1;
 		}
     }
@@ -123,40 +123,40 @@ int loadIPC(){
     msQ entry;
 
     if(signal(SIGALRM, sigHandler) == SIG_ERR){
-		perror("Error en signal de loadIPC");
+		perror("IPCAPI: Error en signal de loadIPC");
 		return errno;
 	}
     if(sigemptyset (&mask) == -1){
-		perror("Error en el conjunto de señales de loadIPC");
+		perror("IPCAPI: Error en el conjunto de señales de loadIPC");
 		return errno;
 	}
     if(sigaddset (&mask, SIGALRM) == -1){
-		perror("Error al agregar la señal al conjunto en loadIPC");
+		perror("IPCAPI: Error al agregar la señal al conjunto en loadIPC");
 		return errno;
 	}
 	if(sigprocmask (SIG_BLOCK, &mask, &oldmask) == -1){
-		perror("Erro en la mascara de señales en loadIPC");
+		perror("IPCAPI: Error en la mascara de señales en loadIPC");
 		return errno;
 	}
     if((queue_id = msgget((key_t)getppid(), 0)) == -1){
-		perror("Erro al crear la queue en loadIPC");
+		perror("IPCAPI: Error al crear la queue en loadIPC");
 		return errno;
 	}
 
 	if((aux = read(_stdin_, &(ownID[1]), sizeof(int))) == -1){
-		perror("Erro al leer de la entrada estandar en loadIPC");
+		perror("IPCAPI: Error al leer de la entrada estandar en loadIPC");
 		return errno;
 	}
 	
     ownID[0] = 1 + ownID[1];
      if((hashTable = hashCreateTable(10, freeIPCID, compareIPCIDs, copyIPCID)) == NULL){
-		fprintf(stderr,"Error en crear la tabla de hash en loadIPC\n");
+		fprintf(stderr,"IPCAPI: Error en crear la tabla de hash en loadIPC\n");
 		return -1;
 	}
         
 	itoa(getppid(), pidString);
 	if((hashInsert(&hashTable, ownID, pidString, 0)) == NULL){
-		fprintf(stderr,"Error en insertar una entry en la tabla de hash en loadIpc con pidString = %s\n", pidString);
+		fprintf(stderr,"IPCAPI: Error en insertar una entry en la tabla de hash en loadIpc con pidString = %s\n", pidString);
 		return -1;
 	}
        
@@ -165,7 +165,7 @@ int loadIPC(){
     memcpy(entry.mtext, &pid, sizeof(pid_t));
 
     if((mlen = msgsnd(queue_id, &entry, sizeof(pid_t), 0)) == -1){
-		perror("msgsnd fallo");        
+		perror("IPCAPI: Error en msgsnd");        
 		return errno;
     }
 
@@ -193,13 +193,13 @@ int readIPC(pid_t pid, void *buffer, int bufferSize){
     itoa(pid, pidString);
 
     if((ipcID = hashSearch(hashTable, pidString, &hkey)) == NULL){
-		fprintf(stderr,"Error en buscar una entry en la tabla de hash en readIPC con pidString = %s\n", pidString);
+		fprintf(stderr, "IPCAPI: Error en buscar una entry en la tabla de hash en readIPC con pidString = %s\n", pidString);
 		return -1;
 	}
 
     if(msLastRead == NULL){
 		if((mlen = msgrcv(queue_id ,&entry, bufferSize, ipcID[0], MSG_NOERROR)) == -1){
-			perror("msgrcv fallo");
+			perror("IPCAPI: Error en msgrcv");
             return errno;          
        }      
        memcpy(buffer,entry.mtext, bufferSize);
@@ -221,7 +221,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
        
     itoa(pid, pidString);
 	if((ipcID = hashSearch(hashTable, pidString, &hkey)) == NULL){
-		fprintf(stderr,"Error en buscar una entry en la tabla de hash en writeIPC con pidString = %s\n", pidString);
+		fprintf(stderr,"IPCAPI: Error en buscar una entry en la tabla de hash en writeIPC con pidString = %s\n", pidString);
 	return -1;
 	
 	}
@@ -229,7 +229,7 @@ int writeIPC(pid_t pid, void *buffer, int bufferSize){
     memcpy(entry.mtext, buffer, bufferSize);
 
      if((mlen = msgsnd(queue_id, &entry, bufferSize, 0)) == -1){
-		perror("msgsnd fallo");        
+		perror("IPCAPI: Error en msgsnd");        
         return errno;
 	}
 	return 0;
@@ -244,7 +244,7 @@ int closeIPC(int pid){
 
 int finalizeIPC(){
     if(msgctl(queue_id, IPC_RMID, NULL) == -1){
-		perror("Erro en msgcrl de finalizeIPC");
+		perror("IPCAPI: Error en msgcrl de finalizeIPC");
 		return errno;
 	}
 	if (hashTable != NULL){
@@ -281,12 +281,12 @@ int getIPCStatus(pid_t pid){
     char pidString[10];
 
     if((entry = malloc(sizeof(msQ))) == NULL){
-		perror("GETIPCSTATUS: Errora al crear la memoria para el entry de IPC status");
+		perror("IPCAPI: Error al crear la memoria para el entry de IPC status");
         return errno;
     }
     itoa(pid, pidString);
     if((ipcID = hashSearch(hashTable, pidString, &hkey)) == NULL){
-		fprintf(stderr,"Error en hashSearch en getIPCStatus, invocado con Pid = %s\n",pidString);
+		fprintf(stderr,"IPCAPI: Error en hashSearch en getIPCStatus, invocado con Pid = %s\n",pidString);
 		return -1;
 	}
        

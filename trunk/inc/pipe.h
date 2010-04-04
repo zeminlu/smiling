@@ -1,3 +1,10 @@
+/**
+ * \file pipe.h
+ *
+ *  \date Created on: 3-apr-2010
+ *  \author Luciano R. Zemin & Nicolás Magni & Nicolás Purita
+ */
+
 #ifndef _PIPE_
 #define _PIPE_
 
@@ -19,28 +26,26 @@
 
 typedef int (*handler)(int in1,int in2);
 
-/*
+/**
  *	\struct gatesOfEachLevel
  *		\brief This struct contains the array of gates and the quantity.
  */
-
 typedef struct{
 	gate *gates;
 	int qtyGates;
 	} gatesOfEachLevel;
 
-/*
+/**
  *	\struct circuitTable
  *	
- *	\brief This struct show each level os the circuit.
+ *	\brief This struct shows each level of the circuit.
  */
-
 typedef struct{
 	gatesOfEachLevel *eachLevel;
 	int	totalLevels;
 }circuitTable;
 
-/*
+/**
  *	\fn	int createsGates ( void )
  *
  *	\brief	This function creates the Gates proccess. It read the amount of files
@@ -58,11 +63,10 @@ typedef struct{
  *			}
  *	\endcode
  */
-
 int createsGates(void);
 
-/*
- *	\fn		int createTable( void )
+/**
+ *	\fn	int createTable( void )
  *
  *	\brief	This function has the task of creating the circuit table.
  *
@@ -77,10 +81,9 @@ int createsGates(void);
  *			}
  *	\endcode
  */
-
 int createTable( void );
 
-/*
+/**
  * 	\fn	int fileListener( void )
  *
  *	\brief
@@ -98,15 +101,14 @@ int createTable( void );
  *	\endcode
  *
  */
-
 int fileListener( void );
 
-/*
+/**
  *	\fn	int sendTableToGates( int pid )
  *	
  *	\brief	This function send to gates the whole table, to proccess.
  *	
- *	\param	The pid of gates proccess
+ *	\param	pid The pid of gates proccess
  *
  *	\code
  *			
@@ -123,105 +125,95 @@ int fileListener( void );
  *	\endcode
  *		
  */
-
 int sendTableToGates( int pid );
 
-/*
- *	\fn		void freeCircuits( circuitTable **table, int qtyFile )
+/**
+ *	\fn	void freeCircuits( circuitTable **table, int qtyFile )
  *
  *	\brief	This function frees the whole table.
  *
- *	\param	The table of circuits
- *	\param	The amount of files
+ *	\param	table The table of circuits
+ *	\param	qtyFile The amount of files
  */
-
 void freeCircuits( circuitTable **table, int qtyFile );
 
-/*
- *	\fn		int getFilesAmm( DIR *dp )
+/**
+ *	\fn	int getFilesAmm( DIR *dp )
  *
  *	\brief	This function return the amount of files that are in the pipeDir folder
  *
- *	\param	The directory of pipeDir
+ *	\param	dp The directory of pipeDir
  */
-
 int getFilesAmm (DIR *dp);
 
-/*
- *	\fn		circuitTable * parseXMLGate( char * docName )
+/**
+ *	\fn	circuitTable * parseXMLGate( char * docName )
  *
  *	\brief	This function starting the parser of the file and return the
  *			pointer to the structure of the circuit.
  *
- *	\param The name of the file to be proccessed
+ *	\param docName The name of the file to be proccessed
  */
-
 circuitTable * parseXMLGate( char * docName );
 
-/*
- *	\fn		circuitTable * parseCircuit( xmlDocPtr doc, xmlNodePtr cur )
+/**
+ *	\fn	circuitTable * parseCircuit( xmlDocPtr doc, xmlNodePtr cur )
  *
  *	\brief	This function parse an specific circuit.
  *
- *	\param	The pointer to the XML document
- *	\param	The current Node of the tree.
+ *	\param	doc The pointer to the XML document
+ *	\param	cur The current Node of the tree.
  */
-
 circuitTable * parseCircuit( xmlDocPtr doc, xmlNodePtr cur );
 
-/*
+/**
  *	\fn	void parseGatesTags( char *father, xmlNodePtr cur, circuitTable *circuit, int curLevel )
  *
  *	\brief	This function parses the tag of each gates. This function is recursive.
  *
- *	\param	The name of the father of the gates.
- *	\param	The current node of the tree.
- *	\param	The remaining circuit
- *	\param	The current level that it is proccessing
+ *	\param	father The name of the father of the gates.
+ *	\param	cur The current node of the tree.
+ *	\param	circuit The remaining circuit
+ *	\param	curLevel The current level that it is proccessing
  */
-
 void parseGatesTags( char *father, xmlNodePtr cur, circuitTable * circuit, int curLevel );
 
-/*
- *	\fn int getType ( int typeInt )
+/**
+ *	\fn int getType ( int type )
  *
  *	\brief	This function return the type of the gates.
  *
- *	\param	The integer of the type.
+ *	\param	type The integer of the type.
  */
+int getType( int type);
 
-int getType( int typeInt);
-
-/*
- *	\fn int countLevels( circuitTable *circuits )
+/**
+ *	\fn int countLevels( circuitTable *circuit )
  *
  *	\brief	This function return the amount of levels that this circuist has.
  *
- *	\param	The circuits
+ *	\param	circuit The circuits
  */
+int countLevels( circuitTable *circuit);
 
-int countLevels( circuitTable * circuit);
-
-/*
- * 	\fn int checGateIsLoaded( circuitTable *circuit, char *name, int curLevel )
+/**
+ * 	\fn int checkGateIsLoaded( circuitTable *circuit, char *name, int curLevel )
  *
  * 	\brief This function check if the gates was loaded before in the same level.
  *
- * 	\param 	The remaining circuit
- * 	\param	The name of the gate
- * 	\param	The current level that it is proccessing
+ * 	\param 	circuit The remaining circuit
+ * 	\param	name The name of the gate
+ * 	\param	curLevel The current level that it is proccessing
  */
-
 int checkGateIsLoaded( circuitTable *circuit, char *name, int curLevel);
 
-/*
+/**
  *	\fn	void printCircuitTable( circuitTable *circuit )
  *
  *	\brief This function print the while circuit
  *
- *	\param	The circuit you want to print
+ *	\param	circuit The circuit you want to print
  */
-
 void printCircuitTable( circuitTable * circuit);
 
 #endif
