@@ -1,4 +1,4 @@
-/*
+/**
  * \file pipeIPC.c
  *
  *  \date Created on: 3-apr-2010

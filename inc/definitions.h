@@ -1,4 +1,4 @@
-/*
+/**
  * \file definitions.h
  *
  *  \date Created on: 3-apr-2010

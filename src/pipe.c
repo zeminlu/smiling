@@ -1,8 +1,8 @@
-/*
- *		pipe.c
- *		
- *			Programa encargado de verificar cuando se agrega un archivo en el directorio
- *			pipeDir.
+/**
+ * \file pipe.c
+ *
+ *  \date Created on: 3-apr-2010
+ *  \author Luciano R. Zemin & Nicolás Magni & Nicolás Purita
  */
 
 #include "../inc/pipe.h"
@@ -122,7 +122,7 @@ int createsGates(void)
  *	En caso de que ocurra un error retorna -1, sino 0.
  */
 
-int fileListener( void)
+int fileListener(void)
 {
 	DIR *dp;
 	struct dirent *d = NULL;
@@ -469,7 +469,7 @@ void parseGatesTags( char *father, xmlNodePtr cur, circuitTable * circuit, int c
  *	En caso de error devuelve -1.
  */
 
-int getType( int type)
+int getType(int type)
 {
 	switch( type )
 	{
@@ -493,7 +493,7 @@ int getType( int type)
  *	Cuenta la cantidad de niveles que tiene el circuito
  */
 
-int countLevels( circuitTable* circuit)
+int countLevels(circuitTable *circuit)
 {
 	int level = 0;
 	
@@ -509,7 +509,7 @@ int countLevels( circuitTable* circuit)
  *	FALSE en caso contratio
  */
 
-int checkGateIsLoaded( circuitTable *circuit, char *name, int curLevel)
+int checkGateIsLoaded(circuitTable *circuit, char *name, int curLevel)
 {
 	int i;
 	

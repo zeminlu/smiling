@@ -1,4 +1,4 @@
-/*
+/**
  * \file fifa.c
  *
  *  \date Created on: 3-apr-2010
@@ -34,20 +34,10 @@ int main (void){
 		return -1;
 	}
 	
-	/*printf("<-----------------------------------------LLEGO LO SIGUIENTE A FIFA-----------------------------------------\n");
-	for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
-		printf("Pais: %s - Continente: %d - Campeon: %d - Peso: %d - Same: %d - Death: %d - ChampG: %d - Weak: %d - Cabeza de Serie: %d\n", 
-		countriesTable[j]->name, countriesTable[j]->continent, countriesTable[j]->champ, countriesTable[j]->weight, countriesTable[j]->sameContinent, countriesTable[j]->deathGroup, countriesTable[j]->champGroup, countriesTable[j]->weakGroup, countriesTable[j]->isHead);
-	}
-	printf("<-----------------------------------------------------------------------------------------------------------\n>");*/
-	
 	closeIPC(getpid());
 	
 	if ((pids = malloc(sizeof(pid_t) * countriesTableEntriesAmm)) == NULL || (fixture = malloc(sizeof(void *) * countriesTableEntriesAmm / 4)) == NULL){
 		perror("Error de memoria");
-		/*for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
-			free(countriesTable[j]);
-		}*/
 		varFree(2, pids, countriesTable);
 		
 		return errno;
@@ -55,9 +45,6 @@ int main (void){
 
 	if ((status = startChildProcesses(countriesTable, countriesTableEntriesAmm, &fixture, &pids)) != 0){
 		fprintf(stderr, "Error en startChildprocesses\n");
-		/*for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
-			free(countriesTable[j]);
-		}*/
 		varFree(3, countriesTable, pids, fixture);
 		
 		return status;
@@ -65,15 +52,12 @@ int main (void){
 
 	if ((status = childsListener(pids, countriesTable, countriesTableEntriesAmm, fixture)) != 0){
 		if (status == -2){
-			printf("\nNo se encontro una solucion al problema planteado en esta ocasion, por favor intente nuevamente\n");
+			printf("\nParallel: No se encontro una solucion al problema planteado en esta ocasion, por favor intente nuevamente.\n");
 		}
 		else{
 			fprintf(stderr, "Error en childslistener\n");
-			printf("\nGroupH retorno con error, ver salida de error\n");
+			printf("\nParallel: Grouph retorno con error, ver salida de error.\n");
 		}
-		/*for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
-			free(countriesTable[j]);
-		}*/
 		for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
 			free(fixture[j]);
 		}
@@ -83,9 +67,6 @@ int main (void){
 		return status;
 	}
 	finalizeIPC();
-	/*
-	Guardar a archivo la solucion
-	*/
 	
 	strcpy(fileName, "./results/");
 	itoa(getpid(), pidString);
@@ -97,23 +78,17 @@ int main (void){
 		return errno;
 	}
 	
-	printf("\nSolucion encontrada\n");
+	printf("\nParallel: Solucion encontrada\n");
 		
 	for (j = 0 ; j < countriesTableEntriesAmm / 4 ; ++j){
 		fprintf(fileD, "Grupo %d:\n", j + 1);
 		for(i = 0; i < 4; ++i){
 			fprintf(fileD, "%s\n", (fixture[j][i])->name);
-			/*free(fixture[j][i]);*/
 		}
 		fprintf(fileD, "\n");
-		/*free(fixture[j]);*/
 	}
 	
 	fclose(fileD);
-	
-	/*for (j = 0 ; j < countriesTableEntriesAmm ; ++j){
-		free(countriesTable[j]);
-	}*/
 	varFree(3, countriesTable, fixture, pids);
 	
 	return 0;

@@ -1,4 +1,4 @@
-/*
+/**
  * \file functionTypes.h
  *
  *  \date Created on: 07-nov-2008

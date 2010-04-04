@@ -1,4 +1,4 @@
-/*
+/**
  * \file parallel.c
  *
  *  \date Created on: 3-apr-2010
@@ -99,7 +99,7 @@ int filesListener(){
 		}
 	}
 	
-	printf("\n%d archivos procesados.\n", childs);
+	printf("\nParallel: %d archivos procesados.\n", childs);
 	
 	closedir(dp);
 

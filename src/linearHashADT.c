@@ -1,4 +1,4 @@
-/*
+/**
  * \file linearHashADT.c
  *
  *  \date Created on: 29-oct-2008

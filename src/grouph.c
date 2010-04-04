@@ -1,4 +1,4 @@
-/*
+/**
  * \file grouph.c
  *
  *  \date Created on: 3-apr-2010
@@ -33,9 +33,6 @@ int main (void){
 	
 	if ((condAmm = checkConditions(data, &conditions)) < 0){
 		fprintf(stderr, "Error en checkConditions\n");
-		/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
-			free(countriesTable[i]);
-		}*/
 		varFree(2, data, countriesTable);
 		sendErrorToParent(-3);
 		closeIPC(getpid());
@@ -45,10 +42,6 @@ int main (void){
 	
 	if ((status = buildCondArgs(&condArgs, countriesTable, countriesTableEntriesAmm, data)) != 0){
 		fprintf(stderr, "Error en buildcondargs\n");
-		/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
-			free(countriesTable[i]);
-		}
-		*/
 		varFree(3, data, countriesTable, conditions);
 		sendErrorToParent(-3);
 		closeIPC(getpid());
@@ -58,10 +51,6 @@ int main (void){
 	
 	if ((status = prepareGroup(&group, data)) != 0){
 		fprintf(stderr, "Error en prepareGroup\n");
-		/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
-			free(countriesTable[i]);
-		}
-		*/
 		varFree(5, data, countriesTable, conditions, condArgs->sets, condArgs);
 		sendErrorToParent(-3);
 		closeIPC(getpid());
@@ -73,9 +62,6 @@ int main (void){
 		if (status != -2){
 			fprintf(stderr, "Error en buildSubfixture\n");
 		}
-		/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
-			free(countriesTable[i]);
-		}*/
 		for (i = 0 ; i < condAmm ; ++i){
 			free(condArgs->sets[i]);
 		}
@@ -96,10 +82,6 @@ int main (void){
 		closeIPC(getpid());
 		return status;
 	}
-	
-	/*for(i = 0 ; i < countriesTableEntriesAmm ; ++i){
-		free(countriesTable[i]);
-	}*/
 	
 	for (i = 0 ; i < condAmm ; ++i){
 		free(condArgs->sets[i]);

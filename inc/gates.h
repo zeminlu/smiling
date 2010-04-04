@@ -1,7 +1,10 @@
-/*
- *		gates.h
- *		
+/**
+ * \file gates.h
+ *
+ *  \date Created on: 3-apr-2010
+ *  \author Luciano R. Zemin & Nicolás Magni & Nicolás Purita
  */
+
 #ifndef _GATES_
 #define _GATES_
 
@@ -19,7 +22,7 @@
 #include "../inc/ipcAPI.h"
 #include "../inc/cutils.h"
 
-/*
+/**
  *	\fn int gateInitializer (void )
  *
  *	\brief 	This functions has the task of creating the pipeline.
@@ -29,9 +32,9 @@
  *				and it save 5 int, in this order
  *					Position 0 = 0,
  *					Position 1 = -1,
- *						.
- *						.
- *						.
+ *						
+ *						...
+ *						
  *					Position 4 = -4.
  *				In every round this vector will be incremented in one. When all
  *				of levels were proccessed, it will finished and print results in
@@ -48,10 +51,9 @@
  *	\endcode					
  *
  */
-
 int gateInitializer( void );
 
-/*
+/**
  *	\fn int addMoreFiles (void )
  *
  *	\brief 	This functions has the task of loading the main
@@ -71,11 +73,10 @@ int gateInitializer( void );
  *	\sa	buildCircuitTable
  *
  */
-
 int addMoreFiles( void );
 
-/*
- * 	\fn	int buildCircuitTable( void )
+/**
+ * 	\fn	int buildCircuitsTable( void )
  *
  * 	\brief	This function has the task of loading the data of circuits.
  * 			It must be called by addMoreFiles. Every neccesary information
@@ -84,17 +85,16 @@ int addMoreFiles( void );
  *
  * 	\code
  *
- * 		if( buildCircuitTable() != 0 )
+ * 		if( buildCircuitsTable() != 0 )
  *
  * 		...
  *
  * 	\endcode
  * 			
  */
-
 int buildCircuitsTable( void );
 
-/*
+/**
  * 	\fn	void freeCircuitsGates( void )
  *
  * 	\brief 	This function is the responsable of freeing the whole
@@ -106,11 +106,10 @@ int buildCircuitsTable( void );
  *
  * 	\endcode
  */
-
 void freeCircuitsGates( void );
 
-/*
- * \fn int startsCircuitsPipeline( void )
+/**
+ * \fn int startCircuitsPipeline( void )
  *
  * \brief 	This function has the task of creating each level proccess.
  * 			It verifies is this file didn't finished and if it is in the
@@ -132,10 +131,9 @@ void freeCircuitsGates( void );
  * 	\endcode
  *
  */
-
 int startCircuitsPipeline( void);
 
-/*
+/**
  *	\fn	int listenToMyChildren( void )
  *
  * 	\brief 	This function has the task of load the information that
@@ -151,10 +149,9 @@ int startCircuitsPipeline( void);
  * 	\endcode
  *
  */
-
 int listenToMyChildren( void );
 
-/*
+/**
  *	\fn	void incLevels ( void )
  *
  *	\brief	This function will increment in one each position
@@ -170,11 +167,11 @@ int listenToMyChildren( void );
  *				...
  *			incLevels();
  *		}
+ *	\endcode
  */
-
 void incLevels( void );
 
-/*
+/**
  *	\fn	void initLevels( void )
  *
  *	\brief	This function create the levels vector. This function must
@@ -193,10 +190,9 @@ void incLevels( void );
  *	\endcode
  *
  */
-
 void initLevels( void );
 
-/*
+/**
  *	\fn int getCurrentPipeFiles( void )
  *
  *	\brief	This function return the amount of proccess that are running
@@ -215,15 +211,17 @@ void initLevels( void );
  *	\endcode
  *
  */
-
 int getCurrentPipeFiles( void );
 
-/*
+/**
  *	\fn	int saveProccessFile( circuitTable *table, int pos )
  *
- *	\brief	This function store the results of each circtuis in a file.
- *			It must be called after finish all of levels proccess.
+ *	\brief	This function stores the results of each circtuis in a file.
+ *		It must be called after finish all of levels proccess.
  *	
+ *	\param table The circuits table
+ *	\param pos Index of the table
+ *
  *	\code
  *		
  *		while( !allFilesWasProccessed() )
@@ -236,10 +234,9 @@ int getCurrentPipeFiles( void );
  *	\endcode
  *
  */
-
 int saveProccessFile( circuitTable *table, int pos );
 
-/*
+/**
  *	\fn	int allFilesWasProccessed( void )
  *
  *	\brief	This function check if there is still some level of processing.
@@ -251,7 +248,6 @@ int saveProccessFile( circuitTable *table, int pos );
  *	\endcode
  *
  */
-
 int allFilesWasProccessed( void );
 
 #endif

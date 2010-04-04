@@ -1,4 +1,4 @@
-/*
+/**
  * \file conditions.c
  *
  *  \date Created on: 3-apr-2010
@@ -10,15 +10,6 @@
 pthread_mutex_t mutexIndex;
 int *threadsRet;
 int threadsIndex = 0;
-
-/*Nombre: sameContinent
-*
-* 	Busca de la talba de paises, cual pertenece al mismo continente
-* que el pais de cabezera, y almacena el int asociado , ala entrada
-* en la tabla de paises. De no encontrar ninguno devuelve FALSE.
-* Necesita liberar el puntero que se devuelve.
-*
-*/
 
 void * sameContinent(void * condi){
 	int * countryInt;
@@ -46,7 +37,6 @@ void * sameContinent(void * condi){
 		return NULL;
 	}
 	if(countryInt == NULL){
-		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
 		threadsRet[myIndex] = errno;
 		return NULL;
@@ -71,14 +61,6 @@ void * sameContinent(void * condi){
 	return cond;
 }
 
-/*Nombre: deathGroup
-*
-* 	Busca de la talba de paises, cuales tiene mayor peso que WEAK_GROUP,
-* y almacena el int asociado , ala entrada en la tabla de paises. 
-* De no encontrar ninguno devuelve FALSE.
-* Necesita liberar el puntero que se devuelve.
-*
-*/
 void * deathGroup(void * condi){
 	int * countryInt;
 	int i, j;
@@ -105,7 +87,6 @@ void * deathGroup(void * condi){
 		return NULL;
 	}
 	if(countryInt == NULL){
-		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
 		threadsRet[myIndex] = errno;
 		return NULL;
@@ -129,14 +110,6 @@ void * deathGroup(void * condi){
 	return cond;
 }
 
-/*Nombre: champGroup
-*
-* 	Busca de la talba de paises, los que hallan salido campeon,
-* y almacena el int asociado , ala entrada en la tabla de paises.
-* De no encontrar ninguno devuelve FALSE.
-* Necesita liberar el puntero que se devuelve. 
-*
-*/
 void * champGroup(void * condi){
 	int * countryInt;
 	int i, j;
@@ -163,7 +136,6 @@ void * champGroup(void * condi){
 		return NULL;
 	}
 	if(countryInt == NULL){
-		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
 		threadsRet[myIndex] = errno;
 		return NULL;
@@ -195,15 +167,6 @@ void * champGroup(void * condi){
 	return cond;
 }
 
-/*Nombre: weakGroup
-*
-* 	Busca de la talba de paises, los que tenga peso menos o igual que,
-* WEAK_GROUP, y almacena el int asociado , ala entrada en la tabla de paises.
-* De no encontrar ninguno devuelve FALSE.
-* Necesita liberar el puntero que se devuelve.
-*
-*/
-
 void * weakGroup(void * condi){
 	int * countryInt;
 	int i, j;
@@ -224,13 +187,11 @@ void * weakGroup(void * condi){
 	countryInt = malloc(sizeof(int)*(cond->maxCountries));
 	
 	if(ans == NULL){
-		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto de paises del weak Grpup");
 		threadsRet[myIndex] = errno;
 		return NULL;
 	}
 	if(countryInt == NULL){
-		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto countryInt");
 		threadsRet[myIndex] = errno;
 		return NULL;
@@ -253,13 +214,7 @@ void * weakGroup(void * condi){
 	threadsRet[myIndex] = 1;
 	return cond;
 }
-/*Nombre: countryFree
-*
-* 	Busca todos los paises que estan sin usar, si no encuentra ninguno
-* devuelve FALSE. Necesita liberar el puntero que se devuelve.
-* en caso de error devuelvo errno
-*
-*/
+
 int countryFree( condPack * cond){
 	int * countryInt;
 	int i , j;
@@ -273,13 +228,11 @@ int countryFree( condPack * cond){
 	countryInt = malloc(sizeof(int) * cond->maxCountries);
 	
 	if(ans == NULL){
-		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto de paises del weak Grpup");
 		return errno;
 	}	
 
 	if(countryInt == NULL){
-		/*	error memoria, insuficiente*/
 		perror("Memoria insuficiente, para crear el conjunto de paises libres");
 		return errno;
 	}
@@ -304,13 +257,6 @@ int countryFree( condPack * cond){
 
 	return TRUE;
 }
-/*Nombre: noCondition
-*
-* 	De los paises libres busca uno al azar, si no hay paises
-* devuelve FALSE. Necesita liberar el puntero que se devuelve.
-* en caso de error retorna errno.
-*
-*/	
 
 void * noCondition(void * condi){
 	

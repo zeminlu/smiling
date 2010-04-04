@@ -1,8 +1,8 @@
-/*
- *		gates.c
+/**
+ * \file gates.c
  *
- *			Archivo encargado de llevar a cabo todos los procesos de resolucion
- *			de un circuito de compuertas.
+ *  \date Created on: 3-apr-2010
+ *  \author Luciano R. Zemin & Nicolás Magni & Nicolás Purita
  */
 
 #include "../inc/gates.h"
