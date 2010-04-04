@@ -96,10 +96,10 @@ int createsGates(void)
 			perror("Error no se pudo escuchar el archivo");
 			return errno;
 		}
-		for( i = 0 ; i < qtyFiles ; ++i )
+		/*for( i = 0 ; i < qtyFiles ; ++i )
 		{
 			printCircuitTable(table[i]);
-		}
+		}*/
 		sendTableToGates(pid);
 		freeCircuits(table,pos);
 		if( createTable() == -1 )
@@ -113,7 +113,7 @@ int createsGates(void)
 		wait(&pid);
 	}
 	finalizeIPC();
-	printf("Se procesaron %d archivos\n", totalProccessFiles);	
+	printf("Se procesaron %d archivos de Pipeline\n", totalProccessFiles);	
 	return procStatus;
 }
 
