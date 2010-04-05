@@ -153,6 +153,11 @@ int gateInitializer( void )
 		}
 		for (i = 0 ; i < qtyFiles ; ++i)
 		{
+			if( levels[i] == (maxLevel[i] - 1) )
+			{
+				saveProccessFile(table[i], childPids[i]);
+				printf("Se resolvio el archivo de pipeline, el resultado se encuentra en el archivo finalizado con %d\n\n", childPids[i]);
+			}
 			if( levels[i] < maxLevel[i] && levels[i] >= 0 )
 			{
 				wait(&(childPids[i]));
@@ -162,7 +167,8 @@ int gateInitializer( void )
 		incLevels();
 		finalizeIPC();
 	}
-	if( allFilesWasProccessed() )
+	
+	/*if( allFilesWasProccessed() )
 	{
 		for( i = 0 ; i < qtyFileCom ; ++i )
 			saveProccessFile(table[i], i);
@@ -171,7 +177,7 @@ int gateInitializer( void )
 		{
 			printCircuitTable(table[i]);
 		}
-	}
+	}*/
 	
 	freeCircuitsGates();
 	free(childPids);
@@ -339,8 +345,10 @@ int listenToMyChildren( void )
 	}
 	for( i = 0 ; i < qtyFiles ; ++i )
 	{
-		if( childPids[i] != -1 )
+		if( childPids[i] < -1 )
+		{
 			childPids[i] = childPids[i] * -1;
+		}
 	}
 	return 0;
 }
@@ -502,7 +510,7 @@ int getCurrentPipeFiles( void )
 int saveProccessFile( circuitTable *table, int pos )
 {
 	int i,j;
-	char *nameStart = "./results/finalCircuit", *endFile = ".txt", fileName[30], posi[10];
+	char *nameStart = "./results/finalCircuit", *endFile = ".txt", fileName[50], posi[10];
 	FILE *proFile;
 	
 	itoa(pos, posi);
@@ -515,6 +523,7 @@ int saveProccessFile( circuitTable *table, int pos )
 		perror("Error al abrir el archivo procesado");
 		return errno;
 	}
+	
 	for( i = 0 ; i < table[0].totalLevels ; ++i )
 	{
 		for( j = 0 ; j < (table[i].eachLevel)->qtyGates ; ++j )

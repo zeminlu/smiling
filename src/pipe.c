@@ -65,7 +65,7 @@ int createTable( void )
 
 int createsGates(void)
 {
-	int procStatus = 0, i;
+	int procStatus = 0;
 		
 	while( signalFlag )
 	{
