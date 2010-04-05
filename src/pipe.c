@@ -199,12 +199,17 @@ int fileListener(void)
 			strcpy(procCopyDir,procDir);
 			strcat(procCopyDir,d->d_name);
 			fclose( dataFile );
-			if( link(dirFile,procCopyDir) == -1)
+			
+			if (rename( dirFile, procCopyDir) < 0){
+				return -1;
+			}
+			
+			/*if( link( dirFile,procCopyDir) == -1)
 			{
 				perror("Error en el link de pipe\n");
 				return errno;
 			}
-			unlink(dirFile);
+			unlink(dirFile);*/
 		}
 	}
 	free(dirFile);
